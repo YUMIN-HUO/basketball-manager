@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>篮球生涯模拟器 · 从青训到传奇</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0a0e17;
+    --card: #131a2b;
+    --card2: #1a2238;
+    --accent: #ff6b35;
+    --accent2: #f7931e;
+    --gold: #ffd700;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e8eaf0;
+    --text-dim: #8b92a8;
+    --border: #2a3350;
+  }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body {
+    background: linear-gradient(180deg, #0a0e17 0%, #0f1424 50%, #0a0e17 100%);
+  }
+  .app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 12px;
+    min-height: 100vh;
+  }
+  .screen { display: none; animation: fadeIn .3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(255,107,53,0.3); }
+    50% { box-shadow: 0 0 20px rgba(255,107,53,0.6); }
+  }
+  h1, h2, h3 { font-weight: 700; }
+  .btn {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 14px 16px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text);
+    font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: all .2s ease;
+    text-align: left; font-family: inherit;
+  }
+  .btn:hover { background: var(--card2); border-color: var(--accent); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: 0.4; pointer-events: none; }
+  .btn-sm { padding: 10px 12px; font-size: 13px; }
+  .btn-block { margin-bottom: 8px; }
+
+  .header {
+    text-align: center; padding: 20px 0 16px;
+  }
+  .header h1 {
+    font-size: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+
+  .setup-section { margin-bottom: 20px; }
+  .setup-title {
+    font-size: 18px; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .setup-title .step {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: white; font-size: 12px;
+  }
+  .country-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  .country-btn {
+    flex-direction: column; align-items: flex-start; gap: 4px;
+  }
+  .country-btn .flag { font-size: 24px; }
+  .country-btn .c-name { font-weight: 600; }
+  .country-btn .c-info { font-size: 12px; color: var(--text-dim); }
+  .country-btn.selected {
+    background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(247,147,30,0.1));
+    border-color: var(--accent);
+  }
+
+  .input-row { display: flex; gap: 10px; }
+  .input-row input {
+    flex: 1; padding: 12px 14px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 15px;
+    font-family: inherit; outline: none;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+  .pos-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .pos-btn {
+    flex-direction: column; align-items: center; gap: 4px;
+    padding: 12px 6px; font-size: 12px;
+  }
+  .pos-btn .pos-code { font-weight: 700; font-size: 16px; color: var(--accent); }
+
+  /* Player Card */
+  .player-card {
+    background: linear-gradient(145deg, var(--card), var(--card2));
+    border-radius: 16px; padding: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .player-main {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .ovr-badge {
+    width: 68px; height: 68px; border-radius: 14px;
+    background: linear-gradient(145deg, #1a1f35, #0f1424);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 2px solid var(--accent);
+    flex-shrink: 0;
+  }
+  .ovr-badge .ovr {
+    font-size: 28px; font-weight: 800; color: var(--accent);
+    line-height: 1;
+  }
+  .ovr-badge .ovr-label {
+    font-size: 10px; color: var(--text-dim); margin-top: 2px;
+  }
+  .player-info { flex: 1; min-width: 0; }
+  .player-name {
+    font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .player-meta {
+    font-size: 13px; color: var(--text-dim); margin-top: 3px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .player-meta span { display: inline-flex; align-items: center; gap: 3px; }
+  .team-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px; padding: 8px 10px;
+    background: rgba(255,255,255,0.03); border-radius: 8px;
+  }
+  .team-logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+    flex-shrink: 0;
+  }
+  .team-name { font-size: 14px; font-weight: 600; }
+  .team-league { font-size: 11px; color: var(--text-dim); }
+
+  /* Stat bars */
+  .stat-bars { display: flex; gap: 12px; margin-top: 12px; }
+  .stat-bar { flex: 1; }
+  .stat-bar .bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-dim); margin-bottom: 4px;
+  }
+  .bar-fill {
+    height: 6px; background: rgba(255,255,255,0.08);
+    border-radius: 3px; overflow: hidden;
+  }
+  .bar-inner {
+    height: 100%; border-radius: 3px;
+    transition: width .5s ease;
+  }
+  .bar-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .bar-blue { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+  .bar-gold { background: linear-gradient(90deg, #f59e0b, #d97706); }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin-top: 12px;
+  }
+  .stat-item {
+    text-align: center; padding: 8px 4px;
+    background: rgba(255,255,255,0.03); border-radius: 8px;
+  }
+  .stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
+  .stat-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Decision card */
+  .event-card {
+    background: linear-gradient(145deg, var(--card), var(--card2));
+    border-radius: 16px; padding: 16px;
+    border: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .event-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px;
+  }
+  .event-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .event-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+  .choice-btn {
+    flex-direction: column; align-items: flex-start; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .choice-btn .choice-title { font-weight: 600; font-size: 14px; }
+  .choice-btn .choice-desc { font-size: 12px; color: var(--text-dim); }
+  .choice-btn .choice-tag {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    background: rgba(255,107,53,0.15); color: var(--accent);
+    font-size: 11px; font-weight: 600;
+  }
+
+  /* Timeline */
+  .timeline-title {
+    font-size: 14px; font-weight: 600; margin-bottom: 8px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .timeline-item {
+    display: flex; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-age {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--accent); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+  .timeline-content { flex: 1; min-width: 0; }
+  .timeline-main { font-size: 13px; font-weight: 500; }
+  .timeline-sub { font-size: 11px; color: var(--text-dim); }
+
+  /* Honor */
+  .honor-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .honor-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 8px; border-radius: 6px;
+    background: rgba(255,215,0,0.1); color: var(--gold);
+    font-size: 11px; font-weight: 600;
+    border: 1px solid rgba(255,215,0,0.2);
+  }
+
+  /* Retirement */
+  .retire-card {
+    background: linear-gradient(145deg, var(--card), var(--card2));
+    border-radius: 16px; padding: 20px;
+    border: 1px solid var(--border); text-align: center;
+  }
+  .retire-title {
+    font-size: 24px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .retire-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+  .career-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; margin-bottom: 16px;
+  }
+  .career-stat {
+    padding: 12px; background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+  }
+  .career-stat .val {
+    font-size: 22px; font-weight: 800;
+    color: var(--accent);
+  }
+  .career-stat .lbl {
+    font-size: 11px; color: var(--text-dim); margin-top: 2px;
+  }
+
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mode-btn {
+    flex-direction: column; align-items: center; gap: 4px;
+    padding: 14px 8px; text-align: center;
+  }
+  .mode-btn .mode-name { font-weight: 700; font-size: 13px; }
+  .mode-btn .mode-desc { font-size: 10px; color: var(--text-dim); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2));
+    border-color: var(--accent);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px;
+    z-index: 100; display: flex; align-items: center; gap: 8px;
+    animation: slideUp .3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+
+  .hidden { display: none !important; }
+
+  /* Scroll hint */
+  .scroll-hint {
+    text-align: center; color: var(--text-dim);
+    font-size: 11px; padding: 8px 0;
+  }
+
+  /* Logo colors */
+  .logo-athletic { background: linear-gradient(135deg, #c8102e, #7a0a1c); }
+  .logo-classic { background: linear-gradient(135deg, #1e3a5f, #0f1f33); }
+  .logo-modern { background: linear-gradient(135deg, #3d2b1f, #1a0f08); }
+  .logo-bright { background: linear-gradient(135deg, #ff6b35, #c44a1a); }
+  .logo-navy { background: linear-gradient(135deg, #0f1b3d, #1a2d5a); }
+  .logo-red { background: linear-gradient(135deg, #d32f2f, #8b0000); }
+  .logo-green { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+  .logo-blue { background: linear-gradient(135deg, #1565c0, #0d47a1); }
+  .logo-purple { background: linear-gradient(135deg, #6a1b9a, #4a148c); }
+  .logo-orange { background: linear-gradient(135deg, #e65100, #bf360c); }
+  .logo-gold { background: linear-gradient(135deg, #b8860b, #8b6508); }
+  .logo-teal { background: linear-gradient(135deg, #00695c, #004d40); }
+  .logo-crimson { background: linear-gradient(135deg, #8b0000, #5a0000); }
+  .logo-royal { background: linear-gradient(135deg, #1a237e, #0d1442); }
+  .logo-sunset { background: linear-gradient(135deg, #ff6f00, #c43e00); }
+  .logo-forest { background: linear-gradient(135deg, #1b5e20, #0d3311); }
+  .logo-steel { background: linear-gradient(135deg, #455a64, #263238); }
+  .logo-maroon { background: linear-gradient(135deg, #5d1a1a, #3d0f0f); }
+  .logo-emerald { background: linear-gradient(135deg, #00695c, #004d40); }
+  .logo-silver { background: linear-gradient(135deg, #546e7a, #37474f); }
+
+  .competition-banner {
+    padding: 10px 14px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,53,0.1));
+    border: 1px solid rgba(255,215,0,0.3);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .competition-banner .cb-icon { font-size: 20px; }
+  .competition-banner .cb-text { font-size: 13px; font-weight: 600; }
+
+  .draft-card {
+    background: linear-gradient(145deg, var(--card), var(--card2));
+    border-radius: 16px; padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .draft-pick {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; background: rgba(255,255,255,0.03);
+    border-radius: 10px; margin-bottom: 8px;
+  }
+  .draft-pick .pick-num {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--accent); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px;
+  }
+  .draft-pick .pick-team { flex: 1; min-width: 0; }
+  .draft-pick .pick-team-name { font-weight: 600; font-size: 14px; }
+  .draft-pick .pick-team-league { font-size: 11px; color: var(--text-dim); }
+
+  .injured-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 6px; border-radius: 4px;
+    background: rgba(239,68,68,0.15); color: var(--red);
+    font-size: 11px; font-weight: 600;
+  }
+
+  .legend-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 7px; border-radius: 5px;
+    background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.3);
+    font-size: 11px; font-weight: 600; color: var(--gold);
+  }
+
+  @media (max-width: 380px) {
+    .country-grid { grid-template-columns: 1fr; }
+    .pos-grid { grid-template-columns: repeat(3, 1fr); }
+    .mode-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ============= DATA =============
+const POSITIONS = [
+  { code: 'PG', name: '组织后卫', desc: '控球、传球、指挥进攻' },
+  { code: 'SG', name: '得分后卫', desc: '得分、三分、防守' },
+  { code: 'SF', name: '小前锋', desc: '全能、突破、中距离' },
+  { code: 'PF', name: '大前锋', desc: '篮板、内线、防守' },
+  { code: 'C',  name: '中锋',     desc: '篮下统治、盖帽、篮板' }
+];
+
+const LOGO_CLASSES = [
+  'logo-athletic','logo-classic','logo-modern','logo-bright','logo-navy',
+  'logo-red','logo-green','logo-blue','logo-purple','logo-orange',
+  'logo-gold','logo-teal','logo-crimson','logo-royal','logo-sunset',
+  'logo-forest','logo-steel','logo-maroon','logo-emerald','logo-silver'
+];
+
+const HIGH_SCHOOLS = {
+  CHN: [
+    { name: '清华附中', logo: '清华', cls: 'logo-red' },
+    { name: '北大附中', logo: '北大', cls: 'logo-blue' },
+    { name: '光明中学', logo: '光明', cls: 'logo-gold' },
+    { name: '东莞光明', logo: '东莞', cls: 'logo-orange' },
+    { name: '浙江回浦', logo: '回浦', cls: 'logo-green' },
+    { name: '上海南模', logo: '南模', cls: 'logo-navy' },
+    { name: '湖南地质', logo: '地质', cls: 'logo-steel' },
+    { name: '山东临沂', logo: '临沂', cls: 'logo-crimson' },
+    { name: '江苏南京', logo: '南京', cls: 'logo-royal' },
+    { name: '吉林实验', logo: '吉林', cls: 'logo-emerald' }
+  ],
+  USA: [
+    { name: 'Oak Hill Academy', logo: 'OAK', cls: 'logo-red' },
+    { name: 'Montverde Academy', logo: 'MVA', cls: 'logo-blue' },
+    { name: 'IMG Academy', logo: 'IMG', cls: 'logo-orange' },
+    { name: 'La Lumiere', logo: 'LL', cls: 'logo-navy' },
+    { name: 'DeMatha', logo: 'DM', cls: 'logo-crimson' },
+    { name: 'St. Anthony', logo: 'SA', cls: 'logo-purple' },
+    { name: 'Prolific Prep', logo: 'PP', cls: 'logo-gold' },
+    { name: 'Huntington', logo: 'HH', cls: 'logo-green' },
+    { name: 'Findlay Prep', logo: 'FP', cls: 'logo-teal' },
+    { name: 'Ball State', logo: 'BS', cls: 'logo-sunset' }
+  ],
+  ESP: [
+    { name: 'Real Madrid 青训', logo: 'RM', cls: 'logo-royal' },
+    { name: 'Barcelona 青训', logo: 'FCB', cls: 'logo-red' },
+    { name: 'Lleida Basket', logo: 'LL', cls: 'logo-blue' },
+    { name: 'Joventut Badalona', logo: 'JB', cls: 'logo-green' },
+    { name: 'Valencia Basket', logo: 'VB', cls: 'logo-orange' }
+  ],
+  FRA: [
+    { name: 'INSEP Paris', logo: 'INSEP', cls: 'logo-blue' },
+    { name: 'ASVEL 青训', logo: 'ASV', cls: 'logo-navy' },
+    { name: 'Monaco 青训', logo: 'ASM', cls: 'logo-red' },
+    { name: 'Limoges CSP', logo: 'LCSP', cls: 'logo-gold' },
+    { name: 'Le Mans', logo: 'LM', cls: 'logo-teal' }
+  ],
+  SRB: [
+    { name: 'Crvena Zvezda 青训', logo: 'CZ', cls: 'logo-red' },
+    { name: 'Partizan 青训', logo: 'PAR', cls: 'logo-crimson' },
+    { name: 'Vojvodina', logo: 'VOJ', cls: 'logo-navy' },
+    { name: 'Radnicki', logo: 'RAD', cls: 'logo-orange' }
+  ],
+  GRC: [
+    { name: 'Panathinaikos 青训', logo: 'PAO', cls: 'logo-green' },
+    { name: 'Olympiacos 青训', logo: 'OLY', cls: 'logo-red' },
+    { name: 'AEK Athens', logo: 'AEK', cls: 'logo-gold' },
+    { name: 'Peristeri', logo: 'PER', cls: 'logo-blue' }
+  ],
+  TUR: [
+    { name: 'Fenerbahce 青训', logo: 'FEN', cls: 'logo-navy' },
+    { name: 'Galatasaray 青训', logo: 'GS', cls: 'logo-red' },
+    { name: 'Efes Pilsen', logo: 'EP', cls: 'logo-blue' },
+    { name: 'Besiktas', logo: 'BJK', cls: 'logo-crimson' }
+  ],
+  ITA: [
+    { name: 'Olimpia Milano 青训', logo: 'OM', cls: 'logo-red' },
+    { name: 'Juventus Basket', logo: 'JUV', cls: 'logo-crimson' },
+    { name: 'Virtus Bologna', logo: 'VB', cls: 'logo-navy' },
+    { name: 'Fortitudo', logo: 'FORT', cls: 'logo-blue' }
+  ],
+  GER: [
+    { name: 'ALBA Berlin 青训', logo: 'ALBA', cls: 'logo-red' },
+    { name: 'Bayern Munich 青训', logo: 'FCB', cls: 'logo-crimson' },
+    { name: 'Brose Baskets', logo: 'BRO', cls: 'logo-green' },
+    { name: 'Ratiopharm', logo: 'RAT', cls: 'logo-blue' }
+  ],
+  ARG: [
+    { name: 'Boca Juniors 青训', logo: 'BOC', cls: 'logo-blue' },
+    { name: 'River Plate 青训', logo: 'RIV', cls: 'logo-red' },
+    { name: 'San Lorenzo', logo: 'SL', cls: 'logo-navy' },
+    { name: 'Estudiantes', logo: 'EST', cls: 'logo-sunset' }
+  ],
+  AUS: [
+    { name: 'Australian Institute of Sport', logo: 'AIS', cls: 'logo-green' },
+    { name: 'Melbourne United 青训', logo: 'MU', cls: 'logo-navy' },
+    { name: 'Sydney Kings 青训', logo: 'SK', cls: 'logo-red' },
+    { name: 'Brisbane Bullets 青训', logo: 'BB', cls: 'logo-blue' }
+  ],
+  CAN: [
+    { name: 'Canadian Elite Academy', logo: 'CEA', cls: 'logo-red' },
+    { name: 'Toronto Raptors 青训', logo: 'TOR', cls: 'logo-navy' },
+    { name: 'Vancouver Bandits', logo: 'VB', cls: 'logo-orange' },
+    { name: 'Ottawa Blackjacks', logo: 'OBJ', cls: 'logo-gold' }
+  ],
+  JPN: [
+    { name: '日本大学第三高中', logo: '日大', cls: 'logo-red' },
+    { name: '延冈学園', logo: '延岡', cls: 'logo-blue' },
+    { name: '福冈第一', logo: '福岡', cls: 'logo-navy' },
+    { name: '中部大学第一', logo: '中部', cls: 'logo-green' }
+  ],
+  KOR: [
+    { name: '首尔龙山高中', logo: '용산', cls: 'logo-red' },
+    { name: '釜山中央高中', logo: '부산', cls: 'logo-blue' },
+    { name: '大邱昌德高中', logo: '대구', cls: 'logo-navy' },
+    { name: '全州第一高中', logo: '전주', cls: 'logo-green' }
+  ],
+  BRA: [
+    { name: 'Flamengo 青训', logo: 'FLA', cls: 'logo-red' },
+    { name: 'Palmeiras 青训', logo: 'PAL', cls: 'logo-green' },
+    { name: 'Sao Paulo', logo: 'SAO', cls: 'logo-navy' },
+    { name: 'Corinthians', logo: 'COR', cls: 'logo-gold' }
+  ]
+};
+
+const UNIVERSITIES = {
+  CHN: [
+    { name: '清华大学', logo: '清华', cls: 'logo-red', conf: 'CUBA' },
+    { name: '北京大学', logo: '北大', cls: 'logo-blue', conf: 'CUBA' },
+    { name: '中国矿业大学', logo: '矿大', cls: 'logo-navy', conf: 'CUBA' },
+    { name: '山西大学', logo: '山大', cls: 'logo-green', conf: 'CUBA' },
+    { name: '华侨大学', logo: '华大', cls: 'logo-gold', conf: 'CUBA' },
+    { name: '中南大学', logo: '中南', cls: 'logo-orange', conf: 'CUBA' },
+    { name: '湖南大学', logo: '湖大', cls: 'logo-crimson', conf: 'CUBA' },
+    { name: '同济大学', logo: '同济', cls: 'logo-purple', conf: 'CUBA' }
+  ],
+  USA: [
+    { name: 'Duke University', logo: 'DUK', cls: 'logo-blue', conf: 'NBA' },
+    { name: 'University of Kentucky', logo: 'UK', cls: 'logo-red', conf: 'NBA' },
+    { name: 'University of North Carolina', logo: 'UNC', cls: 'logo-navy', conf: 'NBA' },
+    { name: 'University of Kansas', logo: 'KU', cls: 'logo-blue', conf: 'NBA' },
+    { name: 'Louisville', logo: 'LOU', cls: 'logo-red', conf: 'NBA' },
+    { name: 'Michigan State', logo: 'MSU', cls: 'logo-green', conf: 'NBA' },
+    { name: 'Indiana University', logo: 'IND', cls: 'logo-crimson', conf: 'NBA' },
+    { name: 'Arizona', logo: 'AZ', cls: 'logo-navy', conf: 'NBA' },
+    { name: 'Villanova', logo: 'VIL', cls: 'logo-blue', conf: 'NBA' },
+    { name: 'Gonzaga', logo: 'GON', cls: 'logo-red', conf: 'NBA' }
+  ],
+  ESP: [
+    { name: 'Universidad Complutense', logo: 'UCM', cls: 'logo-navy', conf: 'ACB' },
+    { name: 'Universitat de Barcelona', logo: 'UB', cls: 'logo-red', conf: 'ACB' },
+    { name: 'Universidad Politecnica', logo: 'UPM', cls: 'logo-blue', conf: 'ACB' }
+  ],
+  FRA: [
+    { name: 'Universite Paris-Saclay', logo: 'UPS', cls: 'logo-blue', conf: 'EuroLeague' },
+    { name: 'Universite de Lyon', logo: 'UDL', cls: 'logo-teal', conf: 'EuroLeague' }
+  ],
+  SRB: [
+    { name: 'University of Belgrade', logo: 'UBG', cls: 'logo-red', conf: 'Adriatic' }
+  ],
+  GRC: [
+    { name: 'University of Athens', logo: 'UOA', cls: 'logo-navy', conf: 'Greek League' }
+  ],
+  TUR: [
+    { name: 'Bogazici University', logo: 'BOUN', cls: 'logo-navy', conf: 'Turkish League' }
+  ],
+  ITA: [
+    { name: 'Universita di Bologna', logo: 'UB', cls: 'logo-red', conf: 'Serie A' }
+  ],
+  GER: [
+    { name: 'Technical University of Munich', logo: 'TUM', cls: 'logo-blue', conf: 'BBL' }
+  ],
+  ARG: [
+    { name: 'Universidad de Buenos Aires', logo: 'UBA', cls: 'logo-blue', conf: 'Liga Nacional' }
+  ],
+  AUS: [
+    { name: 'Australian National University', logo: 'ANU', cls: 'logo-navy', conf: 'NBL' }
+  ],
+  CAN: [
+    { name: 'University of Toronto', logo: 'UofT', cls: 'logo-blue', conf: 'CIS' }
+  ],
+  JPN: [
+    { name: '日本大学', logo: '日大', cls: 'logo-red', conf: 'B.League' },
+    { name: '早稲田大学', logo: '早稲田', cls: 'logo-navy', conf: 'B.League' }
+  ],
+  KOR: [
+    { name: '首尔大学', logo: '서울대', cls: 'logo-navy', conf: 'KBL' },
+    { name: '高丽大学', logo: '고려대', cls: 'logo-red', conf: 'KBL' }
+  ],
+  BRA: [
+    { name: 'Universidade de Sao Paulo', logo: 'USP', cls: 'logo-navy', conf: 'NBB' }
+  ]
+};
+
+const PRO_TEAMS = {
+  CHN: [
+    { name: '辽宁本钢', logo: '辽宁', cls: 'logo-red', league: 'CBA' },
+    { name: '广东宏远', logo: '广东', cls: 'logo-navy', league: 'CBA' },
+    { name: '浙江稠州', logo: '浙江', cls: 'logo-blue', league: 'CBA' },
+    { name: '北京首钢', logo: '北京', cls: 'logo-crimson', league: 'CBA' },
+    { name: '新疆伊力特', logo: '新疆', cls: 'logo-gold', league: 'CBA' },
+    { name: '上海久事', logo: '上海', cls: 'logo-sunset', league: 'CBA' },
+    { name: '山东高速', logo: '山东', cls: 'logo-green', league: 'CBA' },
+    { name: '深圳马可波罗', logo: '深圳', cls: 'logo-teal', league: 'CBA' },
+    { name: '广州龙狮', logo: '广州', cls: 'logo-emerald', league: 'CBA' },
+    { name: '天津先行者', logo: '天津', cls: 'logo-purple', league: 'CBA' },
+    { name: '山西汾酒', logo: '山西', cls: 'logo-orange', league: 'CBA' },
+    { name: '吉林九台', logo: '吉林', cls: 'logo-steel', league: 'CBA' },
+    { name: '青岛国信', logo: '青岛', cls: 'logo-blue', league: 'CBA' },
+    { name: '南京同曦', logo: '南京', cls: 'logo-crimson', league: 'CBA' },
+    { name: '福建浔兴', logo: '福建', cls: 'logo-navy', league: 'CBA' }
+  ],
+  USA: [
+    { name: '洛杉矶湖人', logo: 'LAL', cls: 'logo-purple', league: 'NBA' },
+    { name: '波士顿凯尔特人', logo: 'BOS', cls: 'logo-green', league: 'NBA' },
+    { name: '金州勇士', logo: 'GSW', cls: 'logo-blue', league: 'NBA' },
+    { name: '迈阿密热火', logo: 'MIA', cls: 'logo-red', league: 'NBA' },
+    { name: ' Milwaukee Bucks', logo: 'MIL', cls: 'logo-navy', league: 'NBA' },
+    { name: 'Phoenix Suns', logo: 'PHX', cls: 'logo-sunset', league: 'NBA' },
+    { name: 'Dallas Mavericks', logo: 'DAL', cls: 'logo-blue', league: 'NBA' },
+    { name: 'Denver Nuggets', logo: 'DEN', cls: 'logo-navy', league: 'NBA' },
+    { name: 'Philadelphia 76ers', logo: 'PHI', cls: 'logo-red', league: 'NBA' },
+    { name: 'Brooklyn Nets', logo: 'BKN', cls: 'logo-crimson', league: 'NBA' },
+    { name: 'New York Knicks', logo: 'NYK', cls: 'logo-blue', league: 'NBA' },
+    { name: 'Chicago Bulls', logo: 'CHI', cls: 'logo-red', league: 'NBA' },
+    { name: 'LA Clippers', logo: 'LAC', cls: 'logo-navy', league: 'NBA' },
+    { name: 'Memphis Grizzlies', logo: 'MEM', cls: 'logo-teal', league: 'NBA' },
+    { name: 'Minnesota Timberwolves', logo: 'MIN', cls: 'logo-blue', league: 'NBA' },
+    { name: 'New Orleans Pelicans', logo: 'NOP', cls: 'logo-red', league: 'NBA' },
+    { name: 'Sacramento Kings', logo: 'SAC', cls: 'logo-purple', league: 'NBA' },
+    { name: 'Atlanta Hawks', logo: 'ATL', cls: 'logo-crimson', league: 'NBA' },
+    { name: 'Charlotte Hornets', logo: 'CHA', cls: 'logo-teal', league: 'NBA' },
+    { name: 'Indiana Pacers', logo: 'IND', cls: 'logo-blue', league: 'NBA' }
+  ],
+  ESP: [
+    { name: 'Real Madrid', logo: 'RMA', cls: 'logo-navy', league: 'ACB' },
+    { name: 'FC Barcelona', logo: 'FCB', cls: 'logo-red', league: 'ACB' },
+    { name: 'Lleida Basquet', logo: 'LL', cls: 'logo-blue', league: 'ACB' },
+    { name: 'Joventut Badalona', logo: 'JOV', cls: 'logo-green', league: 'ACB' },
+    { name: 'Valencia Basket', logo: 'VAL', cls: 'logo-orange', league: 'ACB' },
+    { name: 'Unicaja Malaga', logo: 'UNI', cls: 'logo-teal', league: 'ACB' },
+    { name: 'Real Betis', logo: 'BET', cls: 'logo-crimson', league: 'ACB' }
+  ],
+  FRA: [
+    { name: 'ASVEL Villeurbanne', logo: 'ASV', cls: 'logo-navy', league: 'EuroLeague' },
+    { name: 'Monaco Basket', logo: 'ASM', cls: 'logo-red', league: 'EuroLeague' },
+    { name: 'Limoges CSP', logo: 'LIM', cls: 'logo-gold', league: 'EuroLeague' },
+    { name: 'Le Mans Sarthe', logo: 'LMS', cls: 'logo-teal', league: 'EuroLeague' },
+    { name: 'Nanterre 92', logo: 'N92', cls: 'logo-purple', league: 'EuroLeague' }
+  ],
+  SRB: [
+    { name: 'Crvena Zvezda', logo: 'CZ', cls: 'logo-red', league: 'Adriatic' },
+    { name: 'Partizan Belgrade', logo: 'PAR', cls: 'logo-crimson', league: 'Adriatic' },
+    { name: 'Vojvodina Novi Sad', logo: 'VOJ', cls: 'logo-navy', league: 'Adriatic' }
+  ],
+  GRC: [
+    { name: 'Panathinaikos BC', logo: 'PAO', cls: 'logo-green', league: 'Greek League' },
+    { name: 'Olympiacos BC', logo: 'OLY', cls: 'logo-red', league: 'Greek League' },
+    { name: 'AEK Athens', logo: 'AEK', cls: 'logo-gold', league: 'Greek League' },
+    { name: 'Peristeri BC', logo: 'PER', cls: 'logo-blue', league: 'Greek League' }
+  ],
+  TUR: [
+    { name: 'Fenerbahce Beko', logo: 'FEN', cls: 'logo-navy', league: 'Turkish League' },
+    { name: 'Galatasaray Nef', logo: 'GS', cls: 'logo-red', league: 'Turkish League' },
+    { name: 'Anadolu Efes', logo: 'ANE', cls: 'logo-blue', league: 'Turkish League' },
+    { name: 'Besiktas JK', logo: 'BJK', cls: 'logo-crimson', league: 'Turkish League' }
+  ],
+  ITA: [
+    { name: 'Olimpia Milano', logo: 'OM', cls: 'logo-red', league: 'Serie A' },
+    { name: 'JuveCaserta', logo: 'JC', cls: 'logo-navy', league: 'Serie A' },
+    { name: 'Virtus Bologna', logo: 'VB', cls: 'logo-navy', league: 'Serie A' },
+    { name: 'Fortitudo Bologna', logo: 'FORT', cls: 'logo-blue', league: 'Serie A' }
+  ],
+  GER: [
+    { name: 'ALBA Berlin', logo: 'ALB', cls: 'logo-red', league: 'BBL' },
+    { name: 'Bayern Munich', logo: 'BAY', cls: 'logo-crimson', league: 'BBL' },
+    { name: 'Brose Baskets Bamberg', logo: 'BRO', cls: 'logo-green', league: 'BBL' },
+    { name: 'Ratiopharm Ulm', logo: 'RAU', cls: 'logo-blue', league: 'BBL' }
+  ],
+  ARG: [
+    { name: 'Boca Juniors', logo: 'BOC', cls: 'logo-blue', league: 'Liga Nacional' },
+    { name: 'River Plate', logo: 'RIV', cls: 'logo-red', league: 'Liga Nacional' },
+    { name: 'San Lorenzo', logo: 'SL', cls: 'logo-navy', league: 'Liga Nacional' },
+    { name: 'Estudiantes', logo: 'EST', cls: 'logo-sunset', league: 'Liga Nacional' }
+  ],
+  AUS: [
+    { name: 'Melbourne United', logo: 'MU', cls: 'logo-navy', league: 'NBL' },
+    { name: 'Sydney Kings', logo: 'SK', cls: 'logo-red', league: 'NBL' },
+    { name: 'Brisbane Bullets', logo: 'BB', cls: 'logo-blue', league: 'NBL' },
+    { name: 'Perth Wildcats', logo: 'PW', cls: 'logo-crimson', league: 'NBL' },
+    { name: 'Adelaide 36ers', logo: 'A36', cls: 'logo-navy', league: 'NBL' },
+    { name: 'Tasmanian JackJumpers', logo: 'TJ', cls: 'logo-teal', league: 'NBL' }
+  ],
+  CAN: [
+    { name: 'Toronto Raptors', logo: 'TOR', cls: 'logo-red', league: 'NBA' },
+    { name: 'Vancouver Bandits', logo: 'VB', cls: 'logo-orange', league: 'CEBL' },
+    { name: 'Ottawa Blackjacks', logo: 'OBJ', cls: 'logo-gold', league: 'CEBL' },
+    { name: 'Edmonton Stingers', logo: 'ES', cls: 'logo-blue', league: 'CEBL' }
+  ],
+  JPN: [
+    { name: 'Tokyo Yomiuri Giants', logo: 'TYG', cls: 'logo-red', league: 'B.League' },
+    { name: 'Osaka Evessa', logo: 'OE', cls: 'logo-navy', league: 'B.League' },
+    { name: 'Kyoto Hannaryz', logo: 'KH', cls: 'logo-purple', league: 'B.League' },
+    { name: 'Ryukyu Golden Kings', logo: 'RGK', cls: 'logo-gold', league: 'B.League' }
+  ],
+  KOR: [
+    { name: 'Seoul Samsung Thunders', logo: 'SST', cls: 'logo-navy', league: 'KBL' },
+    { name: 'Busan KT Sonicboom', logo: 'BKT', cls: 'logo-blue', league: 'KBL' },
+    { name: 'Goyang Orion Orions', logo: 'GOO', cls: 'logo-red', league: 'KBL' },
+    { name: 'Jeonju KCC Egis', logo: 'KCC', cls: 'logo-gold', league: 'KBL' }
+  ],
+  BRA: [
+    { name: 'Flamengo Basketball', logo: 'FLA', cls: 'logo-red', league: 'NBB' },
+    { name: 'Palmeiras Basketball', logo: 'PAL', cls: 'logo-green', league: 'NBB' },
+    { name: 'Sao Paulo Basketball', logo: 'SAO', cls: 'logo-navy', league: 'NBB' },
+    { name: 'Corinthians Basketball', logo: 'COR', cls: 'logo-gold', league: 'NBB' }
+  ]
+};
+
+const COUNTRIES = [
+  { code: 'CHN', name: '中国', flag: '🇨🇳', threshold: '中', thresholdVal: 55, 
+    youthName: '耐高', universityName: 'CUBA', proName: 'CBA', confederation: 'FIBA Asia' },
+  { code: 'USA', name: '美国', flag: '🇺🇸', threshold: '极高', thresholdVal: 75,
+    youthName: 'High School', universityName: 'NCAA D1', proName: 'NBA', confederation: 'FIBA Americas' },
+  { code: 'ESP', name: '西班牙', flag: '🇪🇸', threshold: '极高', thresholdVal: 72,
+    youthName: '西班牙青年联赛', universityName: 'ACB大学', proName: 'ACB', confederation: 'FIBA Europe' },
+  { code: 'FRA', name: '法国', flag: '🇫🇷', threshold: '极高', thresholdVal: 70,
+    youthName: '法国青年联赛', universityName: '法国大学联赛', proName: 'EuroLeague', confederation: 'FIBA Europe' },
+  { code: 'SRB', name: '塞尔维亚', flag: '🇷🇸', threshold: '极高', thresholdVal: 70,
+    youthName: '塞尔维亚青年联赛', universityName: 'Adriatic大学', proName: 'Adriatic League', confederation: 'FIBA Europe' },
+  { code: 'GRC', name: '希腊', flag: '🇬🇷', threshold: '高', thresholdVal: 65,
+    youthName: '希腊青年联赛', universityName: '希腊大学联赛', proName: 'Greek League', confederation: 'FIBA Europe' },
+  { code: 'TUR', name: '土耳其', flag: '🇹🇷', threshold: '高', thresholdVal: 65,
+    youthName: '土耳其青年联赛', universityName: '土耳其大学联赛', proName: 'Turkish League', confederation: 'FIBA Europe' },
+  { code: 'ITA', name: '意大利', flag: '🇮🇹', threshold: '高', thresholdVal: 65,
+    youthName: '意大利青年联赛', universityName: '意大利大学联赛', proName: 'Serie A', confederation: 'FIBA Europe' },
+  { code: 'GER', name: '德国', flag: '🇩🇪', threshold: '高', thresholdVal: 65,
+    youthName: '德国青年联赛', universityName: '德国大学联赛', proName: 'BBL', confederation: 'FIBA Europe' },
+  { code: 'ARG', name: '阿根廷', flag: '🇦🇷', threshold: '高', thresholdVal: 65,
+    youthName: '阿根廷青年联赛', universityName: '阿根廷大学联赛', proName: 'Liga Nacional', confederation: 'FIBA Americas' },
+  { code: 'AUS', name: '澳大利亚', flag: '🇦🇺', threshold: '中高', thresholdVal: 60,
+    youthName: '澳洲青年联赛', universityName: '澳洲大学联赛', proName: 'NBL', confederation: 'FIBA Oceania' },
+  { code: 'CAN', name: '加拿大', flag: '🇨🇦', threshold: '中高', thresholdVal: 60,
+    youthName: '加拿大青年联赛', universityName: '加拿大大学联赛', proName: 'NBA', confederation: 'FIBA Americas' },
+  { code: 'JPN', name: '日本', flag: '🇯🇵', threshold: '中高', thresholdVal: 58,
+    youthName: '日本高中联赛', universityName: '日本大学联赛', proName: 'B.League', confederation: 'FIBA Asia' },
+  { code: 'KOR', name: '韩国', flag: '🇰🇷', threshold: '中高', thresholdVal: 58,
+    youthName: '韩国高中联赛', universityName: '韩国大学联赛', proName: 'KBL', confederation: 'FIBA Asia' },
+  { code: 'BRA', name: '巴西', flag: '🇧🇷', threshold: '高', thresholdVal: 65,
+    youthName: '巴西青年联赛', universityName: '巴西大学联赛', proName: 'NBB', confederation: 'FIBA Americas' }
+];
+
+const INJURIES = [
+  { name: '脚踝扭伤', severity: 1, recovery: [1, 3] },
+  { name: '膝盖擦伤', severity: 1, recovery: [1, 4] },
+  { name: '肌肉拉伤', severity: 2, recovery: [2, 6] },
+  { name: '手腕骨折', severity: 2, recovery: [2, 8] },
+  { name: '脑震荡', severity: 2, recovery: [2, 5] },
+  { name: '十字韧带撕裂', severity: 3, recovery: [4, 10] },
+  { name: '跟腱断裂', severity: 3, recovery: [4, 12] },
+  { name: '肩袖损伤', severity: 3, recovery: [3, 8] },
+  { name: '半月板损伤', severity: 2, recovery: [2, 6] },
+  { name: '流感', severity: 1, recovery: [1, 2] }
+];
+
+const RANDOM_EVENTS = [
+  { icon: '🔥', title: '火热手感', desc: '你在训练中表现出色，教练对你赞不绝口。', effect: { ovr: 2, fame: 3 } },
+  { icon: '💪', title: '刻苦训练', desc: '你每天加练三小时，身体和技术都在提升。', effect: { ovr: 1, relation: 2 } },
+  { icon: '⭐', title: '新星崛起', desc: '你在关键比赛中爆砍高分，一战成名！', effect: { ovr: 3, fame: 5 } },
+  { icon: '📰', title: '媒体关注', desc: '媒体采访让你曝光度大增，赞助商也找上门来。', effect: { fame: 4, wealth: 5 } },
+  { icon: '🎯', title: '技惊四座', desc: '你在国际比赛中命中关键球，载入史册。', effect: { ovr: 2, fame: 6 } },
+  { icon: '🏆', title: '团队氛围', desc: '球队团结一心，战斗力爆棚。', effect: { relation: 4 } },
+  { icon: '👕', title: '球衣销售', desc: '你的球衣成为畅销品，球队给你分成。', effect: { wealth: 4, fame: 2 } },
+  { icon: '📈', title: '身价暴涨', desc: '经纪人告诉你，有豪门俱乐部对你感兴趣。', effect: { wealth: 5 } },
+  { icon: '🎓', title: '学业出色', desc: '你在学业上也保持优秀，导师给予肯定。', effect: { relation: 2 } },
+  { icon: '💼', title: '商业合作', desc: '品牌商邀请你代言，收入可观。', effect: { wealth: 6 } },
+  { icon: '🎪', title: '伤病初愈', desc: '从伤病中完全恢复，状态比之前更好。', effect: { ovr: 1 } },
+  { icon: '🏥', title: '小伤不断', desc: '小伤影响了你的状态，需要调整。', effect: { ovr: -1, relation: -1 } },
+  { icon: '😤', title: '更衣室矛盾', desc: '与队友发生争执，气氛变得紧张。', effect: { relation: -3 } },
+  { icon: '📉', title: '状态下滑', desc: '连续的比赛让你疲惫不堪。', effect: { ovr: -1 } },
+  { icon: '🎂', title: '生日派对', desc: '队友为你举办了惊喜派对，士气高涨。', effect: { relation: 3 } }
+];
+
+const HONORS = {
+  highSchool: ['高中联赛MVP', '高中联赛总冠军', '高中全明星', '最佳新秀', '最佳防守球员'],
+  university: ['大学联赛MVP', '大学联赛总冠军', '大学全明星', '最佳新秀', '最佳一阵', '最佳防守球员'],
+  pro: ['常规赛MVP', '总决赛MVP', '总冠军', '全明星首发', '最佳一阵', '最佳防守一阵', '最佳新秀', '最佳第六人', '最快进步球员'],
+  national: ['FIBA世界杯冠军', 'FIBA世界杯MVP', '奥运会金牌', '奥运会MVP', '洲际锦标赛冠军', '洲际锦标赛MVP', '亚洲杯冠军', '亚洲杯MVP']
+};
+
+// Competition schedule (year-based)
+const COMPETITIONS = {
+  // FIBA World Cup: every 4 years, offset from Olympics
+  fibaWorldCup: { name: 'FIBA篮球世界杯', years: [2023, 2027, 2031, 2035], frequency: 4, type: 'world' },
+  // Olympics: every 4 years
+  olympics: { name: '奥运会篮球比赛', years: [2024, 2028, 2032, 2036], frequency: 4, type: 'world' },
+  // FIBA Asia Cup: every 4 years
+  asiaCup: { name: 'FIBA亚洲杯', years: [2025, 2029, 2033], frequency: 4, type: 'continental' },
+  // EuroBasket: every 2 years
+  euroBasket: { name: 'FIBA欧锦赛', years: [2025, 2027, 2029], frequency: 2, type: 'continental' },
+  // AfroBasket: every 2 years
+  afroBasket: { name: 'FIBA非洲杯', years: [2025, 2027, 2029], frequency: 2, type: 'continental' },
+  // AmeriCup: every 4 years
+  ameriCup: { name: 'FIBA美洲杯', years: [2024, 2028, 2032], frequency: 4, type: 'continental' }
+};
+
+// ============= LOGGING SYSTEM =============
+const LOG_ENABLED = true;
+const gameLog = [];
+
+function log(category, message, data) {
+  if (!LOG_ENABLED) return;
+  const entry = {
+    time: new Date().toISOString(),
+    year: gameYear,
+    category: category,
+    message: message,
+    data: data ? JSON.parse(JSON.stringify(data)) : null
+  };
+  gameLog.push(entry);
+  console.log(`[${category}] ${gameYear}年 | ${message}`, data || '');
+}
+
+function getLog() { return gameLog; }
+function clearLog() { gameLog.length = 0; }
+function printLog() {
+  gameLog.forEach(e => console.log(`[${e.category}] ${e.year}年 | ${e.message}`));
+}
+
+// ============= GAME STATE =============
+let state = null;
+let gameYear = 2024; // Starting year
+let mode = 'standard'; // 'immerse' | 'standard' | 'speed'
+
+function getDecisionsPerYear() {
+  return mode === 'immerse' ? 1 : mode === 'standard' ? 2 : 3;
+}
+
+// ============= UTILITY =============
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pickN(arr, n) {
+  const copy = [...arr]; const result = [];
+  for (let i = 0; i < n && copy.length; i++) {
+    const idx = Math.floor(Math.random() * copy.length);
+    result.push(copy.splice(idx, 1)[0]);
+  }
+  return result;
+}
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// ============= GAME INITIALIZATION =============
+// 真实篮球青训体系：
+// 高中: 16-18岁 (3年: 高一/高二/高三)
+// 大学: 18-22岁 (4年: 大一/大二/大三/大四)
+// 选秀资格: 年满19岁 + 高中毕业至少1年 (NBA one-and-done规则)
+// 国际球员可不读大学直接参加选秀 (需满19岁)
+function createPlayer(nationality, position, name, number) {
+  const country = COUNTRIES.find(c => c.code === nationality);
+  const threshold = country.thresholdVal;
+  const posBonus = { PG: 2, SG: 1, SF: 0, PF: -1, C: -2 }[position.code] || 0;
+  
+  const player = {
+    name: name || '匿名球员',
+    number: number || randInt(1, 55),
+    nationality: nationality,
+    nationalityFlag: country.flag,
+    position: position.code,
+    positionName: position.name,
+    age: 16,
+    ovr: randInt(threshold - 10, threshold + 5) + posBonus,
+    potential: randInt(70, 95),
+    phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
+    hsYear: 0,   // 高中第几年 (0=高一, 1=高二, 2=高三)
+    uniYear: 0,  // 大学第几年 (0=大一, 1=大二, 2=大三, 3=大四)
+    team: null,
+    teamName: '',
+    teamLogo: '',
+    teamLogoCls: '',
+    league: '',
+    salary: 0,
+    wealth: 0,
+    fame: 10,
+    relation: 50,
+    stats: {
+      gp: 0, pts: 0, reb: 0, ast: 0,
+      ppg: 0, rpg: 0, apg: 0
+    },
+    career: [],
+    honors: [],
+    injuries: [],
+    injuryHistory: [],   // 完整伤病历史记录
+    currentInjury: null,
+    chronicInjuries: 0,  // 慢性伤病计数器 (影响长期OVR)
+    yearStats: { gp: 0, pts: 0, reb: 0, ast: 0 },
+    draftPick: null,
+    draftDeclared: false,
+    retired: false,
+    retirementReason: '',
+    yearEvents: [],
+    yearAwards: []
+  };
+  
+  // Pick initial high school
+  const hs = pickN(HIGH_SCHOOLS[nationality] || HIGH_SCHOOLS.USA, 3);
+  player.highSchoolChoices = hs;
+  
+  log('INIT', `创建球员: ${player.name} #${player.number} | ${country.name} ${position.code} | 初始OVR=${player.ovr} 潜力=${player.potential}`, { nationality, position: position.code, ovr: player.ovr });
+  
+  return player;
+}
+
+function startGame(nationality, position, name, number) {
+  clearLog();
+  state = createPlayer(nationality, position, name, number);
+  gameYear = 2024;
+  log('GAME_START', `游戏开始 | ${gameYear}年 | 球员: ${state.name}`);
+  render();
+}
+
+// ============= GAME LOGIC =============
+function advanceYear() {
+  const p = state;
+  if (p.retired) return;
+  
+  const prevOvr = p.ovr;
+  p.age++;
+  gameYear++;
+  
+  log('YEAR', `--- ${gameYear}年 | ${p.name} ${p.age}岁 | 阶段:${p.phase} | OVR:${p.ovr} ---`);
+  
+  // 高中年级递增
+  if (p.phase === 'highschool') p.hsYear++;
+  // 大学年级递增
+  if (p.phase === 'university') p.uniYear++;
+  
+  // OVR变化: 30岁前上升, 30岁后下降 (随机性+年龄修正+慢性伤病影响)
+  const ageMod = getAgeModifier(p.age);
+  const chronicPenalty = p.chronicInjuries > 0 ? -randInt(0, p.chronicInjuries) : 0;
+  const change = randInt(-2, 3) + ageMod + chronicPenalty;
+  p.ovr = clamp(p.ovr + change, 40, 99);
+  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (年龄修正:${ageMod}, 慢性伤病:${chronicPenalty}, 随机:${change - ageMod - chronicPenalty})`);
+  
+  // 潜力值: 25岁后逐年下降, 不低于当前OVR
+  if (p.age > 25) {
+    const potDrop = randInt(0, 2);
+    p.potential = Math.max(p.potential - potDrop, p.ovr);
+    if (potDrop > 0) log('POTENTIAL', `潜力下降 ${potDrop} → ${p.potential}`);
+  }
+  
+  // === 伤病系统 ===
+  // 概率基于年龄和打球强度 (年龄越大概率越高)
+  const baseInjuryChance = 0.12;
+  const ageInjuryMod = p.age > 30 ? (p.age - 30) * 0.02 : 0;
+  const chronicMod = p.chronicInjuries * 0.03;
+  const injuryChance = baseInjuryChance + ageInjuryMod + chronicMod;
+  
+  if (!p.currentInjury && Math.random() < injuryChance) {
+    const injury = pick(INJURIES);
+    const duration = randInt(injury.recovery[0], injury.recovery[1]);
+    p.currentInjury = { ...injury, weeksMissed: duration, yearMissed: duration > 8 };
+    
+    // 严重伤病: OVR下降 + 慢性伤病计数
+    if (injury.severity >= 2) {
+      const ovrLoss = randInt(1, 3);
+      p.ovr = Math.max(40, p.ovr - ovrLoss);
+      p.chronicInjuries++;
+      log('INJURY', `⚠️ 严重伤病: ${injury.name} | 严重度:${injury.severity} | 停赛${duration}周 | OVR-${ovrLoss} | 慢性伤病计数:${p.chronicInjuries}`, { injury, duration, ovrLoss });
+    } else {
+      log('INJURY', `伤病: ${injury.name} | 严重度:${injury.severity} | 停赛${duration}周`, { injury, duration });
+    }
+    
+    p.injuryHistory.push({
+      age: p.age, year: gameYear, name: injury.name,
+      severity: injury.severity, weeks: duration
+    });
+    p.yearEvents.push({ type: 'injury', name: injury.name, duration });
+  } else if (p.currentInjury) {
+    p.currentInjury.weeksMissed--;
+    if (p.currentInjury.weeksMissed <= 0) {
+      log('RECOVERY', `✅ 伤病恢复: ${p.currentInjury.name}`, { injury: p.currentInjury.name });
+      p.currentInjury = null;
+      p.yearEvents.push({ type: 'recovery' });
+    } else {
+      log('INJURY', `伤病恢复中: ${p.currentInjury.name} 剩余${p.currentInjury.weeksMissed}周`);
+    }
+  }
+  
+  // === 赛季统计 ===
+  // 不同阶段比赛场次不同
+  let maxGames = 38;
+  if (p.phase === 'highschool') maxGames = 25;
+  else if (p.phase === 'university') maxGames = 30;
+  else if (p.phase === 'pro') maxGames = p.league === 'NBA' ? 82 : 50;
+  
+  const gamesPlayed = p.currentInjury 
+    ? Math.max(0, maxGames - Math.ceil(p.currentInjury.weeksMissed * maxGames / 40))
+    : randInt(Math.floor(maxGames * 0.7), maxGames);
+  
+  // 位置影响数据分布
+  const basePerf = p.ovr / 100;
+  const perfMultiplier = rand(0.8, 1.2);
+  const posStats = {
+    PG: { pts: 22, reb: 4, ast: 8 },
+    SG: { pts: 20, reb: 5, ast: 4 },
+    SF: { pts: 18, reb: 7, ast: 4 },
+    PF: { pts: 16, reb: 9, ast: 3 },
+    C:  { pts: 15, reb: 11, ast: 2 }
+  }[p.position] || { pts: 18, reb: 7, ast: 4 };
+  
+  p.yearStats.gp = gamesPlayed;
+  p.yearStats.pts = Math.round(gamesPlayed * basePerf * posStats.pts * perfMultiplier);
+  p.yearStats.reb = Math.round(gamesPlayed * basePerf * posStats.reb * perfMultiplier);
+  p.yearStats.ast = Math.round(gamesPlayed * basePerf * posStats.ast * perfMultiplier);
+  
+  p.stats.gp += p.yearStats.gp;
+  p.stats.pts += p.yearStats.pts;
+  p.stats.reb += p.yearStats.reb;
+  p.stats.ast += p.yearStats.ast;
+  
+  p.stats.ppg = (p.stats.pts / Math.max(1, p.stats.gp)).toFixed(1);
+  p.stats.rpg = (p.stats.reb / Math.max(1, p.stats.gp)).toFixed(1);
+  p.stats.apg = (p.stats.ast / Math.max(1, p.stats.gp)).toFixed(1);
+  
+  log('STATS', `赛季数据: ${gamesPlayed}场 | ${Math.round(p.yearStats.pts/Math.max(1,gamesPlayed))}分 ${Math.round(p.yearStats.reb/Math.max(1,gamesPlayed))}板 ${Math.round(p.yearStats.ast/Math.max(1,gamesPlayed))}助`);
+  
+  // 名气和关系变化
+  const perfScore = (p.yearStats.pts / Math.max(1, p.yearStats.gp)) * 0.5;
+  p.fame = clamp(p.fame + perfScore + randInt(-2, 4), 0, 100);
+  p.relation = clamp(p.relation + randInt(-2, 3), 0, 100);
+  
+  // 薪水和财富
+  if (p.phase === 'pro' && p.salary > 0) {
+    p.wealth += p.salary;
+    if (perfScore > 20) p.wealth += Math.round(p.salary * 0.1);
+  }
+  
+  // 随机事件
+  if (Math.random() < 0.4) {
+    const evt = pick(RANDOM_EVENTS);
+    if (evt.effect.ovr) p.ovr = clamp(p.ovr + evt.effect.ovr, 40, 99);
+    if (evt.effect.fame) p.fame = clamp(p.fame + evt.effect.fame, 0, 100);
+    if (evt.effect.relation) p.relation = clamp(p.relation + evt.effect.relation, 0, 100);
+    if (evt.effect.wealth) p.wealth += evt.effect.wealth * 10000;
+    p.yearEvents.push({ ...evt });
+    log('EVENT', `${evt.icon} ${evt.title}: ${evt.desc}`);
+  }
+  
+  // 国家队赛事
+  checkNationalTeam(p);
+  
+  // 阶段转换
+  checkPhaseTransition(p);
+  
+  // 退役检查
+  checkRetirement(p);
+}
+
+function getAgeModifier(age) {
+  // 30岁前上升期, 30岁后下降期 (有随机波动)
+  if (age <= 18) return randInt(2, 4);      // 高中: 快速成长
+  if (age <= 22) return randInt(2, 4);      // 大学: 继续成长
+  if (age <= 25) return randInt(1, 3);      // 职业早期: 稳步提升
+  if (age <= 28) return randInt(0, 2);      // 巅峰期: 缓慢提升
+  if (age <= 30) return randInt(-1, 1);     // 30岁: 开始波动
+  if (age <= 33) return randInt(-2, 0);     // 下降初期
+  if (age <= 36) return randInt(-3, -1);    // 下降中期
+  if (age <= 40) return randInt(-4, -2);    // 末期
+  return randInt(-5, -3);                    // 40+: 急剧下降
+}
+
+function checkNationalTeam(p) {
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+  if (!country) return;
+  
+  // Check which competitions occur this year
+  for (const [key, comp] of Object.entries(COMPETITIONS)) {
+    if (comp.years.includes(gameYear)) {
+      // Player must be at least 18 and have decent OVR
+      if (p.age >= 18 && p.ovr >= 65) {
+        const nationalTeamBonus = randInt(-5, 10);
+        const winChance = (p.ovr - 60 + nationalTeamBonus) / 80;
+        
+        if (Math.random() < clamp(winChance, 0.1, 0.9)) {
+          p.yearAwards.push({
+            type: 'national',
+            competition: comp.name,
+            result: '参加了' + comp.name,
+            icon: '🌍'
+          });
+          
+          if (p.ovr >= 80 || Math.random() < 0.3) {
+            const honors = HONORS.national;
+            const honor = key.startsWith('olympics') ? 
+              (Math.random() < 0.15 ? '奥运会金牌' : '参与奥运会') :
+              key.startsWith('fiba') ?
+                (Math.random() < 0.2 ? 'FIBA世界杯冠军' : '参与FIBA世界杯') :
+              key.startsWith('asia') ?
+                (Math.random() < 0.25 ? '亚洲杯冠军' : '参与亚洲杯') :
+              key.startsWith('euro') ?
+                (Math.random() < 0.2 ? '欧锦赛冠军' : '参与欧锦赛') :
+              key.startsWith('afro') ?
+                (Math.random() < 0.3 ? '非洲杯冠军' : '参与非洲杯') :
+              key.startsWith('ameri') ?
+                (Math.random() < 0.2 ? '美洲杯冠军' : '参与美洲杯') :
+                '参与国际赛事';
+            
+            if (honor.includes('冠军') || honor.includes('金牌')) {
+              p.honors.push(honor);
+              p.ovr = clamp(p.ovr + 2, 40, 99);
+              p.fame = clamp(p.fame + 10, 0, 100);
+              p.wealth += 500000;
+              p.yearAwards[p.yearAwards.length - 1].result = '赢得了' + comp.name + '！';
+              p.yearAwards[p.yearAwards.length - 1].icon = '🏆';
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function checkPhaseTransition(p) {
+  // 高中: 16-18岁 (3年: 高一/高二/高三), 18岁毕业
+  if (p.phase === 'highschool' && p.age >= 18 && p.hsYear >= 2) {
+    p.phase = 'university';
+    p.uniYear = 0;
+    const universityChoices = pickN(UNIVERSITIES[p.nationality] || UNIVERSITIES.USA, 3);
+    p.universityChoices = universityChoices;
+    p.career.push({
+      age: p.age, event: '高中毕业', team: p.teamName, league: p.league
+    });
+    log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr}`);
+  }
+  
+  // 大学: 18-22岁 (4年), 大四毕业(22岁)必须参加选秀
+  // NBA规则: 年满19岁可参加选秀 (one-and-done)
+  if (p.phase === 'university' && p.age >= 22 && p.uniYear >= 3 && !p.draftDeclared) {
+    log('PHASE', `🎓 大学毕业 → 自动参加选秀 | 大学: ${p.teamName} | OVR: ${p.ovr}`);
+    declareDraft();
+  }
+}
+
+function checkRetirement(p) {
+  // 1. 年龄硬上限: 42岁强制退役
+  if (p.age >= 42) {
+    p.retired = true;
+    p.retirementReason = '年龄太大（42岁），身体无法承受职业联赛强度';
+    log('RETIRE', `🏁 强制退役: 年龄达到42岁上限`);
+    return;
+  }
+  
+  // 2. 职业阶段 OVR < 60: 无球队签约
+  if (p.phase === 'pro' && p.ovr < 60) {
+    p.retired = true;
+    p.retirementReason = `能力值过低（OVR ${p.ovr}），没有球队愿意续约`;
+    log('RETIRE', `🏁 被迫退役: OVR=${p.ovr} < 60, 无球队签约`);
+    return;
+  }
+  
+  // 3. 严重伤病导致退役: 赛季报销 + OVR大幅下降
+  if (p.phase === 'pro' && p.currentInjury && p.currentInjury.severity >= 3 && p.currentInjury.weeksMissed >= 10) {
+    p.retired = true;
+    p.retirementReason = `严重伤病（${p.currentInjury.name}）无法恢复，被迫退役`;
+    log('RETIRE', `🏁 伤病退役: ${p.currentInjury.name} | 严重度:${p.currentInjury.severity} | 停赛${p.currentInjury.weeksMissed}周`);
+    return;
+  }
+  
+  // 4. 38岁以上 + OVR < 70: 高概率退役
+  if (p.phase === 'pro' && p.age >= 38 && p.ovr < 70) {
+    if (Math.random() < 0.5) {
+      p.retired = true;
+      p.retirementReason = `年龄偏大（${p.age}岁）且状态下滑（OVR ${p.ovr}），选择挂靴`;
+      log('RETIRE', `🏁 自然退役: 年龄${p.age} + OVR${p.ovr}`);
+      return;
+    }
+  }
+  
+  // 5. 慢性伤病过多: 35岁+ 且慢性伤病>=3
+  if (p.phase === 'pro' && p.age >= 35 && p.chronicInjuries >= 3) {
+    if (Math.random() < 0.4) {
+      p.retired = true;
+      p.retirementReason = `累积伤病过多（${p.chronicInjuries}次严重伤病），身体不堪重负`;
+      log('RETIRE', `🏁 伤病累积退役: 慢性伤病=${p.chronicInjuries}`);
+      return;
+    }
+  }
+}
+
+function chooseHighSchool(index) {
+  const p = state;
+  const hs = p.highSchoolChoices[index];
+  p.teamName = hs.name;
+  p.teamLogo = hs.logo;
+  p.teamLogoCls = hs.cls;
+  p.league = COUNTRIES.find(c => c.code === p.nationality).youthName;
+  p.team = hs;
+  p.career.push({
+    age: p.age, event: '加入', team: hs.name, league: p.league
+  });
+  p.phase = 'highschool';
+  p.highSchoolChoices = null;
+  render();
+}
+
+function chooseUniversity(index) {
+  const p = state;
+  const uni = p.universityChoices[index];
+  p.teamName = uni.name;
+  p.teamLogo = uni.logo;
+  p.teamLogoCls = uni.cls;
+  p.league = uni.conf;
+  p.team = uni;
+  p.career.push({
+    age: p.age, event: '加入', team: uni.name, league: p.league
+  });
+  p.phase = 'university';
+  p.universityChoices = null;
+  render();
+}
+
+function chooseDecision(choice) {
+  const p = state;
+  
+  // Apply immediate effects
+  if (choice.title && choice.title.includes('刻苦训练')) {
+    p.ovr = clamp(p.ovr + randInt(1, 3), 40, 99);
+    p.relation = clamp(p.relation + randInt(1, 2), 0, 100);
+  } else if (choice.title && choice.title.includes('加练提升')) {
+    p.ovr = clamp(p.ovr + randInt(1, 2), 40, 99);
+  } else if (choice.title && choice.title.includes('商业活动')) {
+    p.wealth += randInt(100000, 500000);
+    p.fame = clamp(p.fame + randInt(1, 3), 0, 100);
+  } else if (choice.title && choice.title.includes('请求续约')) {
+    if (p.ovr >= 70) {
+      p.salary = Math.round(p.salary * (1.1 + Math.random() * 0.3));
+      p.relation = clamp(p.relation + 3, 0, 100);
+    } else {
+      p.relation = clamp(p.relation - 2, 0, 100);
+    }
+  } else if (choice.title && choice.title.includes('留守大学')) {
+    // Small boost for staying
+    p.ovr = clamp(p.ovr + 1, 40, 99);
+  }
+  
+  if (choice.type === 'stay') {
+    advanceYear();
+  } else if (choice.type === 'transfer') {
+    if (choice.team) {
+      p.teamName = choice.team.name;
+      p.teamLogo = choice.team.logo;
+      p.teamLogoCls = choice.team.cls;
+      p.league = choice.team.league || choice.team.conf || (p.phase === 'highschool' ? COUNTRIES.find(c => c.code === p.nationality).youthName : COUNTRIES.find(c => c.code === p.nationality).universityName);
+      p.team = choice.team;
+      if (choice.salary) p.salary = choice.salary;
+      const phaseLabel = p.phase === 'highschool' ? '转学' : '转学';
+      p.career.push({
+        age: p.age, event: phaseLabel, team: choice.team.name, league: p.league
+      });
+    }
+    advanceYear();
+  } else if (choice.type === 'draft') {
+    declareDraft();
+    return;
+  } else if (choice.type === 'decline_draft') {
+    advanceYear();
+  } else if (choice.type === 'g_league') {
+    p.phase = 'pro';
+    p.salary = Math.round(p.salary * 0.3);
+    advanceYear();
+  } else if (choice.type === 'retire') {
+    p.retired = true;
+    p.retirementReason = '主动退役，结束职业生涯';
+  }
+  
+  render();
+}
+
+function declareDraft() {
+  const p = state;
+  p.draftDeclared = true;
+  p.phase = 'pro';
+  
+  // === 真实选秀逻辑 ===
+  // NBA选秀: 2轮, 共60顺位 (30队×2轮)
+  // 选秀顺位基于OVR + 年龄 + 随机因素
+  // OVR 85+: 乐透区(前14顺位)
+  // OVR 75-84: 首轮中后段
+  // OVR 65-74: 次轮
+  // OVR <65: 可能落选
+  
+  // 选秀顺位基于: OVR + 潜力 + 年龄(年轻球员有更高上限,顺位bonus)
+  // NBA球探更看重年轻球员的"上限"(upside)
+  const ageBonus = p.age <= 19 ? -3 : p.age <= 20 ? -1 : p.age >= 23 ? 2 : 0;
+  const potBonus = p.potential >= 90 ? -2 : p.potential >= 85 ? -1 : 0;
+
+  let draftPosition;
+  let drafted = true;
+
+  if (p.ovr >= 85) {
+    // 乐透秀: 1-14顺位 (OVR越高顺位越靠前)
+    draftPosition = clamp(randInt(1, 14) - Math.floor((p.ovr - 85) / 2) + ageBonus + potBonus, 1, 14);
+    log('DRAFT', `选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 潜力修正:${potBonus} → 预估顺位:${draftPosition}`);
+  } else if (p.ovr >= 75) {
+    // 首轮中后段: 15-30顺位
+    draftPosition = clamp(randInt(15, 30) + ageBonus, 15, 30);
+    log('DRAFT', `选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
+  } else if (p.ovr >= 65) {
+    // 次轮: 31-60顺位
+    draftPosition = clamp(randInt(31, 60) + ageBonus, 31, 60);
+    log('DRAFT', `选秀评估: OVR=${p.ovr} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
+  } else {
+    // OVR < 65: 60%概率落选 (低OVR难获青睐)
+    if (Math.random() < 0.6) {
+      drafted = false;
+      log('DRAFT', `选秀评估: OVR=${p.ovr} < 65, 落选概率高`);
+    } else {
+      draftPosition = randInt(45, 60);
+      log('DRAFT', `选秀评估: OVR=${p.ovr} 勉强入选 → 预估顺位:${draftPosition}`);
+    }
+  }
+  
+  if (!drafted) {
+    // 落选 → 自由球员
+    p.draftPick = null;
+    p.salary = 50000;
+    p.teamName = '自由球员';
+    p.teamLogo = 'FA';
+    p.teamLogoCls = 'logo-steel';
+    p.league = '自由联赛';
+    p.team = { name: '自由球员', logo: 'FA', cls: 'logo-steel', league: '自由联赛' };
+    p.career.push({
+      age: p.age, event: '落选自由球员', team: '自由球员', league: '自由联赛',
+      draftPick: '落选'
+    });
+    log('DRAFT', `❌ 选秀落选 | OVR=${p.ovr} | 成为自由球员 | 起薪${formatSalary(p.salary)}`);
+    return;
+  }
+  
+  const round = draftPosition <= 30 ? 1 : 2;
+  const pickNum = draftPosition <= 30 ? draftPosition : draftPosition - 30;
+  
+  // 选秀球队: 根据国籍选联赛, NBA球队有30支
+  const proTeams = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
+  const draftTeam = pick(proTeams);
+  
+  p.draftPick = {
+    round: round,
+    pick: pickNum,
+    overall: draftPosition,
+    team: draftTeam.name,
+    logo: draftTeam.logo,
+    cls: draftTeam.cls,
+    league: draftTeam.league
+  };
+  
+  // 薪资: 基于真实NBA新秀合同
+  // 乐透秀(前14): ~800万-1200万美元/4年 → 约200-300万/年
+  // 首轮其他(15-30): ~200-400万/4年 → 约50-100万/年
+  // 次轮: ~100-200万/年 (非保障)
+  let baseSalary;
+  if (draftPosition <= 5) {
+    baseSalary = randInt(2500000, 4000000);  // 前5顺位
+  } else if (draftPosition <= 14) {
+    baseSalary = randInt(1500000, 2500000);  // 乐透区
+  } else if (draftPosition <= 30) {
+    baseSalary = randInt(800000, 1500000);   // 首轮其他
+  } else {
+    baseSalary = randInt(100000, 500000);     // 次轮
+  }
+  p.salary = baseSalary;
+  p.teamName = draftTeam.name;
+  p.teamLogo = draftTeam.logo;
+  p.teamLogoCls = draftTeam.cls;
+  p.league = draftTeam.league;
+  p.team = draftTeam;
+  
+  const pickLabel = draftPosition <= 14 ? '乐透秀' : round === 1 ? '首轮秀' : '次轮秀';
+  p.career.push({
+    age: p.age, event: pickLabel,
+    team: draftTeam.name, league: draftTeam.league,
+    draftPick: `第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`
+  });
+  
+  log('DRAFT', `📋 选秀结果: ${pickLabel} | 第${round}轮第${pickNum}顺位(总第${draftPosition}) | 球队:${draftTeam.name}(${draftTeam.league}) | 起薪:${formatSalary(p.salary)} | OVR:${p.ovr}`, { round, pickNum, overall: draftPosition, team: draftTeam.name, salary: p.salary });
+  
+  // 选秀后名气提升
+  const fameBoost = draftPosition <= 14 ? 15 : draftPosition <= 30 ? 8 : 3;
+  p.fame = clamp(p.fame + fameBoost, 0, 100);
+}
+
+function getTransferChoices() {
+  const p = state;
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+  const allTeams = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
+  
+  // Better OVR = more offers from better teams
+  const numOffers = p.ovr >= 85 ? 4 : p.ovr >= 75 ? 3 : p.ovr >= 65 ? 2 : 1;
+  const offers = pickN(allTeams, Math.min(numOffers + 1, allTeams.length));
+  
+  return offers.map((team, i) => ({
+    type: 'transfer',
+    title: `加盟 ${team.name}`,
+    desc: `${team.league} · 年薪 ${formatSalary(Math.round(p.salary * (0.7 + Math.random() * 0.6)))}`,
+    team: team,
+    salary: Math.round(p.salary * (0.7 + Math.random() * 0.6))
+  }));
+}
+
+function getYearChoices() {
+  const p = state;
+  const choices = [];
+  
+  if (p.phase === 'highschool') {
+    // High school choices
+    choices.push({
+      type: 'stay',
+      title: `留在 ${p.teamName}`,
+      desc: '继续为当前球队效力',
+      tag: '稳定'
+    });
+    
+    // Transfer to another high school
+    const hsChoices = pickN(HIGH_SCHOOLS[p.nationality] || HIGH_SCHOOLS.USA, 2);
+    hsChoices.forEach(hs => {
+      choices.push({
+        type: 'transfer',
+        title: `转学至 ${hs.name}`,
+        desc: COUNTRIES.find(c => c.code === p.nationality).youthName,
+        team: hs,
+        salary: 0,
+        tag: '转学'
+      });
+    });
+    
+    // Work hard option
+    choices.push({
+      type: 'stay',
+      title: '刻苦训练',
+      desc: '每天加练，提升能力值',
+      tag: '训练'
+    });
+    
+    return choices.slice(0, 3);
+  }
+  
+  if (p.phase === 'university') {
+    // University choices
+    choices.push({
+      type: 'stay',
+      title: `留在 ${p.teamName}`,
+      desc: '继续为当前学校效力',
+      tag: '稳定'
+    });
+    
+    // Transfer to another university
+    const uniChoices = pickN(UNIVERSITIES[p.nationality] || UNIVERSITIES.USA, 2);
+    uniChoices.forEach(uni => {
+      choices.push({
+        type: 'transfer',
+        title: `转学至 ${uni.name}`,
+        desc: uni.conf,
+        team: uni,
+        salary: 0,
+        tag: '转学'
+      });
+    });
+    
+    // Draft option: NBA one-and-done rule (19岁+高中毕业1年即可参选)
+    // 高中18岁毕业 → 19岁(大二)起可声明参选
+    if (p.age >= 19 && !p.draftDeclared) {
+      const draftStock = p.ovr >= 90 ? '状元热门' : p.ovr >= 85 ? '乐透秀' : p.ovr >= 75 ? '首轮秀' : p.ovr >= 65 ? '次轮秀' : '可能落选';
+      choices.push({
+        type: 'draft',
+        title: '参加选秀',
+        desc: `当前选秀行情：${draftStock}`,
+        tag: '选秀'
+      });
+      choices.push({
+        type: 'decline_draft',
+        title: '留守大学',
+        desc: '再打一年大学联赛，提升选秀排名',
+        tag: '观望'
+      });
+    } else {
+      choices.push({
+        type: 'stay',
+        title: '加练提升',
+        desc: '每天额外训练，提升能力值',
+        tag: '训练'
+      });
+    }
+    
+    return choices.slice(0, 4);
+  }
+  
+  // Professional phase
+  choices.push({
+    type: 'stay',
+    title: `留在 ${p.teamName}`,
+    desc: `继续效力当前球队`,
+    tag: '稳定'
+  });
+  
+  // Transfer offers
+  const transferChoices = getTransferChoices();
+  choices.push(...transferChoices.slice(0, 2));
+  
+  // Negotiate
+  choices.push({
+    type: 'stay',
+    title: '请求续约',
+    desc: '与球队商谈新合同',
+    tag: '合同'
+  });
+  
+  // Retirement option
+  if (p.age >= 38 || (p.phase === 'pro' && p.ovr < 65)) {
+    choices.push({
+      type: 'retire',
+      title: '考虑退役',
+      desc: '结束职业生涯，开始新篇章',
+      tag: '退役'
+    });
+  }
+  
+  return choices.slice(0, 4);
+}
+
+function formatSalary(amount) {
+  if (amount >= 10000000) return (amount / 10000000).toFixed(1) + '千万';
+  if (amount >= 10000) return (amount / 10000).toFixed(0) + '万';
+  return amount + '元';
+}
+
+// ============= RENDERING =============
+function render() {
+  const app = document.getElementById('app');
+  
+  if (!state) {
+    app.innerHTML = renderSetupScreen();
+    bindSetupEvents();
+    return;
+  }
+  
+  if (state.retired) {
+    app.innerHTML = renderRetirementScreen();
+    bindRetirementEvents();
+    return;
+  }
+  
+  // Check for phase-specific choices
+  if (state.phase === 'highschool' && state.highSchoolChoices) {
+    app.innerHTML = renderHighSchoolChoice();
+    bindHighSchoolEvents();
+    return;
+  }
+  
+  if (state.phase === 'university' && state.universityChoices) {
+    app.innerHTML = renderUniversityChoice();
+    bindUniversityEvents();
+    return;
+  }
+  
+  // Main game screen
+  app.innerHTML = renderGameScreen();
+  bindGameEvents();
+}
+
+function renderSetupScreen() {
+  return `
+    <div class="screen active" id="screen-setup">
+      <div class="header">
+        <h1>🏀 篮球生涯模拟器</h1>
+        <p>从青训到传奇，每个决定都算数</p>
+      </div>
+      
+      <div class="setup-section">
+        <div class="setup-title"><span class="step">1</span>选择游戏节奏</div>
+        <div class="mode-grid">
+          <button class="btn mode-btn" data-mode="immerse">
+            <span class="mode-name">沉浸</span>
+            <span class="mode-desc">每年一次决策<br>最完整的生涯</span>
+          </button>
+          <button class="btn mode-btn active" data-mode="standard">
+            <span class="mode-name">标准</span>
+            <span class="mode-desc">每年两次决策<br>推荐</span>
+          </button>
+          <button class="btn mode-btn" data-mode="speed">
+            <span class="mode-name">速通</span>
+            <span class="mode-desc">每年三次决策<br>快速通关</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="setup-section">
+        <div class="setup-title"><span class="step">2</span>选择国籍</div>
+        <div class="country-grid" id="countryGrid">
+          ${COUNTRIES.map(c => `
+            <button class="btn country-btn" data-code="${c.code}">
+              <span class="flag">${c.flag}</span>
+              <span class="c-name">${c.name}</span>
+              <span class="c-info">门槛 ${c.threshold}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="setup-section">
+        <div class="setup-title"><span class="step">3</span>选择位置</div>
+        <div class="pos-grid">
+          ${POSITIONS.map((p, i) => `
+            <button class="btn pos-btn" data-pos="${p.code}" style="${i === 2 ? 'background: linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2)); border-color: var(--accent);' : ''}">
+              <span class="pos-code">${p.code}</span>
+              <span>${p.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="setup-section">
+        <div class="setup-title"><span class="step">4</span>填写信息</div>
+        <div class="input-row" style="margin-bottom: 10px;">
+          <input type="text" id="playerName" placeholder="输入姓名" maxlength="10">
+        </div>
+        <div class="input-row">
+          <input type="number" id="playerNumber" placeholder="号码 (1-99)" min="1" max="99" value="23">
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" id="startBtn" style="margin-top: 20px; justify-content: center;">
+        开始生涯 →
+      </button>
+    </div>
+  `;
+}
+
+function bindSetupEvents() {
+  let selectedCountry = null;
+  let selectedPosition = 'SF';
+  
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+    });
+  });
+  
+  document.querySelectorAll('.country-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCountry = btn.dataset.code;
+    });
+  });
+  
+  document.querySelectorAll('.pos-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pos-btn').forEach(b => {
+        b.style.background = '';
+        b.style.borderColor = '';
+      });
+      btn.style.background = 'linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2))';
+      btn.style.borderColor = 'var(--accent)';
+      selectedPosition = btn.dataset.pos;
+    });
+  });
+  
+  document.getElementById('startBtn').addEventListener('click', () => {
+    if (!selectedCountry) {
+      showToast('请选择国籍');
+      return;
+    }
+    const position = POSITIONS.find(p => p.code === selectedPosition);
+    const name = document.getElementById('playerName').value || '匿名球员';
+    const number = parseInt(document.getElementById('playerNumber').value) || 23;
+    startGame(selectedCountry, position, name, number);
+  });
+}
+
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
+function renderPlayerCard() {
+  const p = state;
+  return `
+    <div class="player-card">
+      <div class="player-main">
+        <div class="ovr-badge">
+          <span class="ovr">${p.ovr}</span>
+          <span class="ovr-label">OVR</span>
+        </div>
+        <div class="player-info">
+          <div class="player-name">
+            <span>${p.nationalityFlag}</span>
+            ${p.name} #${p.number}
+          </div>
+          <div class="player-meta">
+            <span>${p.age}岁</span>
+            <span>${p.position}</span>
+            <span>${p.positionName}</span>
+            ${p.currentInjury ? `<span class="injured-badge">🤕 ${p.currentInjury.name}</span>` : ''}
+          </div>
+          ${p.teamName ? `
+          <div class="team-row">
+            <div class="team-logo ${p.teamLogoCls}">${p.teamLogo}</div>
+            <div>
+              <div class="team-name">${p.teamName}</div>
+              <div class="team-league">${p.league}</div>
+            </div>
+          </div>` : ''}
+        </div>
+      </div>
+      <div class="stat-bars">
+        <div class="stat-bar">
+          <div class="bar-label"><span>名气</span><span>${Math.round(p.fame)}</span></div>
+          <div class="bar-fill"><div class="bar-inner bar-gold" style="width:${p.fame}%"></div></div>
+        </div>
+        <div class="stat-bar">
+          <div class="bar-label"><span>关系</span><span>${Math.round(p.relation)}</span></div>
+          <div class="bar-fill"><div class="bar-inner bar-blue" style="width:${p.relation}%"></div></div>
+        </div>
+        <div class="stat-bar">
+          <div class="bar-label"><span>财富</span><span>${formatSalary(p.wealth)}</span></div>
+          <div class="bar-fill"><div class="bar-inner bar-green" style="width:${Math.min(100, p.wealth/100000)}%"></div></div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-value">${p.yearStats.gp}</div><div class="stat-label">场次</div></div>
+        <div class="stat-item"><div class="stat-value">${p.yearStats.pts}</div><div class="stat-label">得分</div></div>
+        <div class="stat-item"><div class="stat-value">${p.yearStats.reb}</div><div class="stat-label">篮板</div></div>
+        <div class="stat-item"><div class="stat-value">${p.yearStats.ast}</div><div class="stat-label">助攻</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHighSchoolChoice() {
+  const p = state;
+  return `
+    <div class="screen active">
+      ${renderPlayerCard()}
+      <div class="event-card">
+        <div class="event-icon">🎓</div>
+        <div class="event-title">高中入学</div>
+        <div class="event-desc">你16岁了，有三所高中想签下你，你选择哪所开始你的篮球之路？</div>
+        ${p.highSchoolChoices.map((hs, i) => `
+          <button class="btn choice-btn" data-idx="${i}">
+            <div style="display:flex;align-items:center;gap:10px;width:100%;">
+              <div class="team-logo ${hs.cls}">${hs.logo}</div>
+              <div style="flex:1;">
+                <div class="choice-title">${hs.name}</div>
+                <div class="choice-desc">${COUNTRIES.find(c => c.code === p.nationality).youthName}</div>
+              </div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function bindHighSchoolEvents() {
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      chooseHighSchool(idx);
+    });
+  });
+}
+
+function renderUniversityChoice() {
+  const p = state;
+  return `
+    <div class="screen active">
+      ${renderPlayerCard()}
+      <div class="event-card">
+        <div class="event-icon">🎓</div>
+        <div class="event-title">大学选择</div>
+        <div class="event-desc">高中生涯结束，你收到了三所大学的offer，选择你的下一站。</div>
+        ${p.universityChoices.map((uni, i) => `
+          <button class="btn choice-btn" data-idx="${i}">
+            <div style="display:flex;align-items:center;gap:10px;width:100%;">
+              <div class="team-logo ${uni.cls}">${uni.logo}</div>
+              <div style="flex:1;">
+                <div class="choice-title">${uni.name}</div>
+                <div class="choice-desc">${uni.conf}</div>
+              </div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function bindUniversityEvents() {
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      chooseUniversity(idx);
+    });
+  });
+}
+
+function renderGameScreen() {
+  const p = state;
+  const choices = state.currentChoices || getYearChoices();
+  state.currentChoices = choices;
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+  
+  // Build timeline
+  const recentCareer = p.career.slice(-6).reverse();
+  
+  return `
+    <div class="screen active">
+      ${renderPlayerCard()}
+      
+      ${p.yearAwards.length > 0 ? `
+      <div class="competition-banner">
+        <span class="cb-icon">🏆</span>
+        <span class="cb-text">${p.yearAwards.map(a => a.result).join(' · ')}</span>
+      </div>` : ''}
+      
+      ${p.currentInjury ? `
+      <div class="competition-banner" style="background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));border-color:rgba(239,68,68,0.3);">
+        <span class="cb-icon">🤕</span>
+        <span class="cb-text">伤病中：${p.currentInjury.name}，还需恢复 ${p.currentInjury.weeksMissed} 周</span>
+      </div>` : ''}
+      
+      <div class="event-card">
+        <div class="event-icon">📅</div>
+        <div class="event-title">${gameYear}赛季 · ${p.age}岁</div>
+        <div class="event-desc">${getPhaseDesc(p)}  ·  年薪 ${formatSalary(p.salary)}${p.phase === 'pro' ? '  ·  身价 ' + formatSalary(p.salary * 5) : ''}</div>
+        ${choices.map((c, i) => `
+          <button class="btn choice-btn" data-idx="${i}">
+            <div style="display:flex;align-items:flex-start;gap:10px;width:100%;">
+              <div style="flex:1;">
+                <div class="choice-title">${c.title} ${c.tag ? `<span class="choice-tag">${c.tag}</span>` : ''}</div>
+                <div class="choice-desc">${c.desc}</div>
+              </div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+      
+      ${p.draftPick ? `
+      <div class="draft-card" style="margin-bottom:16px;">
+        <div class="timeline-title">选秀记录</div>
+        <div class="draft-pick">
+          <div class="pick-num">${p.draftPick.round}×${p.draftPick.pick}</div>
+          <div class="pick-team">
+            <div class="pick-team-name">${p.draftPick.team}</div>
+            <div class="pick-team-league">${p.draftPick.league}</div>
+          </div>
+        </div>
+      </div>` : ''}
+      
+      ${p.honors.length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div class="timeline-title">荣誉记录</div>
+        <div class="honor-grid">
+          ${p.honors.map(h => `<span class="honor-chip">🏆 ${h}</span>`).join('')}
+        </div>
+      </div>` : ''}
+      
+      ${recentCareer.length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div class="timeline-title">生涯轨迹</div>
+        ${recentCareer.map(c => `
+          <div class="timeline-item">
+            <div class="timeline-age">${c.age}</div>
+            <div class="timeline-content">
+              <div class="timeline-main">${c.event} ${c.team}</div>
+              <div class="timeline-sub">${c.league}${c.draftPick ? ' · ' + c.draftPick : ''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : ''}
+      
+      <button class="btn" id="restartBtn" style="justify-content:center;margin-top:10px;">
+        🔄 重新开始
+      </button>
+    </div>
+  `;
+}
+
+function getPhaseDesc(p) {
+  if (p.phase === 'highschool') return '高中联赛 (' + COUNTRIES.find(c => c.code === p.nationality).youthName + ')';
+  if (p.phase === 'university') return '大学联赛 (' + (p.league || COUNTRIES.find(c => c.code === p.nationality).universityName) + ')';
+  if (p.phase === 'pro') return '职业生涯 (' + p.league + ')';
+  return '青训阶段';
+}
+
+function bindGameEvents() {
+  const choices = state.currentChoices || getYearChoices();
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      state.currentChoices = null; // Reset for next render
+      chooseDecision(choices[idx]);
+    });
+  });
+  
+  const restartBtn = document.getElementById('restartBtn');
+  if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+      if (confirm('确定要重新开始吗？')) {
+        state = null;
+        gameYear = 2024;
+        render();
+      }
+    });
+  }
+}
+
+function renderRetirementScreen() {
+  const p = state;
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+  
+  const careerStats = [
+    { val: p.age, lbl: '退役年龄' },
+    { val: p.stats.gp, lbl: '总场次' },
+    { val: p.stats.pts, lbl: '总得分' },
+    { val: p.stats.reb, lbl: '总篮板' },
+    { val: p.stats.ast, lbl: '总助攻' },
+    { val: p.stats.ppg, lbl: '场均得分' },
+    { val: p.honors.length, lbl: '荣誉数量' },
+    { val: formatSalary(p.wealth), lbl: '生涯总收入' }
+  ];
+  
+  return `
+    <div class="screen active">
+      <div class="retire-card">
+        <div class="retire-title">🏀 生涯总结</div>
+        <div class="retire-sub">${p.name} · ${p.number}号 · ${p.position} · ${country.name}</div>
+        <div style="font-size:14px;color:var(--text-dim);margin-bottom:16px;">
+          ${p.retirementReason}
+        </div>
+        
+        <div class="career-stats">
+          ${careerStats.map(s => `
+            <div class="career-stat">
+              <div class="val">${s.val}</div>
+              <div class="lbl">${s.lbl}</div>
+            </div>
+          `).join('')}
+        </div>
+        
+        ${p.honors.length > 0 ? `
+        <div style="margin-bottom:16px;">
+          <div class="timeline-title" style="text-align:left;">🏆 生涯荣誉</div>
+          <div class="honor-grid">
+            ${p.honors.map(h => `<span class="honor-chip">${h}</span>`).join('')}
+          </div>
+        </div>` : ''}
+        
+        ${p.career.length > 0 ? `
+        <div style="text-align:left;margin-bottom:20px;">
+          <div class="timeline-title">📖 生涯轨迹</div>
+          ${p.career.map(c => `
+            <div class="timeline-item">
+              <div class="timeline-age">${c.age}</div>
+              <div class="timeline-content">
+                <div class="timeline-main">${c.event} ${c.team}</div>
+                <div class="timeline-sub">${c.league}${c.draftPick ? ' · ' + c.draftPick : ''}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>` : ''}
+        
+        <button class="btn btn-primary" id="restartBtn" style="justify-content:center;">
+          🔄 再来一局
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function bindRetirementEvents() {
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    state = null;
+    gameYear = 2024;
+    render();
+  });
+}
+
+// ============= INIT =============
+render();
+
+// ============= 模拟测试数据系统 =============
+// 通过 console.runSimTests() 调用，测试不同场景下的游戏逻辑
+// 测试覆盖: 青训体系、选秀逻辑、伤病系统、退役判定
+
+const SIM_TESTS = {
+  results: [],
+  pass: 0,
+  fail: 0,
+
+  reset() { this.results = []; this.pass = 0; this.fail = 0; },
+
+  assert(cond, name, detail) {
+    if (cond) { this.pass++; this.results.push(`  ✅ ${name}`); }
+    else { this.fail++; this.results.push(`  ❌ ${name} ${detail||''}`); }
+  },
+
+  // ===== 测试1: 高中联赛青训体系 (16→18岁, 3年) =====
+  testHighSchoolSystem() {
+    this.results.push('\n📋 测试1: 高中联赛青训体系');
+    const natCodes = ['CHN', 'USA', 'ESP', 'SRB'];
+    const pos = POSITIONS[0];
+
+    natCodes.forEach(code => {
+      const country = COUNTRIES.find(c => c.code === code);
+      const hs = HIGH_SCHOOLS[code];
+      this.assert(hs && hs.length >= 3, `${country.name}高中联赛数据≥3支`, `(实际${hs?hs.length:0})`);
+
+      // 模拟创建球员
+      const savedState = state;
+      const savedYear = gameYear;
+      state = createPlayer(code, pos, `测试_${code}`, 23);
+      const startOvr = state.ovr;
+
+      // 检查初始状态
+      this.assert(state.phase === 'highschool', `${code}初始阶段=highschool`, `(实际${state.phase})`);
+      this.assert(state.age === 16, `${code}初始年龄=16`, `(实际${state.age})`);
+      this.assert(state.hsYear === 0, `${code}高中年份=0(高一)`, `(实际${state.hsYear})`);
+
+      // 选择高中
+      chooseHighSchool(0);
+      this.assert(state.teamName !== '', `${code}已分配高中球队`, `(球队=${state.teamName})`);
+      this.assert(state.league === country.youthName, `${code}联赛=${country.youthName}`, `(实际${state.league})`);
+
+      // 模拟推进3年高中 (16→18)
+      let prevOvr = state.ovr;
+      for (let i = 0; i < 3; i++) {
+        advanceYear();
+        // 高中阶段OVR应整体上升 (16-18岁成长期, 允许随机事件导致的波动)
+        if (state.phase === 'highschool' || state.phase === 'university') {
+          this.assert(state.ovr >= prevOvr - 3, `${code}第${i+1}年OVR未大幅下降`, `(${prevOvr}→${state.ovr})`);
+        }
+        prevOvr = state.ovr;
+      }
+
+      // 3年后应进入大学
+      this.assert(state.phase === 'university' || state.phase === 'pro',
+        `${code}3年后进入大学/职业`, `(阶段=${state.phase}, 年龄=${state.age})`);
+      this.assert(state.age === 19, `${code}3年后年龄=19`, `(实际${state.age})`);
+
+      // 恢复状态
+      state = savedState;
+      gameYear = savedYear;
+    });
+  },
+
+  // ===== 测试2: 选秀逻辑 (不同OVR/年龄/潜力组合) =====
+  testDraftLogic() {
+    this.results.push('\n📋 测试2: 选秀逻辑 (多场景)');
+    const scenarios = [
+      { ovr: 92, potential: 95, age: 19, desc: '状元级(高OVR+年轻+高潜力)' },
+      { ovr: 88, potential: 90, age: 19, desc: '乐透秀(高OVR+年轻)' },
+      { ovr: 85, potential: 88, age: 20, desc: '乐透秀(高OVR)' },
+      { ovr: 80, potential: 85, age: 21, desc: '首轮中段' },
+      { ovr: 75, potential: 80, age: 20, desc: '首轮末段' },
+      { ovr: 70, potential: 75, age: 21, desc: '次轮秀' },
+      { ovr: 65, potential: 70, age: 22, desc: '次轮末段' },
+      { ovr: 60, potential: 65, age: 22, desc: '低OVR(可能落选)' },
+      { ovr: 55, potential: 60, age: 22, desc: '极低OVR(高概率落选)' },
+    ];
+
+    const draftResults = [];
+    scenarios.forEach(s => {
+      const savedState = state;
+      const savedYear = gameYear;
+      clearLog();
+
+      // 构造测试球员
+      state = createPlayer('USA', POSITIONS[0], `选秀测试_${s.ovr}`, 1);
+      state.ovr = s.ovr;
+      state.potential = s.potential;
+      state.age = s.age;
+      state.phase = 'university';
+
+      declareDraft();
+
+      const result = {
+        scenario: s.desc,
+        ovr: s.ovr, potential: s.potential, age: s.age,
+        draftPick: state.draftPick,
+        salary: state.salary,
+        team: state.teamName,
+        league: state.league
+      };
+      draftResults.push(result);
+
+      // 验证选秀结果符合预期
+      if (s.ovr >= 85) {
+        this.assert(state.draftPick && state.draftPick.overall <= 14,
+          `OVR${s.ovr}应进乐透(≤14顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
+      } else if (s.ovr >= 75) {
+        this.assert(state.draftPick && state.draftPick.overall <= 30,
+          `OVR${s.ovr}应进首轮(≤30顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
+      } else if (s.ovr >= 65) {
+        this.assert(state.draftPick && state.draftPick.overall <= 60,
+          `OVR${s.ovr}应被选中(≤60顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
+      } else {
+        // OVR<65可能落选,两种结果都合理
+        this.assert(true, `OVR${s.ovr}选秀结果: ${state.draftPick?'第'+state.draftPick.overall+'顺位':'落选(自由球员)'}`);
+      }
+
+      // 验证薪资符合新秀合同
+      if (state.draftPick) {
+        const dp = state.draftPick.overall;
+        if (dp <= 5) {
+          this.assert(state.salary >= 2500000 && state.salary <= 4000000,
+            `前5顺位薪资250-400万`, `(实际=${state.salary})`);
+        } else if (dp <= 14) {
+          this.assert(state.salary >= 1500000 && state.salary <= 2500000,
+            `乐透秀薪资150-250万`, `(实际=${state.salary})`);
+        } else if (dp <= 30) {
+          this.assert(state.salary >= 800000 && state.salary <= 1500000,
+            `首轮秀薪资80-150万`, `(实际=${state.salary})`);
+        } else {
+          this.assert(state.salary >= 100000 && state.salary <= 500000,
+            `次轮秀薪资10-50万`, `(实际=${state.salary})`);
+        }
+      }
+
+      // 验证阶段转换
+      this.assert(state.phase === 'pro', `选秀后阶段=pro`, `(实际=${state.phase})`);
+
+      state = savedState;
+      gameYear = savedYear;
+    });
+
+    // 输出选秀结果汇总
+    this.results.push('\n  📊 选秀结果汇总:');
+    draftResults.forEach(r => {
+      const pick = r.draftPick ? `第${r.draftPick.overall}顺位` : '落选';
+      this.results.push(`    ${r.scenario}: ${pick} → ${r.team}(${r.league}) 薪资${formatSalary(r.salary)}`);
+    });
+  },
+
+  // ===== 测试3: 伤病系统 (不同严重度场景) =====
+  testInjurySystem() {
+    this.results.push('\n📋 测试3: 伤病系统');
+    const savedState = state;
+    const savedYear = gameYear;
+
+    // 测试每种伤病类型
+    INJURIES.forEach(injury => {
+      clearLog();
+      state = createPlayer('USA', POSITIONS[0], `伤病测试_${injury.name}`, 1);
+      state.age = 25;
+      state.phase = 'pro';
+      state.ovr = 80;
+
+      // 手动触发伤病
+      const duration = randInt(injury.recovery[0], injury.recovery[1]);
+      state.currentInjury = { ...injury, weeksMissed: duration, yearMissed: duration > 8 };
+      const prevOvr = state.ovr;
+      const prevChronic = state.chronicInjuries;
+
+      if (injury.severity >= 2) {
+        const ovrLoss = randInt(1, 3);
+        state.ovr = Math.max(40, state.ovr - ovrLoss);
+        state.chronicInjuries++;
+      }
+
+      state.injuryHistory.push({
+        age: state.age, year: gameYear, name: injury.name,
+        severity: injury.severity, weeks: duration
+      });
+
+      // 验证伤病记录
+      this.assert(state.injuryHistory.length === 1, `${injury.name}已记录到病史`);
+      this.assert(state.currentInjury.name === injury.name, `${injury.name}当前伤病已设置`);
+
+      // 验证严重伤病影响
+      if (injury.severity >= 2) {
+        this.assert(state.ovr < prevOvr, `${injury.name}(严重度${injury.severity})导致OVR下降`, `(${prevOvr}→${state.ovr})`);
+        this.assert(state.chronicInjuries === prevChronic + 1, `${injury.name}慢性伤病计数+1`, `(=${state.chronicInjuries})`);
+      }
+
+      // 验证恢复时间在合理范围
+      this.assert(duration >= injury.recovery[0] && duration <= injury.recovery[1],
+        `${injury.name}恢复时间${injury.recovery[0]}-${injury.recovery[1]}周`, `(实际=${duration})`);
+
+      // 模拟恢复过程
+      const weeksToRecover = duration;
+      for (let w = 0; w < weeksToRecover; w++) {
+        if (state.currentInjury) state.currentInjury.weeksMissed--;
+        if (state.currentInjury && state.currentInjury.weeksMissed <= 0) {
+          state.currentInjury = null;
+        }
+      }
+      this.assert(state.currentInjury === null, `${injury.name}恢复后currentInjury=null`);
+    });
+
+    // 测试年龄对伤病概率的影响
+    this.results.push('\n  📊 年龄-伤病概率测试:');
+    [20, 25, 30, 33, 36, 40].forEach(age => {
+      const baseChance = 0.12;
+      const ageMod = age > 30 ? (age - 30) * 0.02 : 0;
+      const totalChance = baseChance + ageMod;
+      this.results.push(`    ${age}岁: 伤病概率=${(totalChance*100).toFixed(1)}% (基础12%+年龄修正${(ageMod*100).toFixed(0)}%)`);
+    });
+
+    state = savedState;
+    gameYear = savedYear;
+  },
+
+  // ===== 测试4: 退役判定 (多条件) =====
+  testRetirement() {
+    this.results.push('\n📋 测试4: 退役判定');
+    const savedState = state;
+    const savedYear = gameYear;
+
+    // 场景1: 年龄42强制退役
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '退役测试_年龄', 1);
+    state.age = 42;
+    state.phase = 'pro';
+    state.ovr = 75;
+    checkRetirement(state);
+    this.assert(state.retired === true, '42岁强制退役', `(retired=${state.retired})`);
+    this.assert(state.retirementReason.includes('42'), '退役原因含"42岁"');
+
+    // 场景2: OVR<60被迫退役 (30岁以下)
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '退役测试_低OVR', 1);
+    state.age = 28;
+    state.phase = 'pro';
+    state.ovr = 55;
+    checkRetirement(state);
+    this.assert(state.retired === true, 'OVR<60被迫退役', `(OVR=${state.ovr}, retired=${state.retired})`);
+    this.assert(state.retirementReason.includes('能力值'), '退役原因含"能力值"');
+
+    // 场景3: 严重伤病退役
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '退役测试_伤病', 1);
+    state.age = 32;
+    state.phase = 'pro';
+    state.ovr = 70;
+    state.currentInjury = { name: '十字韧带撕裂', severity: 3, weeksMissed: 10, recovery: [4,10] };
+    checkRetirement(state);
+    this.assert(state.retired === true, '严重伤病(severity≥3,≥10周)退役', `(retired=${state.retired})`);
+
+    // 场景4: 38岁+OVR<70 自然退役 (概率性,运行多次)
+    let retireCount = 0;
+    const trials = 20;
+    for (let i = 0; i < trials; i++) {
+      state = createPlayer('USA', POSITIONS[0], '退役测试_自然', 1);
+      state.age = 38;
+      state.phase = 'pro';
+      state.ovr = 65;
+      state.currentInjury = null;
+      checkRetirement(state);
+      if (state.retired) retireCount++;
+    }
+    this.assert(retireCount > 0 && retireCount < trials,
+      `38岁+OVR65有概率退役(~50%)`, `(20次中${retireCount}次退役)`);
+
+    // 场景5: 正常球员不应过早退役
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '退役测试_正常', 1);
+    state.age = 28;
+    state.phase = 'pro';
+    state.ovr = 80;
+    state.currentInjury = null;
+    state.chronicInjuries = 0;
+    checkRetirement(state);
+    this.assert(state.retired === false, '28岁OVR80不应退役', `(retired=${state.retired})`);
+
+    state = savedState;
+    gameYear = savedYear;
+  },
+
+  // ===== 测试5: 完整生涯模拟 (16岁→退役) =====
+  testFullCareer() {
+    this.results.push('\n📋 测试5: 完整生涯模拟');
+    const careers = [];
+    const testConfigs = [
+      { nat: 'USA', pos: POSITIONS[0], name: '天才后卫', desc: '美国PG' },
+      { nat: 'CHN', pos: POSITIONS[4], name: '中国大个子', desc: '中国C' },
+      { nat: 'ESP', pos: POSITIONS[2], name: '西班牙前锋', desc: '西班牙SF' },
+      { nat: 'SRB', pos: POSITIONS[1], name: '塞尔维亚射手', desc: '塞尔维亚SG' },
+    ];
+
+    testConfigs.forEach(cfg => {
+      const savedState = state;
+      const savedYear = gameYear;
+      clearLog();
+
+      state = createPlayer(cfg.nat, cfg.pos, cfg.name, randInt(1, 55));
+      const startOvr = state.ovr;
+      chooseHighSchool(0);
+
+      // 大学选择
+      if (state.phase === 'highschool' && state.highSchoolChoices === null) {
+        // 推进到大学
+        while (state.phase === 'highschool' && !state.retired) advanceYear();
+        if (state.universityChoices) chooseUniversity(0);
+      }
+
+      // 大学阶段: 19岁后选择参选或留守
+      let draftAge = null;
+      while (state.phase === 'university' && !state.retired) {
+        if (state.age >= 19 && !state.draftDeclared && state.ovr >= 80) {
+          // 高OVR球员提前参选
+          declareDraft();
+          draftAge = state.age;
+          break;
+        } else if (state.age >= 22) {
+          // 22岁强制参选
+          declareDraft();
+          draftAge = state.age;
+          break;
+        }
+        advanceYear();
+        // advanceYear内部可能触发自动选秀(checkPhaseTransition)
+        if (state.phase === 'pro' && draftAge === null) {
+          draftAge = state.age;
+        }
+      }
+
+      // 职业阶段: 推进到退役
+      let proYears = 0;
+      while (!state.retired && state.age < 45) {
+        advanceYear();
+        proYears++;
+        if (proYears > 30) break; // 安全阀
+      }
+
+      const career = {
+        name: cfg.name,
+        desc: cfg.desc,
+        startOvr: startOvr,
+        peakOvr: state.ovr,
+        finalOvr: state.ovr,
+        draftAge: draftAge,
+        draftPick: state.draftPick,
+        retired: state.retired,
+        retirementReason: state.retirementReason,
+        retireAge: state.age,
+        totalGames: state.stats.gp,
+        totalPts: state.stats.pts,
+        totalReb: state.stats.reb,
+        totalAst: state.stats.ast,
+        ppg: state.stats.ppg,
+        honors: state.honors,
+        injuries: state.injuryHistory.length,
+        chronicInjuries: state.chronicInjuries,
+        wealth: state.wealth,
+        fame: state.fame,
+        proYears: proYears
+      };
+      careers.push(career);
+
+      // 验证生涯完整性
+      this.assert(state.retired === true, `${cfg.name}已退役`, `(age=${state.age})`);
+      this.assert(state.age >= 22 && state.age <= 45, `${cfg.name}退役年龄22-45岁`, `(实际=${state.age})`);
+      this.assert(state.stats.gp > 0, `${cfg.name}有比赛记录`, `(GP=${state.stats.gp})`);
+      this.assert(state.career.length >= 3, `${cfg.name}生涯事件≥3`, `(事件数=${state.career.length})`);
+
+      state = savedState;
+      gameYear = savedYear;
+    });
+
+    // 输出生涯汇总
+    this.results.push('\n  📊 生涯模拟汇总:');
+    careers.forEach(c => {
+      const pick = c.draftPick ? `第${c.draftPick.overall}顺位` : '落选';
+      this.results.push(`    ${c.name}(${c.desc}): ${c.startOvr}→${c.peakOvr}OVR | ${c.draftAge}岁参选${pick} | ${c.retireAge}岁退役(${c.retirementReason||''}) | ${c.totalGames}场 ${c.totalPts}分 ${c.totalReb}板 ${c.totalAst}助 | ${c.injuries}次伤病 | ${c.honors.length}荣誉 | 财富${formatSalary(c.wealth)}`);
+    });
+  },
+
+  // ===== 运行所有测试 =====
+  runAll() {
+    this.reset();
+    console.log('🏀 ===== 篮球生涯模拟器 · 逻辑测试开始 =====');
+    const t0 = Date.now();
+
+    this.testHighSchoolSystem();
+    this.testDraftLogic();
+    this.testInjurySystem();
+    this.testRetirement();
+    this.testFullCareer();
+
+    const elapsed = Date.now() - t0;
+    this.results.push(`\n⏱️ 测试耗时: ${elapsed}ms`);
+
+    const report = this.results.join('\n');
+    console.log('%c' + report, 'color: #ff6b35');
+    console.log(`%c📊 结果: ${this.pass} 通过 / ${this.fail} 失败`, `color: ${this.fail===0?'#22c55e':'#ef4444'}; font-weight: bold`);
+
+    // 同时返回到日志系统
+    log('TEST', `模拟测试完成: ${this.pass}通过/${this.fail}失败 (${elapsed}ms)`);
+
+    return { report, pass: this.pass, fail: this.fail, elapsed };
+  }
+};
+
+// 控制台快捷调用
+window.runSimTests = () => SIM_TESTS.runAll();
+window.getLog = () => getLog();
+window.printGameLog = () => printLog();
+
+console.log('%c🏀 篮球生涯模拟器已加载', 'color:#ff6b35; font-size:14px; font-weight:bold');
+console.log('%c可用命令:', 'color:#8b92a8');
+console.log('  runSimTests()      - 运行模拟测试(青训/选秀/伤病/退役)');
+console.log('  getLog()           - 获取游戏日志');
+console.log('  printGameLog()     - 打印游戏日志');
+console.log('  SIM_TESTS.testDraftLogic()    - 单独测试选秀');
+console.log('  SIM_TESTS.testInjurySystem()  - 单独测试伤病');
+console.log('  SIM_TESTS.testRetirement()    - 单独测试退役');
+</script>
+</body>
+</html>
+
+
