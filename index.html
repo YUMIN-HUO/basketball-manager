@@ -914,79 +914,126 @@ function pickN(arr, n) {
 }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-// === SVG图片式队徽生成 ===
-// 为每个球队生成圆形盾牌式SVG队徽,看起来更像真实图片
-const LOGO_COLORS = {
-  'logo-red': ['#d32f2f', '#8b0000'],
-  'logo-navy': ['#0f1b3d', '#1a2d5a'],
-  'logo-blue': ['#1565c0', '#0d47a1'],
-  'logo-green': ['#2e7d32', '#1b5e20'],
-  'logo-purple': ['#6a1b9a', '#4a148c'],
-  'logo-orange': ['#e65100', '#bf360c'],
-  'logo-gold': ['#b8860b', '#8b6508'],
-  'logo-teal': ['#00695c', '#004d40'],
-  'logo-crimson': ['#8b0000', '#5a0000'],
-  'logo-royal': ['#1a237e', '#0d1442'],
-  'logo-sunset': ['#ff6f00', '#c43e00'],
-  'logo-forest': ['#1b5e20', '#0d3311'],
-  'logo-steel': ['#455a64', '#263238'],
-  'logo-maroon': ['#5d1a1a', '#3d0f0f'],
-  'logo-emerald': ['#00695c', '#004d40'],
-  'logo-silver': ['#546e7a', '#37474f'],
-  'logo-black': ['#212121', '#000000'],
-  'logo-athletic': ['#c8102e', '#7a0a1c'],
-  'logo-classic': ['#1e3a5f', '#0f1f33'],
-  'logo-modern': ['#3d2b1f', '#1a0f08'],
-  'logo-bright': ['#ff6b35', '#c44a1a']
+// === 真实球队队徽URL映射 ===
+// NBA官方CDN队徽 + Wikipedia Commons真实队徽
+const NBA_LOGO_IDS = {
+  '洛杉矶湖人': '1610612747', '波士顿凯尔特人': '1610612738', '金州勇士': '1610612744',
+  '迈阿密热火': '1610612748', '密尔沃基雄鹿': '1610612749', '菲尼克斯太阳': '1610612756',
+  '达拉斯独行侠': '1610612742', '丹佛掘金': '1610612743', '费城76人': '1610612755',
+  '布鲁克林篮网': '1610612751', '纽约尼克斯': '1610612752', '芝加哥公牛': '1610612741',
+  '洛杉矶快船': '1610612746', '孟菲斯灰熊': '1610612763', '明尼苏达森林狼': '1610612750',
+  '新奥尔良鹈鹕': '1610612740', '萨克拉门托国王': '1610612758', '亚特兰大老鹰': '1610612737',
+  '夏洛特黄蜂': '1610612766', '印第安纳步行者': '1610612754', '克利夫兰骑士': '1610612739',
+  '底特律活塞': '1610612765', '多伦多猛龙': '1610612761', '奥兰多魔术': '1610612753',
+  '华盛顿奇才': '1610612764', '休斯顿火箭': '1610612745', '圣安东尼奥马刺': '1610612759',
+  '俄克拉荷马城雷霆': '1610612760', '犹他爵士': '1610612762', '波特兰开拓者': '1610612757'
 };
-function getTeamBadge(logo, cls) {
-  const colors = LOGO_COLORS[cls] || ['#444', '#222'];
-  const c1 = colors[0], c2 = colors[1];
-  // 基于logo文字生成唯一图案种子
-  let seed = 0;
-  for (let i = 0; i < logo.length; i++) seed += logo.charCodeAt(i);
-  const pattern = seed % 4;  // 4种背景图案
-  const shortLogo = logo.length > 4 ? logo.substring(0, 4) : logo;
 
-  let bgPattern = '';
-  if (pattern === 0) {
-    // 斜条纹
-    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><rect width="4" height="8" fill="rgba(255,255,255,0.08)"/></pattern>`;
-  } else if (pattern === 1) {
-    // 圆点
-    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="10" height="10"><circle cx="5" cy="5" r="1.5" fill="rgba(255,255,255,0.1)"/></pattern>`;
-  } else if (pattern === 2) {
-    // 横条
-    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="10" height="6"><rect width="10" height="3" fill="rgba(255,255,255,0.06)"/></pattern>`;
-  } else {
-    // 棋盘格
-    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="8" height="8"><rect width="4" height="4" fill="rgba(255,255,255,0.05)"/><rect x="4" y="4" width="4" height="4" fill="rgba(255,255,255,0.05)"/></pattern>`;
+// 非NBA球队的真实队徽URL (Wikipedia Commons)
+const TEAM_LOGO_URLS = {
+  '皇家马德里': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Real_madrid_logo.svg',
+  '巴塞罗那': 'https://upload.wikimedia.org/wikipedia/en/a/a8/FCB_Logo.svg',
+  '费内巴切': 'https://upload.wikimedia.org/wikipedia/en/d/da/Fenerbahçe_SK_logo.svg',
+  '奥林匹亚科斯': 'https://upload.wikimedia.org/wikipedia/en/a/a3/Olympiacos_BC_logo.svg',
+  '帕纳辛奈科斯': 'https://upload.wikimedia.org/wikipedia/en/c/c9/Panathinaikos_BC_logo.svg',
+  '拜仁慕尼黑': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg',
+  'ALBA柏林': 'https://upload.wikimedia.org/wikipedia/en/9/90/Alba_Berlin_logo.svg',
+  '贝尔格莱德红星': 'https://upload.wikimedia.org/wikipedia/en/e/e3/KK_Crvena_zvezda_logo.svg',
+  '贝尔格莱德游击队': 'https://upload.wikimedia.org/wikipedia/en/2/2f/KK_Partizan_logo.svg',
+  '米兰奥林匹亚': 'https://upload.wikimedia.org/wikipedia/en/9/9d/Olimpia_Milano_logo.svg',
+  '博洛尼亚维图斯': 'https://upload.wikimedia.org/wikipedia/en/9/9c/Virtus_Bologna_logo.svg',
+  'ASVEL里昂维勒班': 'https://upload.wikimedia.org/wikipedia/en/3/3a/LDLC_ASVEL_logo.svg',
+  '摩纳哥篮球': 'https://upload.wikimedia.org/wikipedia/en/9/92/AS_Monaco_Basket_logo.svg',
+  '瓦伦西亚篮球': 'https://upload.wikimedia.org/wikipedia/en/0/04/Valencia_Basket_logo.svg',
+  '安纳托利亚艾菲斯': 'https://upload.wikimedia.org/wikipedia/en/4/47/Anadolu_Efes_SK_logo.svg',
+  '博卡青年': 'https://upload.wikimedia.org/wikipedia/commons/0/06/Boca_Juniors_logo.svg',
+  '河床篮球': 'https://upload.wikimedia.org/wikipedia/commons/2/26/River_Plate_logo.svg',
+  '弗拉门戈篮球': 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Clube_de_Regatas_do_Flamengo_logo.svg',
+  '尤文图特巴达洛纳': 'https://upload.wikimedia.org/wikipedia/en/2/28/Club_Joventut_Badalona_logo.svg',
+  '乌尼卡哈马拉加': 'https://upload.wikimedia.org/wikipedia/en/8/8a/Unicaja_M%C3%A1laga_logo.svg',
+  '利摩日CSP': 'https://upload.wikimedia.org/wikipedia/en/3/37/Limoges_CSP_logo.svg',
+  '加拉塔萨雷': 'https://upload.wikimedia.org/wikipedia/en/2/25/Galatasaray_SK_logo.svg',
+  '贝西克塔斯': 'https://upload.wikimedia.org/wikipedia/en/4/4f/Besiktas_JK_logo.svg',
+  'AEK雅典': 'https://upload.wikimedia.org/wikipedia/en/2/2e/AEK_Athens_F.C._logo.svg',
+  '悉尼国王': 'https://upload.wikimedia.org/wikipedia/en/9/9e/Sydney_Kings_logo.svg',
+  '珀斯野猫': 'https://upload.wikimedia.org/wikipedia/en/9/93/Perth_Wildcats_logo.svg'
+};
+
+// 生成队徽HTML (真实图片优先,SVG兜底)
+function getTeamBadge(logo, cls, teamName) {
+  let imgUrl = null;
+  // 1. NBA球队: 使用官方CDN
+  if (teamName && NBA_LOGO_IDS[teamName]) {
+    imgUrl = `https://cdn.nba.com/logos/nba/${NBA_LOGO_IDS[teamName]}/primary/L/logo.svg`;
+  }
+  // 2. 非NBA已知球队: 使用Wikipedia URL
+  else if (teamName && TEAM_LOGO_URLS[teamName]) {
+    imgUrl = TEAM_LOGO_URLS[teamName];
   }
 
+  if (imgUrl) {
+    // 真实图片队徽,带onerror降级到SVG
+    const fallback = getFallbackBadge(logo, cls);
+    return `<img src="${imgUrl}" alt="${teamName || logo}" style="width:100%;height:100%;object-fit:contain;" onerror="this.outerHTML='${fallback.replace(/'/g, '&#39;')}'">`;
+  }
+  // 3. 无真实队徽: 生成SVG兜底
+  return getFallbackBadge(logo, cls);
+}
+
+// SVG兜底队徽 (用于无真实logo的球队)
+const LOGO_COLORS = {
+  'logo-red': ['#d32f2f', '#8b0000'], 'logo-navy': ['#0f1b3d', '#1a2d5a'],
+  'logo-blue': ['#1565c0', '#0d47a1'], 'logo-green': ['#2e7d32', '#1b5e20'],
+  'logo-purple': ['#6a1b9a', '#4a148c'], 'logo-orange': ['#e65100', '#bf360c'],
+  'logo-gold': ['#b8860b', '#8b6508'], 'logo-teal': ['#00695c', '#004d40'],
+  'logo-crimson': ['#8b0000', '#5a0000'], 'logo-royal': ['#1a237e', '#0d1442'],
+  'logo-sunset': ['#ff6f00', '#c43e00'], 'logo-forest': ['#1b5e20', '#0d3311'],
+  'logo-steel': ['#455a64', '#263238'], 'logo-maroon': ['#5d1a1a', '#3d0f0f'],
+  'logo-emerald': ['#00695c', '#004d40'], 'logo-silver': ['#546e7a', '#37474f'],
+  'logo-black': ['#212121', '#000000'], 'logo-athletic': ['#c8102e', '#7a0a1c'],
+  'logo-classic': ['#1e3a5f', '#0f1f33'], 'logo-modern': ['#3d2b1f', '#1a0f08'],
+  'logo-bright': ['#ff6b35', '#c44a1a']
+};
+function getFallbackBadge(logo, cls) {
+  const colors = LOGO_COLORS[cls] || ['#444', '#222'];
+  const c1 = colors[0], c2 = colors[1];
+  let seed = 0;
+  for (let i = 0; i < logo.length; i++) seed += logo.charCodeAt(i);
+  const shortLogo = logo.length > 4 ? logo.substring(0, 4) : logo;
   return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-    <defs>${bgPattern}</defs>
     <circle cx="20" cy="20" r="19" fill="${c2}"/>
-    <circle cx="20" cy="20" r="19" fill="url(#p${seed})"/>
-    <circle cx="20" cy="20" r="16" fill="${c1}" opacity="0.9"/>
+    <circle cx="20" cy="20" r="16" fill="${c1}"/>
     <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-    <circle cx="20" cy="20" r="13" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
-    <text x="20" y="25" text-anchor="middle" font-size="11" font-weight="800" fill="white" font-family="Arial,sans-serif">${shortLogo}</text>
+    <text x="20" y="25" text-anchor="middle" font-size="11" font-weight="800" fill="white" font-family="Arial">${shortLogo}</text>
   </svg>`;
 }
 
-// === 荣誉图标映射 ===
+// === SVG荣誉图标 (不用emoji) ===
 function getHonorIcon(honor) {
-  if (honor.includes('奥运') && honor.includes('金牌')) return '🥇';
-  if (honor.includes('世界杯') && honor.includes('冠军')) return '🏆';
-  if (honor.includes('冠军')) return '🏆';
-  if (honor.includes('金牌')) return '🥇';
-  if (honor.includes('MVP')) return '⭐';
-  if (honor.includes('最佳')) return '🏅';
-  if (honor.includes('得分王') || honor.includes('助攻王') || honor.includes('篮板王')) return '🎯';
-  if (honor.includes('全明星')) return '🌟';
-  if (honor.includes('新秀')) return '🌱';
-  return '🎖️';
+  if (honor.includes('奥运') && honor.includes('金牌')) return SVG_ICONS.gold_medal;
+  if (honor.includes('世界杯') && honor.includes('冠军')) return SVG_ICONS.world_trophy;
+  if (honor.includes('冠军')) return SVG_ICONS.trophy;
+  if (honor.includes('金牌')) return SVG_ICONS.gold_medal;
+  if (honor.includes('MVP')) return SVG_ICONS.star;
+  if (honor.includes('最佳')) return SVG_ICONS.medal;
+  if (honor.includes('得分王') || honor.includes('助攻王') || honor.includes('篮板王')) return SVG_ICONS.target;
+  if (honor.includes('全明星')) return SVG_ICONS.sparkle;
+  if (honor.includes('新秀')) return SVG_ICONS.seedling;
+  return SVG_ICONS.ribbon;
 }
+
+// SVG图标库 (16x16,内联,无emoji)
+const SVG_ICONS = {
+  trophy: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>`,
+  gold_medal: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"><circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 3h4l2 5M15.5 9.5L18 3h-4l-2 5" fill="none" stroke="#b8860b" stroke-width="1.5"/></svg>`,
+  world_trophy: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`,
+  star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ffd700" stroke="#b8860b" stroke-width="1"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`,
+  medal: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c0c0c0" stroke-width="2"><circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 3h4l2 5M15.5 9.5L18 3h-4l-2 5"/></svg>`,
+  target: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  sparkle: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>`,
+  seedling: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M7 20h10M10 20c5-3 7-8 7-14-3 0-5 1-7 3M14 20c-5-3-7-8-7-14 3 0 5 1 7 3"/></svg>`,
+  ribbon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8 13l-3 9 7-4 7 4-3-9"/></svg>`
+};
 
 // === 按球队名查找球队数据 ===
 function findTeamByName(name) {
@@ -2221,7 +2268,7 @@ function renderPlayerCard() {
           </div>
           ${p.teamName ? `
           <div class="team-row">
-            <div class="team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls)}</div>
+            <div class="team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls, p.teamName)}</div>
             <div>
               <div class="team-name">${p.teamName}</div>
               <div class="team-league">${p.league}</div>
@@ -2265,7 +2312,7 @@ function renderHighSchoolChoice() {
         ${p.highSchoolChoices.map((hs, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo">${getTeamBadge(hs.logo, hs.cls)}</div>
+              <div class="team-logo">${getTeamBadge(hs.logo, hs.cls, hs.name)}</div>
               <div style="flex:1;">
                 <div class="choice-title">${hs.name}</div>
                 <div class="choice-desc">${COUNTRIES.find(c => c.code === p.nationality).youthName}</div>
@@ -2299,7 +2346,7 @@ function renderUniversityChoice() {
         ${p.universityChoices.map((uni, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo">${getTeamBadge(uni.logo, uni.cls)}</div>
+              <div class="team-logo">${getTeamBadge(uni.logo, uni.cls, uni.name)}</div>
               <div style="flex:1;">
                 <div class="choice-title">${uni.name}</div>
                 <div class="choice-desc">${uni.conf}</div>
@@ -2353,7 +2400,7 @@ function renderGameScreen() {
         ${choices.map((c, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              ${c.team ? `<div class="team-logo">${getTeamBadge(c.team.logo, c.team.cls)}</div>` : ''}
+              ${c.team ? `<div class="team-logo">${getTeamBadge(c.team.logo, c.team.cls, c.team.name)}</div>` : ''}
               <div style="flex:1;">
                 <div class="choice-title">${c.title} ${c.tag ? `<span class="choice-tag">${c.tag}</span>` : ''}</div>
                 <div class="choice-desc">${c.desc}</div>
@@ -2367,7 +2414,7 @@ function renderGameScreen() {
       <div class="draft-card" style="margin-bottom:16px;">
         <div class="timeline-title">选秀记录</div>
         <div class="draft-pick">
-          <div class="team-logo">${getTeamBadge(p.draftPick.logo, p.draftPick.cls)}</div>
+          <div class="team-logo">${getTeamBadge(p.draftPick.logo, p.draftPick.cls, p.draftPick.team)}</div>
           <div class="pick-num">R${p.draftPick.round}·P${p.draftPick.pick}</div>
           <div class="pick-team">
             <div class="pick-team-name">${p.draftPick.team}</div>
@@ -2481,7 +2528,7 @@ function renderRetirementScreen() {
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
             ${p.career.filter((c, i, arr) => arr.findIndex(x => x.team === c.team) === i).map(c => {
               const teamData = findTeamByName(c.team);
-              const badge = teamData ? getTeamBadge(teamData.logo, teamData.cls) : getTeamBadge(c.team.substring(0,2), 'logo-steel');
+              const badge = teamData ? getTeamBadge(teamData.logo, teamData.cls, teamData.name) : getTeamBadge(c.team.substring(0,2), 'logo-steel', c.team);
               return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:rgba(255,255,255,0.03);border-radius:10px;min-width:72px;">
                 <div class="team-logo" style="width:48px;height:48px;">${badge}</div>
                 <div style="font-size:11px;font-weight:600;text-align:center;">${c.team}</div>
