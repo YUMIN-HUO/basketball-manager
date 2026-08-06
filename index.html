@@ -343,6 +343,7 @@
   .logo-maroon { background: linear-gradient(135deg, #5d1a1a, #3d0f0f); }
   .logo-emerald { background: linear-gradient(135deg, #00695c, #004d40); }
   .logo-silver { background: linear-gradient(135deg, #546e7a, #37474f); }
+  .logo-black { background: linear-gradient(135deg, #212121, #000000); }
 
   .competition-banner {
     padding: 10px 14px; border-radius: 10px;
@@ -413,7 +414,7 @@ const LOGO_CLASSES = [
   'logo-athletic','logo-classic','logo-modern','logo-bright','logo-navy',
   'logo-red','logo-green','logo-blue','logo-purple','logo-orange',
   'logo-gold','logo-teal','logo-crimson','logo-royal','logo-sunset',
-  'logo-forest','logo-steel','logo-maroon','logo-emerald','logo-silver'
+  'logo-forest','logo-steel','logo-maroon','logo-emerald','logo-silver','logo-black'
 ];
 
 const HIGH_SCHOOLS = {
@@ -608,112 +609,174 @@ const PRO_TEAMS = {
     { name: '吉林九台', logo: '吉林', cls: 'logo-steel', league: 'CBA' },
     { name: '青岛国信', logo: '青岛', cls: 'logo-blue', league: 'CBA' },
     { name: '南京同曦', logo: '南京', cls: 'logo-crimson', league: 'CBA' },
-    { name: '福建浔兴', logo: '福建', cls: 'logo-navy', league: 'CBA' }
+    { name: '福建浔兴', logo: '福建', cls: 'logo-navy', league: 'CBA' },
+    { name: '苏州肯帝亚', logo: '苏州', cls: 'logo-maroon', league: 'CBA' },
+    { name: '四川金强', logo: '四川', cls: 'logo-forest', league: 'CBA' },
+    { name: '宁波町渥', logo: '宁波', cls: 'logo-silver', league: 'CBA' },
+    { name: '广厦控股', logo: '广厦', cls: 'logo-black', league: 'CBA' },
+    { name: '北控水务', logo: '北控', cls: 'logo-royal', league: 'CBA' }
   ],
   USA: [
     { name: '洛杉矶湖人', logo: 'LAL', cls: 'logo-purple', league: 'NBA' },
     { name: '波士顿凯尔特人', logo: 'BOS', cls: 'logo-green', league: 'NBA' },
     { name: '金州勇士', logo: 'GSW', cls: 'logo-blue', league: 'NBA' },
     { name: '迈阿密热火', logo: 'MIA', cls: 'logo-red', league: 'NBA' },
-    { name: ' Milwaukee Bucks', logo: 'MIL', cls: 'logo-navy', league: 'NBA' },
-    { name: 'Phoenix Suns', logo: 'PHX', cls: 'logo-sunset', league: 'NBA' },
-    { name: 'Dallas Mavericks', logo: 'DAL', cls: 'logo-blue', league: 'NBA' },
-    { name: 'Denver Nuggets', logo: 'DEN', cls: 'logo-navy', league: 'NBA' },
-    { name: 'Philadelphia 76ers', logo: 'PHI', cls: 'logo-red', league: 'NBA' },
-    { name: 'Brooklyn Nets', logo: 'BKN', cls: 'logo-crimson', league: 'NBA' },
-    { name: 'New York Knicks', logo: 'NYK', cls: 'logo-blue', league: 'NBA' },
-    { name: 'Chicago Bulls', logo: 'CHI', cls: 'logo-red', league: 'NBA' },
-    { name: 'LA Clippers', logo: 'LAC', cls: 'logo-navy', league: 'NBA' },
-    { name: 'Memphis Grizzlies', logo: 'MEM', cls: 'logo-teal', league: 'NBA' },
-    { name: 'Minnesota Timberwolves', logo: 'MIN', cls: 'logo-blue', league: 'NBA' },
-    { name: 'New Orleans Pelicans', logo: 'NOP', cls: 'logo-red', league: 'NBA' },
-    { name: 'Sacramento Kings', logo: 'SAC', cls: 'logo-purple', league: 'NBA' },
-    { name: 'Atlanta Hawks', logo: 'ATL', cls: 'logo-crimson', league: 'NBA' },
-    { name: 'Charlotte Hornets', logo: 'CHA', cls: 'logo-teal', league: 'NBA' },
-    { name: 'Indiana Pacers', logo: 'IND', cls: 'logo-blue', league: 'NBA' }
+    { name: '密尔沃基雄鹿', logo: 'MIL', cls: 'logo-navy', league: 'NBA' },
+    { name: '菲尼克斯太阳', logo: 'PHX', cls: 'logo-sunset', league: 'NBA' },
+    { name: '达拉斯独行侠', logo: 'DAL', cls: 'logo-blue', league: 'NBA' },
+    { name: '丹佛掘金', logo: 'DEN', cls: 'logo-navy', league: 'NBA' },
+    { name: '费城76人', logo: 'PHI', cls: 'logo-red', league: 'NBA' },
+    { name: '布鲁克林篮网', logo: 'BKN', cls: 'logo-crimson', league: 'NBA' },
+    { name: '纽约尼克斯', logo: 'NYK', cls: 'logo-blue', league: 'NBA' },
+    { name: '芝加哥公牛', logo: 'CHI', cls: 'logo-red', league: 'NBA' },
+    { name: '洛杉矶快船', logo: 'LAC', cls: 'logo-navy', league: 'NBA' },
+    { name: '孟菲斯灰熊', logo: 'MEM', cls: 'logo-teal', league: 'NBA' },
+    { name: '明尼苏达森林狼', logo: 'MIN', cls: 'logo-blue', league: 'NBA' },
+    { name: '新奥尔良鹈鹕', logo: 'NOP', cls: 'logo-red', league: 'NBA' },
+    { name: '萨克拉门托国王', logo: 'SAC', cls: 'logo-purple', league: 'NBA' },
+    { name: '亚特兰大老鹰', logo: 'ATL', cls: 'logo-crimson', league: 'NBA' },
+    { name: '夏洛特黄蜂', logo: 'CHA', cls: 'logo-teal', league: 'NBA' },
+    { name: '印第安纳步行者', logo: 'IND', cls: 'logo-blue', league: 'NBA' },
+    { name: '克利夫兰骑士', logo: 'CLE', cls: 'logo-red', league: 'NBA' },
+    { name: '底特律活塞', logo: 'DET', cls: 'logo-blue', league: 'NBA' },
+    { name: '多伦多猛龙', logo: 'TOR', cls: 'logo-red', league: 'NBA' },
+    { name: '奥兰多魔术', logo: 'ORL', cls: 'logo-blue', league: 'NBA' },
+    { name: '华盛顿奇才', logo: 'WAS', cls: 'logo-navy', league: 'NBA' },
+    { name: '休斯顿火箭', logo: 'HOU', cls: 'logo-red', league: 'NBA' },
+    { name: '圣安东尼奥马刺', logo: 'SAS', cls: 'logo-silver', league: 'NBA' },
+    { name: '俄克拉荷马城雷霆', logo: 'OKC', cls: 'logo-blue', league: 'NBA' },
+    { name: '犹他爵士', logo: 'UTA', cls: 'logo-purple', league: 'NBA' },
+    { name: '波特兰开拓者', logo: 'POR', cls: 'logo-red', league: 'NBA' }
   ],
   ESP: [
-    { name: 'Real Madrid', logo: 'RMA', cls: 'logo-navy', league: 'ACB' },
-    { name: 'FC Barcelona', logo: 'FCB', cls: 'logo-red', league: 'ACB' },
-    { name: 'Lleida Basquet', logo: 'LL', cls: 'logo-blue', league: 'ACB' },
-    { name: 'Joventut Badalona', logo: 'JOV', cls: 'logo-green', league: 'ACB' },
-    { name: 'Valencia Basket', logo: 'VAL', cls: 'logo-orange', league: 'ACB' },
-    { name: 'Unicaja Malaga', logo: 'UNI', cls: 'logo-teal', league: 'ACB' },
-    { name: 'Real Betis', logo: 'BET', cls: 'logo-crimson', league: 'ACB' }
+    { name: '皇家马德里', logo: 'RMA', cls: 'logo-navy', league: 'ACB' },
+    { name: '巴塞罗那', logo: 'FCB', cls: 'logo-red', league: 'ACB' },
+    { name: '莱里达篮球', logo: 'LL', cls: 'logo-blue', league: 'ACB' },
+    { name: '尤文图特巴达洛纳', logo: 'JOV', cls: 'logo-green', league: 'ACB' },
+    { name: '瓦伦西亚篮球', logo: 'VAL', cls: 'logo-orange', league: 'ACB' },
+    { name: '乌尼卡哈马拉加', logo: 'UNI', cls: 'logo-teal', league: 'ACB' },
+    { name: '皇家贝蒂斯', logo: 'BET', cls: 'logo-crimson', league: 'ACB' },
+    { name: '特内里费篮球', logo: 'TEN', cls: 'logo-gold', league: 'ACB' },
+    { name: '萨拉戈萨篮球', logo: 'ZAR', cls: 'logo-purple', league: 'ACB' },
+    { name: '格拉纳达篮球', logo: 'GRA', cls: 'logo-emerald', league: 'ACB' }
   ],
   FRA: [
-    { name: 'ASVEL Villeurbanne', logo: 'ASV', cls: 'logo-navy', league: 'EuroLeague' },
-    { name: 'Monaco Basket', logo: 'ASM', cls: 'logo-red', league: 'EuroLeague' },
-    { name: 'Limoges CSP', logo: 'LIM', cls: 'logo-gold', league: 'EuroLeague' },
-    { name: 'Le Mans Sarthe', logo: 'LMS', cls: 'logo-teal', league: 'EuroLeague' },
-    { name: 'Nanterre 92', logo: 'N92', cls: 'logo-purple', league: 'EuroLeague' }
+    { name: 'ASVEL里昂维勒班', logo: 'ASV', cls: 'logo-navy', league: 'EuroLeague' },
+    { name: '摩纳哥篮球', logo: 'ASM', cls: 'logo-red', league: 'EuroLeague' },
+    { name: '利摩日CSP', logo: 'LIM', cls: 'logo-gold', league: 'EuroLeague' },
+    { name: '勒芒萨尔特', logo: 'LMS', cls: 'logo-teal', league: 'EuroLeague' },
+    { name: '南泰尔92', logo: 'N92', cls: 'logo-purple', league: 'EuroLeague' },
+    { name: '巴黎篮球', logo: 'PAR', cls: 'logo-blue', league: 'EuroLeague' },
+    { name: '斯特拉斯堡篮球', logo: 'STR', cls: 'logo-red', league: 'EuroLeague' },
+    { name: '布尔格篮球', logo: 'BOU', cls: 'logo-orange', league: 'EuroLeague' }
   ],
   SRB: [
-    { name: 'Crvena Zvezda', logo: 'CZ', cls: 'logo-red', league: 'Adriatic' },
-    { name: 'Partizan Belgrade', logo: 'PAR', cls: 'logo-crimson', league: 'Adriatic' },
-    { name: 'Vojvodina Novi Sad', logo: 'VOJ', cls: 'logo-navy', league: 'Adriatic' }
+    { name: '贝尔格莱德红星', logo: 'CZ', cls: 'logo-red', league: 'Adriatic' },
+    { name: '贝尔格莱德游击队', logo: 'PAR', cls: 'logo-crimson', league: 'Adriatic' },
+    { name: '伏伊伏丁那', logo: 'VOJ', cls: 'logo-navy', league: 'Adriatic' },
+    { name: 'FMP贝尔格莱德', logo: 'FMP', cls: 'logo-blue', league: 'Adriatic' },
+    { name: '梅加篮球', logo: 'MEG', cls: 'logo-green', league: 'Adriatic' },
+    { name: '波拉斯察察克', logo: 'BOR', cls: 'logo-gold', league: 'Adriatic' }
   ],
   GRC: [
-    { name: 'Panathinaikos BC', logo: 'PAO', cls: 'logo-green', league: 'Greek League' },
-    { name: 'Olympiacos BC', logo: 'OLY', cls: 'logo-red', league: 'Greek League' },
-    { name: 'AEK Athens', logo: 'AEK', cls: 'logo-gold', league: 'Greek League' },
-    { name: 'Peristeri BC', logo: 'PER', cls: 'logo-blue', league: 'Greek League' }
+    { name: '帕纳辛奈科斯', logo: 'PAO', cls: 'logo-green', league: 'Greek League' },
+    { name: '奥林匹亚科斯', logo: 'OLY', cls: 'logo-red', league: 'Greek League' },
+    { name: 'AEK雅典', logo: 'AEK', cls: 'logo-gold', league: 'Greek League' },
+    { name: '佩里斯特里', logo: 'PER', cls: 'logo-blue', league: 'Greek League' },
+    { name: '帕尼奥斯', logo: 'PAN', cls: 'logo-navy', league: 'Greek League' },
+    { name: '阿瑞斯萨洛尼卡', logo: 'ARS', cls: 'logo-crimson', league: 'Greek League' },
+    { name: '拉夫里奥篮球', logo: 'LAV', cls: 'logo-teal', league: 'Greek League' },
+    { name: '科洛斯罗多', logo: 'KOL', cls: 'logo-purple', league: 'Greek League' }
   ],
   TUR: [
-    { name: 'Fenerbahce Beko', logo: 'FEN', cls: 'logo-navy', league: 'Turkish League' },
-    { name: 'Galatasaray Nef', logo: 'GS', cls: 'logo-red', league: 'Turkish League' },
-    { name: 'Anadolu Efes', logo: 'ANE', cls: 'logo-blue', league: 'Turkish League' },
-    { name: 'Besiktas JK', logo: 'BJK', cls: 'logo-crimson', league: 'Turkish League' }
+    { name: '费内巴切', logo: 'FEN', cls: 'logo-navy', league: 'Turkish League' },
+    { name: '加拉塔萨雷', logo: 'GS', cls: 'logo-red', league: 'Turkish League' },
+    { name: '安纳托利亚艾菲斯', logo: 'ANE', cls: 'logo-blue', league: 'Turkish League' },
+    { name: '贝西克塔斯', logo: 'BJK', cls: 'logo-crimson', league: 'Turkish League' },
+    { name: '达鲁沙法卡', logo: 'DAR', cls: 'logo-green', league: 'Turkish League' },
+    { name: '巴赫切希尔', logo: 'BAH', cls: 'logo-orange', league: 'Turkish League' },
+    { name: '梅尔辛篮球', logo: 'MER', cls: 'logo-purple', league: 'Turkish League' },
+    { name: '托法斯布尔萨', logo: 'TOF', cls: 'logo-silver', league: 'Turkish League' }
   ],
   ITA: [
-    { name: 'Olimpia Milano', logo: 'OM', cls: 'logo-red', league: 'Serie A' },
-    { name: 'JuveCaserta', logo: 'JC', cls: 'logo-navy', league: 'Serie A' },
-    { name: 'Virtus Bologna', logo: 'VB', cls: 'logo-navy', league: 'Serie A' },
-    { name: 'Fortitudo Bologna', logo: 'FORT', cls: 'logo-blue', league: 'Serie A' }
+    { name: '米兰奥林匹亚', logo: 'OM', cls: 'logo-red', league: 'Serie A' },
+    { name: '卡塞塔尤文', logo: 'JC', cls: 'logo-navy', league: 'Serie A' },
+    { name: '博洛尼亚维图斯', logo: 'VB', cls: 'logo-navy', league: 'Serie A' },
+    { name: '博洛尼亚福尔图多', logo: 'FORT', cls: 'logo-blue', league: 'Serie A' },
+    { name: '瓦雷泽篮球', logo: 'VAR', cls: 'logo-red', league: 'Serie A' },
+    { name: '特雷维索篮球', logo: 'TRE', cls: 'logo-green', league: 'Serie A' },
+    { name: '布雷西亚篮球', logo: 'BRE', cls: 'logo-orange', league: 'Serie A' },
+    { name: '雷吉亚纳篮球', logo: 'REG', cls: 'logo-purple', league: 'Serie A' }
   ],
   GER: [
-    { name: 'ALBA Berlin', logo: 'ALB', cls: 'logo-red', league: 'BBL' },
-    { name: 'Bayern Munich', logo: 'BAY', cls: 'logo-crimson', league: 'BBL' },
-    { name: 'Brose Baskets Bamberg', logo: 'BRO', cls: 'logo-green', league: 'BBL' },
-    { name: 'Ratiopharm Ulm', logo: 'RAU', cls: 'logo-blue', league: 'BBL' }
+    { name: 'ALBA柏林', logo: 'ALB', cls: 'logo-red', league: 'BBL' },
+    { name: '拜仁慕尼黑', logo: 'BAY', cls: 'logo-crimson', league: 'BBL' },
+    { name: '布罗斯班贝格', logo: 'BRO', cls: 'logo-green', league: 'BBL' },
+    { name: '乌尔姆拉蒂奥法姆', logo: 'RAU', cls: 'logo-blue', league: 'BBL' },
+    { name: '法兰克福篮球', logo: 'FRA', cls: 'logo-purple', league: 'BBL' },
+    { name: '波恩电信', logo: 'BON', cls: 'logo-gold', league: 'BBL' },
+    { name: '路德维希堡', logo: 'LUD', cls: 'logo-teal', league: 'BBL' },
+    { name: '汉堡篮球', logo: 'HAM', cls: 'logo-navy', league: 'BBL' }
   ],
   ARG: [
-    { name: 'Boca Juniors', logo: 'BOC', cls: 'logo-blue', league: 'Liga Nacional' },
-    { name: 'River Plate', logo: 'RIV', cls: 'logo-red', league: 'Liga Nacional' },
-    { name: 'San Lorenzo', logo: 'SL', cls: 'logo-navy', league: 'Liga Nacional' },
-    { name: 'Estudiantes', logo: 'EST', cls: 'logo-sunset', league: 'Liga Nacional' }
+    { name: '博卡青年', logo: 'BOC', cls: 'logo-blue', league: 'Liga Nacional' },
+    { name: '河床篮球', logo: 'RIV', cls: 'logo-red', league: 'Liga Nacional' },
+    { name: '圣洛伦索', logo: 'SL', cls: 'logo-navy', league: 'Liga Nacional' },
+    { name: '大学生队', logo: 'EST', cls: 'logo-sunset', league: 'Liga Nacional' },
+    { name: '圣马丁科连特斯', logo: 'SMC', cls: 'logo-green', league: 'Liga Nacional' },
+    { name: '基尔梅斯', logo: 'QUI', cls: 'logo-gold', league: 'Liga Nacional' },
+    { name: '萨米恩托', logo: 'SAM', cls: 'logo-purple', league: 'Liga Nacional' },
+    { name: '阿根廷青年人', logo: 'ARG', cls: 'logo-crimson', league: 'Liga Nacional' }
   ],
   AUS: [
-    { name: 'Melbourne United', logo: 'MU', cls: 'logo-navy', league: 'NBL' },
-    { name: 'Sydney Kings', logo: 'SK', cls: 'logo-red', league: 'NBL' },
-    { name: 'Brisbane Bullets', logo: 'BB', cls: 'logo-blue', league: 'NBL' },
-    { name: 'Perth Wildcats', logo: 'PW', cls: 'logo-crimson', league: 'NBL' },
-    { name: 'Adelaide 36ers', logo: 'A36', cls: 'logo-navy', league: 'NBL' },
-    { name: 'Tasmanian JackJumpers', logo: 'TJ', cls: 'logo-teal', league: 'NBL' }
+    { name: '墨尔本联队', logo: 'MU', cls: 'logo-navy', league: 'NBL' },
+    { name: '悉尼国王', logo: 'SK', cls: 'logo-red', league: 'NBL' },
+    { name: '布里斯班子弹', logo: 'BB', cls: 'logo-blue', league: 'NBL' },
+    { name: '珀斯野猫', logo: 'PW', cls: 'logo-crimson', league: 'NBL' },
+    { name: '阿德莱德36人', logo: 'A36', cls: 'logo-navy', league: 'NBL' },
+    { name: '塔斯马尼亚跳蚁', logo: 'TJ', cls: 'logo-teal', league: 'NBL' },
+    { name: '新西兰破坏者', logo: 'NB', cls: 'logo-black', league: 'NBL' },
+    { name: '伊拉瓦拉老鹰', logo: 'ILL', cls: 'logo-gold', league: 'NBL' }
   ],
   CAN: [
-    { name: 'Toronto Raptors', logo: 'TOR', cls: 'logo-red', league: 'NBA' },
-    { name: 'Vancouver Bandits', logo: 'VB', cls: 'logo-orange', league: 'CEBL' },
-    { name: 'Ottawa Blackjacks', logo: 'OBJ', cls: 'logo-gold', league: 'CEBL' },
-    { name: 'Edmonton Stingers', logo: 'ES', cls: 'logo-blue', league: 'CEBL' }
+    { name: '多伦多猛龙', logo: 'TOR', cls: 'logo-red', league: 'NBA' },
+    { name: '温哥华班迪茨', logo: 'VB', cls: 'logo-orange', league: 'CEBL' },
+    { name: '渥太华黑杰克', logo: 'OBJ', cls: 'logo-gold', league: 'CEBL' },
+    { name: '埃德蒙顿毒刺', logo: 'ES', cls: 'logo-blue', league: 'CEBL' },
+    { name: '萨斯喀彻温狂奔者', logo: 'SAS', cls: 'logo-green', league: 'CEBL' },
+    { name: '蒙特利尔联盟', logo: 'MON', cls: 'logo-navy', league: 'CEBL' },
+    { name: '弗雷泽河谷强盗', logo: 'FV', cls: 'logo-crimson', league: 'CEBL' },
+    { name: '温莎快车', logo: 'WEX', cls: 'logo-purple', league: 'CEBL' }
   ],
   JPN: [
-    { name: 'Tokyo Yomiuri Giants', logo: 'TYG', cls: 'logo-red', league: 'B.League' },
-    { name: 'Osaka Evessa', logo: 'OE', cls: 'logo-navy', league: 'B.League' },
-    { name: 'Kyoto Hannaryz', logo: 'KH', cls: 'logo-purple', league: 'B.League' },
-    { name: 'Ryukyu Golden Kings', logo: 'RGK', cls: 'logo-gold', league: 'B.League' }
+    { name: '东京读卖巨人', logo: 'TYG', cls: 'logo-red', league: 'B.League' },
+    { name: '大阪艾维萨', logo: 'OE', cls: 'logo-navy', league: 'B.League' },
+    { name: '京都创荣', logo: 'KH', cls: 'logo-purple', league: 'B.League' },
+    { name: '琉球黄金国王', logo: 'RGK', cls: 'logo-gold', league: 'B.League' },
+    { name: '川崎勇敢雷霆', logo: 'KBT', cls: 'logo-blue', league: 'B.League' },
+    { name: '名古屋钻石海豚', logo: 'NDD', cls: 'logo-teal', league: 'B.League' },
+    { name: '三远新凤凰', logo: 'SPX', cls: 'logo-orange', league: 'B.League' },
+    { name: '北海道雷邦斯', logo: 'LVB', cls: 'logo-crimson', league: 'B.League' }
   ],
   KOR: [
-    { name: 'Seoul Samsung Thunders', logo: 'SST', cls: 'logo-navy', league: 'KBL' },
-    { name: 'Busan KT Sonicboom', logo: 'BKT', cls: 'logo-blue', league: 'KBL' },
-    { name: 'Goyang Orion Orions', logo: 'GOO', cls: 'logo-red', league: 'KBL' },
-    { name: 'Jeonju KCC Egis', logo: 'KCC', cls: 'logo-gold', league: 'KBL' }
+    { name: '首尔三星迅雷', logo: 'SST', cls: 'logo-navy', league: 'KBL' },
+    { name: '釜山KT声爆', logo: 'BKT', cls: 'logo-blue', league: 'KBL' },
+    { name: '高阳猎户座', logo: 'GOO', cls: 'logo-red', league: 'KBL' },
+    { name: '全州KCC猎鹰', logo: 'KCC', cls: 'logo-gold', league: 'KBL' },
+    { name: '昌原LG猎鹰', logo: 'LGS', cls: 'logo-green', league: 'KBL' },
+    { name: '安养KGC人参公社', logo: 'KGC', cls: 'logo-crimson', league: 'KBL' },
+    { name: '蔚山现代摩比斯', logo: 'MOB', cls: 'logo-purple', league: 'KBL' },
+    { name: '原州DB鹏', logo: 'DBP', cls: 'logo-orange', league: 'KBL' }
   ],
   BRA: [
-    { name: 'Flamengo Basketball', logo: 'FLA', cls: 'logo-red', league: 'NBB' },
-    { name: 'Palmeiras Basketball', logo: 'PAL', cls: 'logo-green', league: 'NBB' },
-    { name: 'Sao Paulo Basketball', logo: 'SAO', cls: 'logo-navy', league: 'NBB' },
-    { name: 'Corinthians Basketball', logo: 'COR', cls: 'logo-gold', league: 'NBB' }
+    { name: '弗拉门戈篮球', logo: 'FLA', cls: 'logo-red', league: 'NBB' },
+    { name: '帕尔梅拉斯篮球', logo: 'PAL', cls: 'logo-green', league: 'NBB' },
+    { name: '圣保罗篮球', logo: 'SAO', cls: 'logo-navy', league: 'NBB' },
+    { name: '科林蒂安篮球', logo: 'COR', cls: 'logo-gold', league: 'NBB' },
+    { name: '米纳斯篮球', logo: 'MIN', cls: 'logo-blue', league: 'NBB' },
+    { name: '法兰卡篮球', logo: 'FRA', cls: 'logo-orange', league: 'NBB' },
+    { name: '皮涅鲁斯篮球', logo: 'PIN', cls: 'logo-purple', league: 'NBB' },
+    { name: '巴西利亚篮球', logo: 'BSB', cls: 'logo-teal', league: 'NBB' }
   ]
 };
 
