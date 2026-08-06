@@ -898,10 +898,13 @@ function createPlayer(nationality, position, name, number) {
     currentInjury: null,
     chronicInjuries: 0,  // 慢性伤病计数器 (影响长期OVR)
     yearStats: { gp: 0, pts: 0, reb: 0, ast: 0 },
+    recentGames: [],     // 最近3年出场数 (用于续约判定)
+    noOfferYears: 0,     // 连续无人报价年数
     draftPick: null,
     draftDeclared: false,
     retired: false,
     retirementReason: '',
+    careerTitle: '',     // 结局称号 (基于生涯数据生成)
     yearEvents: [],
     yearAwards: []
   };
@@ -1034,6 +1037,10 @@ function advanceYear() {
   p.yearStats.pts = Math.round(gamesPlayed * basePerf * posStats.pts * perfMultiplier);
   p.yearStats.reb = Math.round(gamesPlayed * basePerf * posStats.reb * perfMultiplier);
   p.yearStats.ast = Math.round(gamesPlayed * basePerf * posStats.ast * perfMultiplier);
+
+  // 记录最近3年出场数 (用于续约判定)
+  p.recentGames.push(gamesPlayed);
+  if (p.recentGames.length > 3) p.recentGames.shift();
   
   p.stats.gp += p.yearStats.gp;
   p.stats.pts += p.yearStats.pts;
@@ -1076,6 +1083,12 @@ function advanceYear() {
   
   // 退役检查
   checkRetirement(p);
+
+  // 退役时生成结局称号 (基于生涯数据,不随机)
+  if (p.retired && !p.careerTitle) {
+    p.careerTitle = generateCareerTitle(p);
+    log('TITLE', `🏷️ 结局称号: ${p.careerTitle} | 生涯:${p.stats.gp}场 ${p.stats.pts}分 ${p.honors.length}荣誉`);
+  }
 }
 
 function getAgeModifier(age) {
@@ -1282,7 +1295,7 @@ function checkRetirement(p) {
     log('RETIRE', `🏁 强制退役: 年龄达到42岁上限`);
     return;
   }
-  
+
   // 2. 职业阶段 OVR < 60: 无球队签约
   if (p.phase === 'pro' && p.ovr < 60) {
     p.retired = true;
@@ -1290,16 +1303,46 @@ function checkRetirement(p) {
     log('RETIRE', `🏁 被迫退役: OVR=${p.ovr} < 60, 无球队签约`);
     return;
   }
-  
-  // 3. 严重伤病导致退役: 赛季报销 + OVR大幅下降
+
+  // 3. 连续出场不足: 最近3年出场率<30%, 俱乐部不续约
+  if (p.phase === 'pro' && p.recentGames.length >= 3) {
+    const maxGames = p.league === 'NBA' ? 82 : 50;
+    const avgGames = p.recentGames.reduce((a, b) => a + b, 0) / p.recentGames.length;
+    const playRate = avgGames / maxGames;
+    if (playRate < 0.3) {
+      p.retired = true;
+      p.retirementReason = `连续3年平均出场率仅${Math.round(playRate * 100)}%，俱乐部拒绝续约`;
+      log('RETIRE', `🏁 出场不足退役: 最近3年平均${avgGames.toFixed(0)}场/年, 出场率${Math.round(playRate * 100)}% < 30%`);
+      return;
+    }
+  }
+
+  // 4. 严重伤病导致退役: 赛季报销 + OVR大幅下降
   if (p.phase === 'pro' && p.currentInjury && p.currentInjury.severity >= 3 && p.currentInjury.weeksMissed >= 10) {
     p.retired = true;
     p.retirementReason = `严重伤病（${p.currentInjury.name}）无法恢复，被迫退役`;
     log('RETIRE', `🏁 伤病退役: ${p.currentInjury.name} | 严重度:${p.currentInjury.severity} | 停赛${p.currentInjury.weeksMissed}周`);
     return;
   }
-  
-  // 4. 38岁以上 + OVR < 70: 高概率退役
+
+  // 5. 无人报价退役: 检查转会市场是否有球队愿意接收
+  // OVR<65 + 年龄>30 + 无转会报价 → 退役
+  if (p.phase === 'pro' && p.age >= 30 && p.ovr < 68) {
+    const transferChoices = getTransferChoices();
+    if (transferChoices.length === 0) {
+      p.noOfferYears++;
+      if (p.noOfferYears >= 2) {
+        p.retired = true;
+        p.retirementReason = `连续${p.noOfferYears}年无球队报价，被迫挂靴`;
+        log('RETIRE', `🏁 无人报价退役: 连续${p.noOfferYears}年无转会报价`);
+        return;
+      }
+    } else {
+      p.noOfferYears = 0;  // 有报价则重置
+    }
+  }
+
+  // 6. 38岁以上 + OVR < 70: 高概率退役
   if (p.phase === 'pro' && p.age >= 38 && p.ovr < 70) {
     if (Math.random() < 0.5) {
       p.retired = true;
@@ -1308,8 +1351,8 @@ function checkRetirement(p) {
       return;
     }
   }
-  
-  // 5. 慢性伤病过多: 35岁+ 且慢性伤病>=3
+
+  // 7. 慢性伤病过多: 35岁+ 且慢性伤病>=3
   if (p.phase === 'pro' && p.age >= 35 && p.chronicInjuries >= 3) {
     if (Math.random() < 0.4) {
       p.retired = true;
@@ -1318,6 +1361,80 @@ function checkRetirement(p) {
       return;
     }
   }
+}
+
+// === 结局称号生成 (基于生涯数据,不随机) ===
+function generateCareerTitle(p) {
+  const totalGames = p.stats.gp;
+  const totalPts = p.stats.pts;
+  const ppg = parseFloat(p.stats.ppg) || 0;
+  const honors = p.honors;
+  const peakOVR = p.potential;  // 潜力值≈巅峰OVR
+  const retireOVR = p.ovr;
+  const careerYears = p.age - 16;
+  const injuries = p.injuryHistory.length;
+  const draftPick = p.draftPick;
+  const wealth = p.wealth;
+
+  // 检查各类荣誉
+  const hasOlympicGold = honors.some(h => h.includes('奥运') && h.includes('金牌'));
+  const hasWorldCup = honors.some(h => h.includes('世界杯') && h.includes('冠军'));
+  const hasNationalGold = hasOlympicGold || hasWorldCup;
+  const honorCount = honors.length;
+
+  // 按优先级判定称号 (高→低)
+  // 1. 传奇巨星: 国家队金牌 + 长期生涯 + 高得分
+  if (hasNationalGold && careerYears >= 15 && totalPts >= 15000) {
+    return '传奇巨星';
+  }
+
+  // 2. 名人堂球员: 多项荣誉 + 生涯出色
+  if (honorCount >= 4 && totalPts >= 12000 && careerYears >= 12) {
+    return '名人堂球员';
+  }
+
+  // 3. 冠军功臣: 有重大冠军荣誉
+  if (honors.some(h => h.includes('冠军') || h.includes('金牌'))) {
+    return '冠军功臣';
+  }
+
+  // 4. 全明星球员: 高巅峰 + 高得分
+  if (peakOVR >= 85 && ppg >= 18 && totalGames >= 500) {
+    return '全明星球员';
+  }
+
+  // 5. 铁人: 超长生涯 + 出场多
+  if (careerYears >= 18 && totalGames >= 900) {
+    return '赛场铁人';
+  }
+
+  // 6. 得分机器: 高场均得分
+  if (ppg >= 22 && totalPts >= 10000) {
+    return '得分机器';
+  }
+
+  // 7. 逆袭之星: 落选或低顺位但成功
+  if ((!draftPick || (draftPick.overall > 45)) && totalPts >= 8000 && peakOVR >= 80) {
+    return '逆袭之星';
+  }
+
+  // 8. 悲情天才: 高潜力但伤病多
+  if (peakOVR >= 82 && injuries >= 5 && careerYears < 14) {
+    return '悲情天才';
+  }
+
+  // 9. 角色球员: 中等生涯
+  if (totalGames >= 400 && ppg >= 8) {
+    return '可靠角色球员';
+  }
+
+  // 10. 匆匆过客: 短暂生涯
+  if (careerYears <= 6 || totalGames < 200) {
+    return '匆匆过客';
+  }
+
+  // 11. 平凡生涯
+  return '平凡球员';
 }
 
 function chooseHighSchool(index) {
@@ -1422,6 +1539,8 @@ function declareDraft() {
 
   p.draftDeclared = true;
   p.phase = 'pro';
+  p.recentGames = [];  // 进入职业阶段,清空大学时期出场记录(避免误判出场不足)
+  p.noOfferYears = 0;
 
   log('DRAFT', `=== 选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential} | 资格:${eligibility.reason}`);
 
@@ -2221,7 +2340,13 @@ function renderRetirementScreen() {
             </div>
           `).join('')}
         </div>` : ''}
-        
+
+        ${p.careerTitle ? `
+        <div style="margin:24px 0 20px;padding:20px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,107,53,0.1));border:1px solid rgba(255,215,0,0.4);border-radius:16px;text-align:center;">
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;letter-spacing:2px;">生涯称号</div>
+          <div style="font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${p.careerTitle}</div>
+        </div>` : ''}
+
         <button class="btn btn-primary" id="restartBtn" style="justify-content:center;">
           🔄 再来一局
         </button>
@@ -2528,8 +2653,53 @@ const SIM_TESTS = {
     state.ovr = 80;
     state.currentInjury = null;
     state.chronicInjuries = 0;
+    state.recentGames = [70, 75, 68];  // 正常出场
     checkRetirement(state);
     this.assert(state.retired === false, '28岁OVR80不应退役', `(retired=${state.retired})`);
+
+    // 场景6: 连续出场不足退役
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '退役测试_出场不足', 1);
+    state.age = 32;
+    state.phase = 'pro';
+    state.ovr = 72;
+    state.league = 'NBA';
+    state.recentGames = [15, 20, 10];  // NBA平均15场/年,出场率~18%
+    checkRetirement(state);
+    this.assert(state.retired === true, '连续3年出场率<30%应退役', `(出场率=${(state.recentGames.reduce((a,b)=>a+b,0)/3/82*100).toFixed(0)}%, retired=${state.retired})`);
+    this.assert(state.retirementReason.includes('出场率'), '退役原因含"出场率"');
+
+    // 场景7: 称号生成测试 (传奇巨星)
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '称号测试_传奇', 1);
+    state.age = 36;
+    state.stats = { gp: 1200, pts: 18000, reb: 4000, ast: 5000, ppg: '15.0', rpg: '3.3', apg: '4.2' };
+    state.honors = ['奥运会金牌', 'FIBA世界杯冠军'];
+    state.potential = 92;
+    const title1 = generateCareerTitle(state);
+    this.assert(title1 === '传奇巨星', '传奇巨星称号(金牌+15年+18000分)', `(实际=${title1})`);
+
+    // 场景8: 称号生成测试 (逆袭之星)
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '称号测试_逆袭', 1);
+    state.age = 32;
+    state.stats = { gp: 600, pts: 9000, reb: 2000, ast: 1500, ppg: '15.0', rpg: '3.3', apg: '2.5' };
+    state.honors = [];
+    state.potential = 82;
+    state.draftPick = { overall: 55 };  // 次轮末
+    const title2 = generateCareerTitle(state);
+    this.assert(title2 === '逆袭之星', '逆袭之星称号(低顺位+9000分+潜力82)', `(实际=${title2})`);
+
+    // 场景9: 称号生成测试 (匆匆过客)
+    clearLog();
+    state = createPlayer('USA', POSITIONS[0], '称号测试_过客', 1);
+    state.age = 21;
+    state.stats = { gp: 80, pts: 500, reb: 100, ast: 80, ppg: '6.3', rpg: '1.3', apg: '1.0' };
+    state.honors = [];
+    state.potential = 65;
+    state.draftPick = null;
+    const title3 = generateCareerTitle(state);
+    this.assert(title3 === '匆匆过客', '匆匆过客称号(5年生涯+80场)', `(实际=${title3})`);
 
     state = savedState;
     gameYear = savedYear;
@@ -2612,7 +2782,8 @@ const SIM_TESTS = {
         chronicInjuries: state.chronicInjuries,
         wealth: state.wealth,
         fame: state.fame,
-        proYears: proYears
+        proYears: proYears,
+        careerTitle: state.careerTitle
       };
       careers.push(career);
 
@@ -2621,6 +2792,7 @@ const SIM_TESTS = {
       this.assert(state.age >= 22 && state.age <= 45, `${cfg.name}退役年龄22-45岁`, `(实际=${state.age})`);
       this.assert(state.stats.gp > 0, `${cfg.name}有比赛记录`, `(GP=${state.stats.gp})`);
       this.assert(state.career.length >= 3, `${cfg.name}生涯事件≥3`, `(事件数=${state.career.length})`);
+      this.assert(state.careerTitle && state.careerTitle.length > 0, `${cfg.name}有结局称号`, `(称号=${state.careerTitle})`);
 
       state = savedState;
       gameYear = savedYear;
@@ -2630,7 +2802,7 @@ const SIM_TESTS = {
     this.results.push('\n  📊 生涯模拟汇总:');
     careers.forEach(c => {
       const pick = c.draftPick ? `第${c.draftPick.overall}顺位` : '落选';
-      this.results.push(`    ${c.name}(${c.desc}): ${c.startOvr}→${c.peakOvr}OVR | ${c.draftAge}岁参选${pick} | ${c.retireAge}岁退役(${c.retirementReason||''}) | ${c.totalGames}场 ${c.totalPts}分 ${c.totalReb}板 ${c.totalAst}助 | ${c.injuries}次伤病 | ${c.honors.length}荣誉 | 财富${formatSalary(c.wealth)}`);
+      this.results.push(`    ${c.name}(${c.desc}): ${c.startOvr}→${c.peakOvr}OVR | ${c.draftAge}岁参选${pick} | ${c.retireAge}岁退役(${c.retirementReason||''}) | ${c.totalGames}场 ${c.totalPts}分 | ${c.injuries}次伤病 | ${c.honors.length}荣誉 | 称号:${c.careerTitle}`);
     });
   },
 
