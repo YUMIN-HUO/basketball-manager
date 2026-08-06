@@ -1199,15 +1199,79 @@ function checkPhaseTransition(p) {
     p.career.push({
       age: p.age, event: '高中毕业', team: p.teamName, league: p.league
     });
-    log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr}`);
+    p.hsGradYear = gameYear;  // 记录高中毕业年份,用于参选资格判定
+    log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr} | 毕业年份:${p.hsGradYear}`);
   }
-  
-  // 大学: 18-22岁 (4年), 大四毕业(22岁)必须参加选秀
-  // NBA规则: 年满19岁可参加选秀 (one-and-done)
+
+  // 大学: 18-22岁 (4年), 大四毕业(22岁)自动参选
+  // NBA规则: 年满19岁 + 高中毕业满1年 可参选 (one-and-done)
+  // 22岁自动获得参选资格(国际球员规则: 22岁自动参选)
   if (p.phase === 'university' && p.age >= 22 && p.uniYear >= 3 && !p.draftDeclared) {
-    log('PHASE', `🎓 大学毕业 → 自动参加选秀 | 大学: ${p.teamName} | OVR: ${p.ovr}`);
+    log('PHASE', `🎓 大学毕业 → 自动参选 (22岁自动资格) | 大学: ${p.teamName} | OVR: ${p.ovr}`);
     declareDraft();
   }
+}
+
+// === NBA选秀参选资格检查 ===
+// 规则1: 年满19岁 + 高中毕业至少满1年 (one-and-done)
+// 规则2: 国际球员年满22岁自动获得参选资格
+// 规则3: 未满19岁但符合特殊规定的可提前申请(需联盟批准)
+function checkDraftEligibility(p) {
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+  const isInternational = p.nationality !== 'USA';
+
+  // 必须在大学阶段才能参选(高中毕业后)
+  if (p.phase !== 'university') {
+    return { eligible: false, reason: '需先完成高中学业' };
+  }
+
+  // 规则1: 年满19岁 + 高中毕业满1年
+  const yearsSinceHS = p.hsGradYear ? gameYear - p.hsGradYear : 0;
+  if (p.age < 19) {
+    return { eligible: false, reason: `未满19岁(${p.age}岁),不符合参选年龄` };
+  }
+  if (yearsSinceHS < 1) {
+    return { eligible: false, reason: `高中毕业未满1年(仅${yearsSinceHS}年)` };
+  }
+
+  // 规则2: 国际球员22岁自动资格; 美国球员19岁+高中毕业1年即可
+  if (isInternational && p.age >= 22) {
+    return { eligible: true, reason: '国际球员22岁自动参选资格', auto: true };
+  }
+
+  // 规则1满足: 19岁+高中毕业1年
+  return { eligible: true, reason: `年满19岁+高中毕业${yearsSinceHS}年,符合参选条件` };
+}
+
+// === 选秀行情评估 ===
+// 基于OVR+潜力+年龄综合评估选秀顺位区间
+function evaluateDraftStock(p) {
+  const ageBonus = p.age <= 19 ? -3 : p.age <= 20 ? -1 : p.age >= 23 ? 2 : 0;
+  const potBonus = p.potential >= 88 ? -2 : p.potential >= 82 ? -1 : 0;
+  const intlBonus = p.nationality !== 'USA' ? -1 : 0;
+  const totalBonus = ageBonus + potBonus + intlBonus;
+
+  let stock, range;
+  if (p.ovr >= 88) {
+    stock = '状元热门';
+    range = `1-5顺位`;
+  } else if (p.ovr >= 82) {
+    stock = '乐透秀';
+    range = `6-14顺位`;
+  } else if (p.ovr >= 75) {
+    stock = '首轮中后段';
+    range = `15-30顺位`;
+  } else if (p.ovr >= 68) {
+    stock = '次轮秀';
+    range = `31-60顺位`;
+  } else if (p.ovr >= 62) {
+    stock = '可能落选';
+    range = `边缘选秀/落选`;
+  } else {
+    stock = '大概率落选';
+    range = `落选→自由球员`;
+  }
+  return { stock, range, bonus: totalBonus };
 }
 
 function checkRetirement(p) {
@@ -1347,64 +1411,94 @@ function chooseDecision(choice) {
 
 function declareDraft() {
   const p = state;
-  p.draftDeclared = true;
-  p.phase = 'pro';
   const country = COUNTRIES.find(c => c.code === p.nationality);
 
-  // === 真实选秀逻辑 (NBA规则) ===
-  // NBA选秀条件:
-  // 1. 年满19岁 + 高中毕业至少1年 (one-and-done规则)
-  // 2. 国际球员: 年满22岁自动获得参选资格, <22需主动声明
-  // 选秀: 2轮共60顺位 (30队×2轮)
-  // 所有国籍球员均可参加NBA选秀, 但低OVR球员可能落选后进入本国联赛
+  // === 参选资格检查 (NBA规则) ===
+  const eligibility = checkDraftEligibility(p);
+  if (!eligibility.eligible) {
+    log('DRAFT', `❌ 参选资格不符: ${eligibility.reason}`);
+    return false;
+  }
 
-  log('DRAFT', `=== 选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential}`);
+  p.draftDeclared = true;
+  p.phase = 'pro';
 
-  // 选秀顺位基于: OVR + 潜力 + 年龄(年轻球员有更高上限)
-  const ageBonus = p.age <= 19 ? -3 : p.age <= 20 ? -1 : p.age >= 23 ? 2 : 0;
-  const potBonus = p.potential >= 90 ? -2 : p.potential >= 85 ? -1 : 0;
-  // 国际球员bonus: 非美国球员有"国际神秘感"加成,球探更感兴趣
-  const intlBonus = p.nationality !== 'USA' ? -1 : 0;
+  log('DRAFT', `=== 选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential} | 资格:${eligibility.reason}`);
 
+  // === 选秀行情评估 ===
+  const stock = evaluateDraftStock(p);
+  log('DRAFT', `选秀行情: ${stock.stock} (${stock.range}) | 修正:年龄${p.age <= 19 ? '+3年轻' : p.age >= 23 ? '-2大龄' : '0'} 潜力${p.potential >= 88 ? '+2' : '0'} 国际${p.nationality !== 'USA' ? '+1' : '0'}`);
+
+  // === 选秀顺位确定 (乐透抽签+战绩倒序) ===
+  // 乐透区(1-14): 抽签概率与战绩负相关,但游戏简化为OVR越高顺位越靠前
+  // 非乐透区(15-30): 按战绩倒序,游戏简化为OVR决定
+  // 次轮(31-60): OVR+潜力综合
   let draftPosition;
   let drafted = true;
-  let draftLeague = 'NBA';  // 默认参选NBA
 
-  if (p.ovr >= 85) {
-    // 乐透秀: 1-14顺位
-    draftPosition = clamp(randInt(1, 14) - Math.floor((p.ovr - 85) / 2) + ageBonus + potBonus + intlBonus, 1, 14);
-    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 潜力修正:${potBonus} 国际加成:${intlBonus} → 预估顺位:${draftPosition}`);
+  if (p.ovr >= 88) {
+    // 乐透区: 1-14顺位 (抽签机制: OVR越高顺位越靠前,但有随机波动)
+    // 简化乐透抽签: 基础顺位 + 随机波动(模拟抽签概率)
+    const basePick = clamp(1 + Math.floor((90 - p.ovr) / 2) + stock.bonus, 1, 14);
+    const lotteryVariance = randInt(-2, 3);  // 抽签波动(模拟概率权重)
+    draftPosition = clamp(basePick + lotteryVariance, 1, 14);
+    log('DRAFT', `乐透抽签: 基础顺位${basePick} + 抽签波动${lotteryVariance} → 第${draftPosition}顺位`);
+  } else if (p.ovr >= 82) {
+    // 乐透末段/首轮初: 6-14顺位
+    draftPosition = clamp(randInt(6, 14) + stock.bonus, 1, 14);
+    log('DRAFT', `乐透区评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
   } else if (p.ovr >= 75) {
-    // 首轮中后段: 15-30顺位
-    draftPosition = clamp(randInt(15, 30) + ageBonus + intlBonus, 15, 30);
-    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 国际加成:${intlBonus} → 预估顺位:${draftPosition}`);
-  } else if (p.ovr >= 65) {
+    // 首轮中后段: 15-30顺位 (战绩倒序,简化为OVR决定)
+    draftPosition = clamp(randInt(15, 30) + stock.bonus, 15, 30);
+    log('DRAFT', `首轮评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
+  } else if (p.ovr >= 68) {
     // 次轮: 31-60顺位
-    draftPosition = clamp(randInt(31, 60) + ageBonus, 31, 60);
-    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
+    draftPosition = clamp(randInt(31, 60) + stock.bonus, 31, 60);
+    log('DRAFT', `次轮评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
   } else {
-    // OVR < 65: 70%概率NBA落选 (低OVR难获NBA青睐)
-    if (Math.random() < 0.7) {
+    // OVR < 68: 高概率落选
+    // 落选概率: OVR越低概率越高 (62-67: 50%, <62: 80%)
+    const undraftedProb = p.ovr >= 62 ? 0.5 : 0.8;
+    if (Math.random() < undraftedProb) {
       drafted = false;
-      log('DRAFT', `NBA选秀评估: OVR=${p.ovr} < 65, NBA落选概率高`);
+      log('DRAFT', `落选评估: OVR=${p.ovr} < 68, 落选概率${Math.round(undraftedProb*100)}% → 落选`);
     } else {
-      draftPosition = randInt(45, 60);
-      log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 勉强入选 → 预估顺位:${draftPosition}`);
+      draftPosition = randInt(50, 60);
+      log('DRAFT', `边缘入选: OVR=${p.ovr} 勉强入选 → 第${draftPosition}顺位`);
     }
   }
-  
-  if (!drafted) {
-    // NBA落选 → 检查是否能进入本国联赛
-    // OVR≥60: 可签约本国联赛球队(CBA/EuroLeague等)
-    // OVR<60: 成为自由球员
-    p.draftPick = null;
 
+  // === 落选处理: 自由球员签约 ===
+  if (!drafted) {
+    p.draftPick = null;
+    log('DRAFT', `❌ NBA落选 → 进入自由球员市场`);
+
+    // 落选秀可签约NBA球队(双向合同/Exhibit 10)或本国联赛
+    // OVR≥65: 30%概率获NBA双向合同
+    if (p.ovr >= 65 && Math.random() < 0.3) {
+      const nbaTeams = PRO_TEAMS.USA;
+      const draftTeam = pick(nbaTeams);
+      p.salary = randInt(50000, 100000);  // 双向合同底薪
+      p.teamName = draftTeam.name;
+      p.teamLogo = draftTeam.logo;
+      p.teamLogoCls = draftTeam.cls;
+      p.league = draftTeam.league;
+      p.team = draftTeam;
+      p.career.push({
+        age: p.age, event: '落选·NBA双向合同', team: draftTeam.name, league: draftTeam.league,
+        draftPick: '落选(双向合同)'
+      });
+      log('DRAFT', `✅ 落选后签约NBA双向合同: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
+      p.fame = clamp(p.fame + 1, 0, 100);
+      return true;
+    }
+
+    // OVR≥60: 签约本国联赛
     if (p.ovr >= 60 && p.nationality !== 'USA') {
-      // 签约本国联赛
       const homeTeams = PRO_TEAMS[p.nationality];
       if (homeTeams && homeTeams.length > 0) {
         const draftTeam = pick(homeTeams);
-        p.salary = randInt(100000, 300000);  // 本国联赛底薪
+        p.salary = randInt(100000, 300000);
         p.teamName = draftTeam.name;
         p.teamLogo = draftTeam.logo;
         p.teamLogoCls = draftTeam.cls;
@@ -1414,13 +1508,13 @@ function declareDraft() {
           age: p.age, event: 'NBA落选·签约本国联赛', team: draftTeam.name, league: draftTeam.league,
           draftPick: 'NBA落选'
         });
-        log('DRAFT', `❌ NBA落选 → ✅ 签约${country.proName}: ${draftTeam.name} | OVR=${p.ovr} | 起薪${formatSalary(p.salary)}`);
+        log('DRAFT', `✅ 落选后签约${country.proName}: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
         p.fame = clamp(p.fame + 2, 0, 100);
-        return;
+        return true;
       }
     }
 
-    // OVR<60或美国球员落选: 自由球员
+    // OVR<60或无球队签约: 自由球员
     p.salary = 50000;
     p.teamName = '自由球员';
     p.teamLogo = 'FA';
@@ -1431,18 +1525,18 @@ function declareDraft() {
       age: p.age, event: '落选自由球员', team: '自由球员', league: '自由联赛',
       draftPick: '落选'
     });
-    log('DRAFT', `❌ 选秀落选 | OVR=${p.ovr} | 成为自由球员 | 起薪${formatSalary(p.salary)}`);
-    return;
+    log('DRAFT', `❌ 落选→自由球员 | OVR=${p.ovr} | 起薪${formatSalary(p.salary)}`);
+    return true;
   }
 
+  // === 被选中处理 ===
   const round = draftPosition <= 30 ? 1 : 2;
   const pickNum = draftPosition <= 30 ? draftPosition : draftPosition - 30;
 
   // 选秀球队: NBA选秀所有球队都来自NBA联盟(30支)
-  // 国际球员被NBA选中后去NBA打球, 不限于本国联赛
-  const proTeams = PRO_TEAMS.USA;  // NBA球队池
+  const proTeams = PRO_TEAMS.USA;
   const draftTeam = pick(proTeams);
-  
+
   p.draftPick = {
     round: round,
     pick: pickNum,
@@ -1452,20 +1546,20 @@ function declareDraft() {
     cls: draftTeam.cls,
     league: draftTeam.league
   };
-  
-  // 薪资: 基于真实NBA新秀合同
-  // 乐透秀(前14): ~800万-1200万美元/4年 → 约200-300万/年
+
+  // 薪资: 基于真实NBA新秀合同(2023版新秀工资表)
+  // 乐透秀(前14): ~800万-1200万/4年 → 约200-300万/年
   // 首轮其他(15-30): ~200-400万/4年 → 约50-100万/年
   // 次轮: ~100-200万/年 (非保障)
   let baseSalary;
   if (draftPosition <= 5) {
-    baseSalary = randInt(2500000, 4000000);  // 前5顺位
+    baseSalary = randInt(2500000, 4000000);  // 前5顺位(状元~底薪)
   } else if (draftPosition <= 14) {
     baseSalary = randInt(1500000, 2500000);  // 乐透区
   } else if (draftPosition <= 30) {
     baseSalary = randInt(800000, 1500000);   // 首轮其他
   } else {
-    baseSalary = randInt(100000, 500000);     // 次轮
+    baseSalary = randInt(100000, 500000);     // 次轮(非保障)
   }
   p.salary = baseSalary;
   p.teamName = draftTeam.name;
@@ -1473,19 +1567,20 @@ function declareDraft() {
   p.teamLogoCls = draftTeam.cls;
   p.league = draftTeam.league;
   p.team = draftTeam;
-  
+
   const pickLabel = draftPosition <= 14 ? '乐透秀' : round === 1 ? '首轮秀' : '次轮秀';
   p.career.push({
     age: p.age, event: pickLabel,
     team: draftTeam.name, league: draftTeam.league,
     draftPick: `第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`
   });
-  
+
   log('DRAFT', `📋 选秀结果: ${pickLabel} | 第${round}轮第${pickNum}顺位(总第${draftPosition}) | 球队:${draftTeam.name}(${draftTeam.league}) | 起薪:${formatSalary(p.salary)} | OVR:${p.ovr}`, { round, pickNum, overall: draftPosition, team: draftTeam.name, salary: p.salary });
-  
+
   // 选秀后名气提升
   const fameBoost = draftPosition <= 14 ? 15 : draftPosition <= 30 ? 8 : 3;
   p.fame = clamp(p.fame + fameBoost, 0, 100);
+  return true;
 }
 
 function getTransferChoices() {
@@ -1608,14 +1703,16 @@ function getYearChoices() {
       });
     });
     
-    // Draft option: NBA one-and-done rule (19岁+高中毕业1年即可参选)
-    // 高中18岁毕业 → 19岁(大二)起可声明参选
-    if (p.age >= 19 && !p.draftDeclared) {
-      const draftStock = p.ovr >= 90 ? '状元热门' : p.ovr >= 85 ? '乐透秀' : p.ovr >= 75 ? '首轮秀' : p.ovr >= 65 ? '次轮秀' : '可能落选';
+    // Draft option: NBA参选资格检查
+    // 规则: 年满19岁 + 高中毕业满1年 (one-and-done)
+    // 国际球员22岁自动获得参选资格
+    const eligibility = checkDraftEligibility(p);
+    if (eligibility.eligible && !p.draftDeclared) {
+      const stock = evaluateDraftStock(p);
       choices.push({
         type: 'draft',
         title: '参加选秀',
-        desc: `当前选秀行情：${draftStock}`,
+        desc: `选秀行情：${stock.stock} (${stock.range})`,
         tag: '选秀'
       });
       choices.push({
@@ -1623,6 +1720,14 @@ function getYearChoices() {
         title: '留守大学',
         desc: '再打一年大学联赛，提升选秀排名',
         tag: '观望'
+      });
+    } else if (!eligibility.eligible && p.phase === 'university' && p.age < 22) {
+      // 未达参选资格,显示原因
+      choices.push({
+        type: 'stay',
+        title: '加练提升',
+        desc: `${eligibility.reason}`,
+        tag: '训练'
       });
     } else {
       choices.push({
@@ -2203,17 +2308,19 @@ const SIM_TESTS = {
 
   // ===== 测试2: 选秀逻辑 (不同OVR/年龄/潜力组合) =====
   testDraftLogic() {
-    this.results.push('\n📋 测试2: 选秀逻辑 (多场景)');
+    this.results.push('\n📋 测试2: 选秀逻辑 (NBA规则)');
     const scenarios = [
       { ovr: 92, potential: 95, age: 19, desc: '状元级(高OVR+年轻+高潜力)' },
       { ovr: 88, potential: 90, age: 19, desc: '乐透秀(高OVR+年轻)' },
       { ovr: 85, potential: 88, age: 20, desc: '乐透秀(高OVR)' },
-      { ovr: 80, potential: 85, age: 21, desc: '首轮中段' },
+      { ovr: 82, potential: 85, age: 21, desc: '乐透末段' },
+      { ovr: 78, potential: 82, age: 20, desc: '首轮中段' },
       { ovr: 75, potential: 80, age: 20, desc: '首轮末段' },
       { ovr: 70, potential: 75, age: 21, desc: '次轮秀' },
-      { ovr: 65, potential: 70, age: 22, desc: '次轮末段' },
-      { ovr: 60, potential: 65, age: 22, desc: '低OVR(可能落选)' },
-      { ovr: 55, potential: 60, age: 22, desc: '极低OVR(高概率落选)' },
+      { ovr: 68, potential: 72, age: 22, desc: '次轮末段' },
+      { ovr: 65, potential: 70, age: 22, desc: '边缘(可能落选)' },
+      { ovr: 60, potential: 65, age: 22, desc: '低OVR(高概率落选)' },
+      { ovr: 55, potential: 60, age: 22, desc: '极低OVR(落选→自由球员)' },
     ];
 
     const draftResults = [];
@@ -2228,6 +2335,7 @@ const SIM_TESTS = {
       state.potential = s.potential;
       state.age = s.age;
       state.phase = 'university';
+      state.hsGradYear = gameYear - 2;  // 模拟高中毕业2年
 
       declareDraft();
 
@@ -2241,19 +2349,22 @@ const SIM_TESTS = {
       };
       draftResults.push(result);
 
-      // 验证选秀结果符合预期
-      if (s.ovr >= 85) {
+      // 验证选秀结果符合预期 (基于新OVR阈值)
+      if (s.ovr >= 88) {
         this.assert(state.draftPick && state.draftPick.overall <= 14,
           `OVR${s.ovr}应进乐透(≤14顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
+      } else if (s.ovr >= 82) {
+        this.assert(state.draftPick && state.draftPick.overall <= 14,
+          `OVR${s.ovr}应进乐透区(≤14顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
       } else if (s.ovr >= 75) {
         this.assert(state.draftPick && state.draftPick.overall <= 30,
           `OVR${s.ovr}应进首轮(≤30顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
-      } else if (s.ovr >= 65) {
+      } else if (s.ovr >= 68) {
         this.assert(state.draftPick && state.draftPick.overall <= 60,
           `OVR${s.ovr}应被选中(≤60顺位)`, `(实际=${state.draftPick?state.draftPick.overall:'落选'})`);
       } else {
-        // OVR<65可能落选,两种结果都合理
-        this.assert(true, `OVR${s.ovr}选秀结果: ${state.draftPick?'第'+state.draftPick.overall+'顺位':'落选(自由球员)'}`);
+        // OVR<68可能落选,两种结果都合理
+        this.assert(true, `OVR${s.ovr}选秀结果: ${state.draftPick?'第'+state.draftPick.overall+'顺位':'落选'}`);
       }
 
       // 验证薪资符合新秀合同
