@@ -396,6 +396,356 @@
     .pos-grid { grid-template-columns: repeat(3, 1fr); }
     .mode-grid { grid-template-columns: 1fr; }
   }
+
+  /* ========== 新界面样式 ========== */
+
+  /* 顶部：球员信息卡 (足一把风格) */
+  .player-card {
+    background: linear-gradient(180deg, #131828 0%, #101526 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    margin-bottom: 10px;
+  }
+  .pc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .pc-top .ovr-badge {
+    width: 84px; height: 84px; border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 2px 14px rgba(255,107,53,0.18) inset, 0 4px 14px rgba(0,0,0,0.4);
+    border: 1.5px solid rgba(255,107,53,0.35);
+    margin: 0; flex-shrink: 0;
+  }
+  .ovr-badge .ovr {
+    font-size: 34px; font-weight: 900; line-height: 1;
+    background: linear-gradient(180deg, #ffd09e 0%, #ff7043 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .ovr-badge .ovr-label { font-size: 10px; letter-spacing: 2px; color: #b8a98a; margin-top: 2px; }
+  .pc-player { flex: 1; min-width: 0; }
+  .pc-name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .pc-flag { font-size: 18px; line-height: 1; }
+  .pc-name { font-size: 19px; font-weight: 800; color: #fff; }
+  .pc-number { font-size: 14px; font-weight: 700; color: var(--accent); padding: 1px 7px; border-radius: 5px; background: rgba(255,107,53,0.15); }
+  .pc-pos { font-size: 12px; font-weight: 800; color: #b9c2d8; background: rgba(255,255,255,0.06); padding: 1px 7px; border-radius: 5px; }
+  .pc-team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .pc-team-logo { width: 22px; height: 22px; }
+  .pc-team-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .pc-league { font-size: 11px; color: var(--text-dim); margin-left: 2px; }
+  .pc-meta-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-dim); }
+  .pc-meta-row span { font-weight: 600; }
+
+  /* 四项数据 */
+  .pc-four-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin: 12px 0 10px;
+  }
+  .pc-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 4px; border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .pcs-icon { font-size: 14px; }
+  .pcs-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
+  .pcs-lab { font-size: 10.5px; color: var(--text-dim); font-weight: 600; }
+
+  /* 关系/清白/名气/财富条 */
+  .pc-bars { display: flex; flex-direction: column; gap: 6px; }
+  .pc-bar { display: grid; grid-template-columns: 44px 1fr 34px; align-items: center; gap: 8px; }
+  .pc-bar-wealth { grid-template-columns: 58px 1fr; }
+  .pcb-lab { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+  .pcb-track {
+    height: 7px; background: rgba(255,255,255,0.06);
+    border-radius: 10px; overflow: hidden;
+  }
+  .pcb-fill { height: 100%; border-radius: 10px; transition: width .3s; }
+  .pcb-fill.pcb-blue { background: linear-gradient(90deg, #2e6cd6, #5d90ff); }
+  .pcb-fill.pcb-green { background: linear-gradient(90deg, #22a06b, #4ecfa0); }
+  .pcb-fill.pcb-gold { background: linear-gradient(90deg, #c28a2e, #ffd26a); }
+  .pcb-val { font-size: 11px; font-weight: 800; color: #fff; text-align: right; }
+  .pcb-wealth {
+    font-size: 12px; font-weight: 800; color: #ffce74;
+    background: rgba(255,206,116,0.1);
+    padding: 3px 9px; border-radius: 6px; text-align: right;
+  }
+
+  /* 重开入口 */
+  .pc-restart-row { margin-top: 10px; }
+  .pc-restart {
+    width: 100%; display: flex; align-items: center; gap: 6px;
+    justify-content: flex-start; font-size: 12px;
+    padding: 8px 12px; border-radius: 10px;
+    background: linear-gradient(180deg, rgba(34,195,107,0.18), rgba(34,195,107,0.04));
+    border: 1px solid rgba(34,195,107,0.25); color: #81e4b5;
+    font-weight: 700;
+  }
+  .pc-restart .pcr-icon { font-size: 13px; }
+  .pc-restart:hover { filter: brightness(1.1); }
+
+  /* 中间区域(横幅/荣誉/时间线) */
+  .middle-section {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .middle-section:empty { margin: 0; }
+
+  /* 生涯时间线表格 */
+  .career-timeline {
+    background: linear-gradient(180deg, #131828, #101526);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 8px;
+  }
+  .ct-header-row, .ct-row {
+    display: grid; align-items: center;
+    grid-template-columns: 56px 1fr 50px 42px 42px 42px;
+    gap: 6px; padding: 7px 6px;
+  }
+  .ct-header-row {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: 10.5px; color: var(--text-dim); font-weight: 700;
+    text-align: center; margin-bottom: 4px;
+  }
+  .ct-row {
+    border-radius: 8px; font-size: 12px;
+  }
+  .ct-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .ct-age { text-align: center; font-weight: 800; color: #fff; font-size: 13px; }
+  .ct-age-ovr {
+    background: linear-gradient(135deg, #2155b8, #1a3c83);
+    border-radius: 6px; padding: 4px 2px;
+    box-shadow: 0 2px 6px rgba(33,85,184,0.3);
+  }
+  .ct-team { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .ct-team-logo { width: 22px; height: 22px; flex-shrink: 0; }
+  .ct-team > span:last-child {
+    color: #d9dfe9; font-weight: 600; font-size: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ct-ovr { text-align: center; }
+  .ct-ovr-val {
+    font-weight: 900; color: #ff9e67; font-size: 13px;
+    background: rgba(255,107,53,0.1); border-radius: 5px; padding: 2px 4px;
+  }
+  .ct-col { text-align: center; font-weight: 700; color: #d9dfe9; font-size: 12px; }
+  .ct-tag {
+    font-size: 9.5px; font-weight: 800; color: #ff9e67;
+    background: rgba(255,107,53,0.1);
+    padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  /* 事件卡片 — 放在最底部 */
+  .event-card-bottom {
+    margin-top: auto;
+    background: linear-gradient(180deg, #141b30, #0f1428);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 14px 12px 12px;
+    box-shadow: 0 -10px 28px rgba(0,0,0,0.45);
+  }
+  .ev-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .ev-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(255,107,53,0.15); color: #ff8c5e;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .ev-title { font-size: 16px; font-weight: 800; color: #fff; }
+  .ev-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; margin: 2px 4px 10px; }
+  .ev-choices { display: flex; flex-direction: column; gap: 8px; }
+
+  /* 主屏幕三段流式布局: 顶栏卡 - 中间滚动 - 事件卡 固定 */
+  .screen-flow {
+    display: flex; flex-direction: column; min-height: calc(100vh - 32px);
+    height: 100%;
+  }
+  .screen-flow > .middle-section {
+    overflow-y: auto; flex: 1;
+  }
+
+  /* ========== 三步骤 开始界面 ========== */
+  #screen-setup {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .setup-steps { display: flex; justify-content: center; padding: 4px 0 2px; }
+  .step-dots { display: flex; align-items: center; gap: 6px; }
+  .step-dots .dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    transition: all .25s;
+  }
+  .step-dots .dot.active {
+    background: linear-gradient(135deg, #ff7043, #f7931e);
+    color: #fff; border-color: rgba(255,156,100,0.5);
+    box-shadow: 0 3px 14px rgba(255,112,67,0.35);
+  }
+  .step-line {
+    display: inline-block; width: 46px; height: 2px;
+    background: rgba(255,255,255,0.12);
+    position: relative; top: -1px;
+  }
+
+  .setup-panel { display: none; animation: fadeSlide .28s ease; }
+  .setup-panel.active { display: flex; flex-direction: column; gap: 14px; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .setup-title-lg {
+    font-size: 18px; font-weight: 800; color: #fff;
+    padding-left: 10px; border-left: 4px solid var(--accent);
+  }
+
+  /* 步骤1 模式选择 */
+  .step-mode-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .mode-btn {
+    display: flex !important; flex-direction: column; align-items: center; gap: 6px;
+    padding: 18px 10px;
+  }
+  .mode-ico { font-size: 26px; }
+  .mode-name { font-size: 16px; font-weight: 900; }
+  .mode-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; text-align: center; }
+
+  .step-next, .step-back {
+    width: 100%; display: flex; justify-content: center;
+    padding: 12px 14px; font-weight: 800; font-size: 14px;
+  }
+  .step-next[disabled] {
+    opacity: .45; cursor: not-allowed; filter: grayscale(.5);
+  }
+  .step-nav-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .step-back {
+    background: rgba(255,255,255,0.05); color: var(--text-dim);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  /* 步骤2 国籍选择 (国旗加大) */
+  .step-country-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  @media (max-width: 400px) {
+    .step-country-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  .step-country-btn {
+    display: flex !important; flex-direction: column; align-items: center; gap: 4px;
+    padding: 16px 6px;
+  }
+  .flag-lg {
+    font-size: 42px; line-height: 1; margin-bottom: 2px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+  }
+  .flag-lg-img {
+    width: 72px; height: 54px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    margin-bottom: 6px;
+  }
+  .step-country-btn .c-name { font-size: 13px; font-weight: 800; }
+  .step-country-btn .c-info { font-size: 10.5px; color: var(--text-dim); }
+
+  /* 步骤3 球场+球衣 */
+  .sub-title {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 800; color: #d9dfe9;
+    margin-bottom: 8px;
+  }
+  .st-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: linear-gradient(135deg, #ff7043, #f7931e);
+    box-shadow: 0 0 0 3px rgba(255,112,67,0.15);
+  }
+  .court-select-wrap {
+    background: linear-gradient(180deg, #131828, #101526);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 12px;
+  }
+  .court-svg-wrap {
+    width: 100%; border-radius: 10px; overflow: hidden;
+    background: #1a1207;
+  }
+  .court-svg-wrap svg { display: block; width: 100%; height: auto; }
+  /* 球场位置点样式 */
+  .pos-dots .pos-dot { cursor: pointer; }
+  .pd-bg {
+    fill: rgba(255,255,255,0.06);
+    stroke: rgba(255,255,255,0.3); stroke-width: 2;
+    transition: all .2s;
+  }
+  .pd-txt {
+    text-anchor: middle; font-size: 15px; font-weight: 900; fill: #fff;
+    font-family: Impact, sans-serif;
+  }
+  .pd-name {
+    text-anchor: middle; font-size: 9px; fill: rgba(255,255,255,0.85);
+    font-weight: 600;
+  }
+  .pos-dot:hover .pd-bg {
+    fill: rgba(255,107,53,0.25);
+    stroke: rgba(255,107,53,0.65);
+  }
+  .pos-dot.active .pd-bg {
+    fill: rgba(255,107,53,0.4);
+    stroke: #ff7043; stroke-width: 3;
+    filter: drop-shadow(0 0 8px rgba(255,112,67,0.6));
+  }
+  .pos-dot.active .pd-txt { fill: #fff; }
+  .pos-dot.active .pd-name { fill: #ffe7c9; }
+
+  /* 球衣选择 */
+  .jersey-name-wrap {
+    background: linear-gradient(180deg, #131828, #101526);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 12px;
+  }
+  .jersey-row {
+    display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start;
+  }
+  @media (max-width: 420px) {
+    .jersey-row { grid-template-columns: 110px 1fr; }
+  }
+  .jersey-preview {
+    width: 100%; aspect-ratio: 180/200;
+    background: radial-gradient(ellipse at 50% 30%, rgba(45,96,209,0.15), transparent 70%);
+    border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,0.1);
+  }
+  .jersey-preview svg { width: 100%; height: 100%; }
+  .jersey-inputs { display: flex; flex-direction: column; gap: 12px; }
+  .ji-row { display: flex; flex-direction: column; gap: 6px; }
+  .ji-row label { font-size: 11.5px; font-weight: 800; color: var(--text-dim); }
+  .num-picker { display: grid; grid-template-columns: 40px 1fr 40px; gap: 6px; align-items: center; }
+  .num-btn {
+    padding: 6px 0; display: inline-flex; justify-content: center;
+    background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);
+    font-size: 20px; font-weight: 800;
+  }
+  .num-picker input {
+    width: 100%; padding: 7px 10px; text-align: center;
+    font-size: 17px; font-weight: 900;
+  }
+  .num-quick {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px;
+  }
+  .num-chip {
+    padding: 5px 0; border-radius: 7px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04); color: #d9dfe9;
+    font-size: 12px; font-weight: 800;
+    cursor: pointer; transition: all .15s;
+  }
+  .num-chip:hover {
+    background: rgba(255,107,53,0.15);
+    border-color: rgba(255,107,53,0.45); color: #fff;
+  }
+  .ji-row input[type="text"] { width: 100%; padding: 8px 10px; }
 </style>
 </head>
 <body>
@@ -527,26 +877,41 @@ const HIGH_SCHOOLS = {
 
 const UNIVERSITIES = {
   CHN: [
-    { name: '清华大学', logo: '清华', cls: 'logo-red', conf: 'CUBA' },
-    { name: '北京大学', logo: '北大', cls: 'logo-blue', conf: 'CUBA' },
-    { name: '中国矿业大学', logo: '矿大', cls: 'logo-navy', conf: 'CUBA' },
-    { name: '山西大学', logo: '山大', cls: 'logo-green', conf: 'CUBA' },
+    { name: '太原理工大学', logo: '太理', cls: 'logo-red', conf: 'CUBA' },
+    { name: '清华大学', logo: '清华', cls: 'logo-purple', conf: 'CUBA' },
+    { name: '湖南工业大学', logo: '湖工', cls: 'logo-orange', conf: 'CUBA' },
+    { name: '广州商学院', logo: '广商', cls: 'logo-blue', conf: 'CUBA' },
+    { name: '北京大学', logo: '北大', cls: 'logo-red', conf: 'CUBA' },
+    { name: '宁波大学', logo: '宁大', cls: 'logo-teal', conf: 'CUBA' },
+    { name: '北京体育大学', logo: '北体', cls: 'logo-crimson', conf: 'CUBA' },
+    { name: '华中科技大学', logo: '华科', cls: 'logo-green', conf: 'CUBA' },
     { name: '华侨大学', logo: '华大', cls: 'logo-gold', conf: 'CUBA' },
-    { name: '中南大学', logo: '中南', cls: 'logo-orange', conf: 'CUBA' },
-    { name: '湖南大学', logo: '湖大', cls: 'logo-crimson', conf: 'CUBA' },
-    { name: '同济大学', logo: '同济', cls: 'logo-purple', conf: 'CUBA' }
+    { name: '中国矿业大学', logo: '矿大', cls: 'logo-navy', conf: 'CUBA' },
+    { name: '上海交通大学', logo: '上交', cls: 'logo-steel', conf: 'CUBA' },
+    { name: '厦门大学', logo: '厦大', cls: 'logo-royal', conf: 'CUBA' }
   ],
+  // 2026-27 NCAA D1 季前排名 (Andy Katz Power 44, NBA选秀退选截止后)
   USA: [
-    { name: 'Duke University', logo: 'DUK', cls: 'logo-blue', conf: 'NBA' },
-    { name: 'University of Kentucky', logo: 'UK', cls: 'logo-red', conf: 'NBA' },
-    { name: 'University of North Carolina', logo: 'UNC', cls: 'logo-navy', conf: 'NBA' },
-    { name: 'University of Kansas', logo: 'KU', cls: 'logo-blue', conf: 'NBA' },
-    { name: 'Louisville', logo: 'LOU', cls: 'logo-red', conf: 'NBA' },
-    { name: 'Michigan State', logo: 'MSU', cls: 'logo-green', conf: 'NBA' },
-    { name: 'Indiana University', logo: 'IND', cls: 'logo-crimson', conf: 'NBA' },
-    { name: 'Arizona', logo: 'AZ', cls: 'logo-navy', conf: 'NBA' },
-    { name: 'Villanova', logo: 'VIL', cls: 'logo-blue', conf: 'NBA' },
-    { name: 'Gonzaga', logo: 'GON', cls: 'logo-red', conf: 'NBA' }
+    { name: 'University of Florida', logo: 'UF', cls: 'logo-blue', conf: 'NCAA D1' },
+    { name: 'Duke University', logo: 'DUK', cls: 'logo-blue', conf: 'NCAA D1' },
+    { name: 'University of Michigan', logo: 'MICH', cls: 'logo-navy', conf: 'NCAA D1' },
+    { name: 'University of Illinois', logo: 'ILL', cls: 'logo-blue', conf: 'NCAA D1' },
+    { name: 'University of Tennessee', logo: 'UT', cls: 'logo-orange', conf: 'NCAA D1' },
+    { name: 'University of Connecticut', logo: 'UCONN', cls: 'logo-navy', conf: 'NCAA D1' },
+    { name: 'Michigan State University', logo: 'MSU', cls: 'logo-green', conf: 'NCAA D1' },
+    { name: 'University of Texas', logo: 'UTX', cls: 'logo-crimson', conf: 'NCAA D1' },
+    { name: 'Vanderbilt University', logo: 'VANDY', cls: 'logo-gold', conf: 'NCAA D1' },
+    { name: 'University of Louisville', logo: 'LOU', cls: 'logo-crimson', conf: 'NCAA D1' },
+    { name: 'University of Arkansas', logo: 'ARK', cls: 'logo-red', conf: 'NCAA D1' },
+    { name: 'Arizona', logo: 'AZ', cls: 'logo-red', conf: 'NCAA D1' },
+    { name: 'University of Virginia', logo: 'UVA', cls: 'logo-navy', conf: 'NCAA D1' },
+    { name: 'University of Kansas', logo: 'KU', cls: 'logo-blue', conf: 'NCAA D1' },
+    { name: 'University of Houston', logo: 'HOU', cls: 'logo-red', conf: 'NCAA D1' },
+    { name: 'University of Alabama', logo: 'BAMA', cls: 'logo-crimson', conf: 'NCAA D1' },
+    { name: 'Purdue University', logo: 'PUR', cls: 'logo-gold', conf: 'NCAA D1' },
+    { name: 'Gonzaga', logo: 'GON', cls: 'logo-red', conf: 'NCAA D1' },
+    { name: 'Indiana University', logo: 'IU', cls: 'logo-crimson', conf: 'NCAA D1' },
+    { name: 'University of North Carolina', logo: 'UNC', cls: 'logo-navy', conf: 'NCAA D1' }
   ],
   ESP: [
     { name: 'Universidad Complutense', logo: 'UCM', cls: 'logo-navy', conf: 'ACB' },
@@ -958,17 +1323,27 @@ const TEAM_LOGO_URLS = {
   'AEK雅典': 'https://upload.wikimedia.org/wikipedia/en/2/2e/AEK_Athens_F.C._logo.svg',
   '悉尼国王': 'https://upload.wikimedia.org/wikipedia/en/9/9e/Sydney_Kings_logo.svg',
   '珀斯野猫': 'https://upload.wikimedia.org/wikipedia/en/9/93/Perth_Wildcats_logo.svg',
-  // === NCAA大学球队 (Wikipedia Commons) ===
+  // === NCAA大学球队 (Wikipedia Commons) - 2026-27 季前排名 ===
+  'University of Florida': 'https://commons.wikimedia.org/wiki/Special:FilePath/Florida_Gators_logo.svg',
   'Duke University': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Duke_Blue_Devils_logo.svg',
-  'University of Kentucky': 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Kentucky_Wildcats_logo.svg',
-  'University of North Carolina': 'https://upload.wikimedia.org/wikipedia/commons/d/d7/North_Carolina_Tar_Heels_logo.svg',
+  'University of Michigan': 'https://commons.wikimedia.org/wiki/Special:FilePath/Michigan_Wolverines_logo.svg',
+  'University of Illinois': 'https://commons.wikimedia.org/wiki/Special:FilePath/Illinois_Fighting_Illini_logo.svg',
+  'University of Tennessee': 'https://commons.wikimedia.org/wiki/Special:FilePath/Tennessee_Volunteers_logo.svg',
+  'University of Connecticut': 'https://commons.wikimedia.org/wiki/Special:FilePath/Connecticut_Huskies_logo.svg',
+  'Michigan State University': 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Michigan_State_Spartans_alternate_logo.svg',
+  'University of Texas': 'https://commons.wikimedia.org/wiki/Special:FilePath/Texas_Longhorns_logo.svg',
+  'Vanderbilt University': 'https://commons.wikimedia.org/wiki/Special:FilePath/Vanderbilt_Commodores_logo.svg',
+  'University of Louisville': 'https://commons.wikimedia.org/wiki/Special:FilePath/Louisville_Cardinals_logo.svg',
+  'University of Arkansas': 'https://commons.wikimedia.org/wiki/Special:FilePath/Arkansas_Razorbacks_logo.svg',
   'Arizona': 'https://upload.wikimedia.org/wikipedia/commons/3/34/Arizona_Wildcats_logo.svg',
-  'Michigan State': 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Michigan_State_Spartans_alternate_logo.svg',
+  'University of Virginia': 'https://commons.wikimedia.org/wiki/Special:FilePath/Virginia_Cavaliers_logo.svg',
   'University of Kansas': 'https://commons.wikimedia.org/wiki/Special:FilePath/Kansas_Jayhawks_logo.svg',
+  'University of Houston': 'https://commons.wikimedia.org/wiki/Special:FilePath/Houston_Cougars_logo.svg',
+  'University of Alabama': 'https://commons.wikimedia.org/wiki/Special:FilePath/Alabama_Crimson_Tide_logo.svg',
+  'Purdue University': 'https://commons.wikimedia.org/wiki/Special:FilePath/Purdue_Boilermakers_logo.svg',
   'Gonzaga': 'https://commons.wikimedia.org/wiki/Special:FilePath/Gonzaga_Bulldogs_logo.svg',
-  'Louisville': 'https://commons.wikimedia.org/wiki/Special:FilePath/Louisville_Cardinals_logo.svg',
   'Indiana University': 'https://commons.wikimedia.org/wiki/Special:FilePath/Indiana_Hoosiers_logo.svg',
-  'Villanova': 'https://commons.wikimedia.org/wiki/Special:FilePath/Villanova_Wildcats_logo.svg',
+  'University of North Carolina': 'https://upload.wikimedia.org/wikipedia/commons/d/d7/North_Carolina_Tar_Heels_logo.svg',
   // === US高中篮球名校 ===
   'Oak Hill Academy': 'https://upload.wikimedia.org/wikipedia/commons/5/54/Oak_Hill_Academy_athletics_monogram.png',
   'Montverde Academy': 'https://commons.wikimedia.org/wiki/Special:FilePath/Montverde_Academy_athletics_logo.png',
@@ -979,10 +1354,19 @@ const TEAM_LOGO_URLS = {
   '北京首钢': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Ducks_logo.svg',
   '新疆伊力特': 'https://commons.wikimedia.org/wiki/Special:FilePath/Xinjiang_Flying_Tigers_logo.svg',
   '上海久事': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanghai_Sharks_logo.svg',
-  // === 中国大学 (CUBA) ===
+  // === 中国大学 (CUBAL) - 2025-26 最新排名 ===
   '清华大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Tsinghua_University_logo.svg',
   '北京大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Peking_University_logo.svg',
   '同济大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Tongji_University_logo.svg',
+  '太原理工大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Taiyuan_University_of_Technology_logo.svg',
+  '宁波大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Ningbo_University_logo.svg',
+  '北京体育大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Sport_University_logo.svg',
+  '华中科技大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Huazhong_University_of_Science_and_Technology_logo.svg',
+  '上海交通大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanghai_Jiao_Tong_University_logo.svg',
+  '厦门大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Xiamen_University_logo.svg',
+  '华侨大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Huaqiao_Univ_logo.png',
+  '中国矿业大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/China_University_of_Mining_and_Technology_logo.svg',
+  '湖南工业大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Hunan_University_of_Technology_logo.svg',
   // === 日本大学 ===
   '早稲田大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Waseda_University_logo.svg',
   // === 韩国大学 ===
@@ -1266,6 +1650,29 @@ function advanceYear() {
   // 记录最近3年出场数 (用于续约判定)
   p.recentGames.push(gamesPlayed);
   if (p.recentGames.length > 3) p.recentGames.shift();
+  
+  // 记录OVR和数据历史 (时间线展示)
+  if (!p._ovrLog) p._ovrLog = [];
+  p._ovrLog.push({
+    age: p.age,
+    ovr: p.ovr,
+    teamName: p.teamName,
+    teamLogo: p.teamLogo,
+    teamLogoCls: p.teamLogoCls,
+    stats: { ...p.yearStats }
+  });
+  if (p._ovrLog.length > 10) p._ovrLog.shift();
+  
+  // 当前career项补充ovr/stats (用于时间线表格)
+  if (p.career.length > 0) {
+    const last = p.career[p.career.length - 1];
+    if (last.age === p.age) {
+      last.ovr = p.ovr;
+      last.teamName = p.teamName;
+      last.teamLogo = p.teamLogo;
+      last.stats = { ...p.yearStats };
+    }
+  }
   
   p.stats.gp += p.yearStats.gp;
   p.stats.pts += p.yearStats.pts;
@@ -2165,63 +2572,183 @@ function renderSetupScreen() {
         <h1>🏀 篮球生涯模拟器</h1>
         <p>从青训到传奇，每个决定都算数</p>
       </div>
+      <div class="setup-steps">
+        <div class="step-dots">
+          <span class="dot active" data-step="1">1</span>
+          <span class="step-line"></span>
+          <span class="dot" data-step="2">2</span>
+          <span class="step-line"></span>
+          <span class="dot" data-step="3">3</span>
+        </div>
+      </div>
       
-      <div class="setup-section">
-        <div class="setup-title"><span class="step">1</span>选择游戏节奏</div>
-        <div class="mode-grid">
+      <!-- 步骤1: 模式选择 -->
+      <div class="setup-panel active" id="step-mode">
+        <div class="setup-title-lg">第一步 · 选择游戏节奏</div>
+        <div class="mode-grid step-mode-grid">
           <button class="btn mode-btn" data-mode="immerse">
+            <span class="mode-ico">🏆</span>
             <span class="mode-name">沉浸</span>
-            <span class="mode-desc">每年一次决策<br>最完整的生涯</span>
+            <span class="mode-desc">每年一次决策<br>最完整的生涯体验</span>
           </button>
           <button class="btn mode-btn active" data-mode="standard">
+            <span class="mode-ico">🎯</span>
             <span class="mode-name">标准</span>
-            <span class="mode-desc">每年两次决策<br>推荐</span>
+            <span class="mode-desc">每年两次决策<br>平衡节奏·推荐</span>
           </button>
           <button class="btn mode-btn" data-mode="speed">
+            <span class="mode-ico">⚡</span>
             <span class="mode-name">速通</span>
             <span class="mode-desc">每年三次决策<br>快速通关</span>
           </button>
         </div>
+        <button class="btn btn-primary step-next" data-next="2">下一步 · 选择国籍 →</button>
       </div>
       
-      <div class="setup-section">
-        <div class="setup-title"><span class="step">2</span>选择国籍</div>
-        <div class="country-grid" id="countryGrid">
-          ${COUNTRIES.map(c => `
-            <button class="btn country-btn" data-code="${c.code}">
-              <span class="flag">${c.flag}</span>
+      <!-- 步骤2: 国籍选择 (国旗加大) -->
+      <div class="setup-panel" id="step-country">
+        <div class="setup-title-lg">第二步 · 选择国籍</div>
+        <div class="country-grid step-country-grid">
+          ${(() => {
+            // ISO 3166-1 alpha-3 → alpha-2 映射
+            const A3_A2 = { CHN:'cn', USA:'us', ESP:'es', FRA:'fr', SRB:'rs', GRC:'gr',
+              TUR:'tr', ITA:'it', DEU:'de', ARG:'ar', AUS:'au', CAN:'ca', JPN:'jp', KOR:'kr', BRA:'br' };
+            return COUNTRIES.map(c => {
+              const cc = A3_A2[c.code] || c.code.toLowerCase().slice(0,2);
+              return `
+            <button class="btn country-btn step-country-btn" data-code="${c.code}">
+              <img class="flag-lg-img" src="https://flagcdn.com/w80/${cc}.png" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+              <span class="flag-lg" style="display:none">${c.flag}</span>
               <span class="c-name">${c.name}</span>
-              <span class="c-info">门槛 ${c.threshold}</span>
-            </button>
-          `).join('')}
+              <span class="c-info">门槛 · ${c.threshold}</span>
+            </button>`;
+            }).join('');
+          })()}
+        </div>
+        <div class="step-nav-row">
+          <button class="btn step-back" data-prev="1">← 上一步</button>
+          <button class="btn btn-primary step-next" data-next="3" disabled>下一步 · 位置与号码 →</button>
         </div>
       </div>
       
-      <div class="setup-section">
-        <div class="setup-title"><span class="step">3</span>选择位置</div>
-        <div class="pos-grid">
-          ${POSITIONS.map((p, i) => `
-            <button class="btn pos-btn" data-pos="${p.code}" style="${i === 2 ? 'background: linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2)); border-color: var(--accent);' : ''}">
-              <span class="pos-code">${p.code}</span>
-              <span>${p.name}</span>
-            </button>
-          `).join('')}
+      <!-- 步骤3: 位置(球场模型) + 号码(球衣模型) + 姓名 -->
+      <div class="setup-panel" id="step-pos-num">
+        <div class="setup-title-lg">第三步 · 位置、号码与姓名</div>
+        
+        <div class="court-select-wrap">
+          <div class="sub-title"><span class="st-dot"></span>点击球场选择位置</div>
+          <div class="court-svg-wrap">
+            <svg id="courtSvg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+              <!-- 地板 -->
+              <defs>
+                <radialGradient id="courtFloor" cx="50%" cy="50%" r="65%">
+                  <stop offset="0%" stop-color="#c89561" stop-opacity="0.85"/>
+                  <stop offset="100%" stop-color="#8a5f33" stop-opacity="0.95"/>
+                </radialGradient>
+                <pattern id="courtPlanks" width="40" height="300" patternUnits="userSpaceOnUse">
+                  <rect width="40" height="300" fill="url(#courtFloor)"/>
+                  <line x1="40" y1="0" x2="40" y2="300" stroke="#6a4420" stroke-width="1" opacity="0.4"/>
+                </pattern>
+              </defs>
+              <rect x="5" y="5" width="390" height="290" rx="14" fill="url(#courtPlanks)" stroke="#3b260f" stroke-width="2"/>
+              
+              <!-- 半场线 -->
+              <line x1="5" y1="150" x2="395" y2="150" stroke="#f5f0e4" stroke-width="2" opacity="0.85"/>
+              <circle cx="200" cy="150" r="50" fill="none" stroke="#f5f0e4" stroke-width="2" opacity="0.85"/>
+              
+              <!-- 三分线(简化) -->
+              <path d="M 50 50 Q 200 -10 350 50 L 350 10 L 50 10 Z" fill="none" stroke="#f5f0e4" stroke-width="2" opacity="0.75"/>
+              <!-- 禁区/油漆区 -->
+              <rect x="140" y="10" width="120" height="80" fill="none" stroke="#f5f0e4" stroke-width="2" opacity="0.75"/>
+              <!-- 篮筐 -->
+              <circle cx="200" cy="30" r="10" fill="none" stroke="#ff7043" stroke-width="2.5"/>
+              
+              <!-- 位置点 (PG在三分弧顶,SG&SF在侧翼,PF&C在油漆区) -->
+              <g class="pos-dots">
+                <g class="pos-dot" data-pos="PG" transform="translate(200,115)">
+                  <circle r="20" class="pd-bg"/>
+                  <text class="pd-txt" y="5">PG</text>
+                  <text class="pd-name" y="40">组织后卫</text>
+                </g>
+                <g class="pos-dot" data-pos="SG" transform="translate(100,65)">
+                  <circle r="20" class="pd-bg"/>
+                  <text class="pd-txt" y="5">SG</text>
+                  <text class="pd-name" y="40">得分后卫</text>
+                </g>
+                <g class="pos-dot" data-pos="SF" transform="translate(300,65)">
+                  <circle r="20" class="pd-bg"/>
+                  <text class="pd-txt" y="5">SF</text>
+                  <text class="pd-name" y="40">小前锋</text>
+                </g>
+                <g class="pos-dot" data-pos="PF" transform="translate(150,35)">
+                  <circle r="20" class="pd-bg"/>
+                  <text class="pd-txt" y="5">PF</text>
+                  <text class="pd-name" y="40">大前锋</text>
+                </g>
+                <g class="pos-dot" data-pos="C" transform="translate(250,35)">
+                  <circle r="20" class="pd-bg"/>
+                  <text class="pd-txt" y="5">C</text>
+                  <text class="pd-name" y="40">中锋</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="jersey-name-wrap">
+          <div class="sub-title"><span class="st-dot"></span>选择号码(球衣预览)</div>
+          <div class="jersey-row">
+            <div class="jersey-preview">
+              <svg viewBox="0 0 180 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="jerseyGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#2d60d1"/>
+                    <stop offset="100%" stop-color="#163f8f"/>
+                  </linearGradient>
+                </defs>
+                <!-- 球衣主体(背心造型) -->
+                <path d="M 40 10 L 60 10 L 90 30 L 110 30 L 140 10 L 160 10 L 170 55 L 150 70 L 150 185 L 30 185 L 30 70 L 10 55 Z"
+                  fill="url(#jerseyGrad)" stroke="#0b245b" stroke-width="2"/>
+                <!-- 领口 -->
+                <path d="M 75 18 Q 90 42 105 18 L 110 28 L 90 52 L 70 28 Z" fill="#0b245b" opacity="0.35"/>
+                <!-- 肩部 -->
+                <path d="M 40 10 L 60 10 L 72 26 L 50 26 Z" fill="#0b245b" opacity="0.25"/>
+                <path d="M 128 26 L 140 10 L 160 10 L 150 26 Z" fill="#0b245b" opacity="0.25"/>
+                <!-- 号码 -->
+                <text id="jerseyNumber" x="90" y="125" text-anchor="middle" font-size="68" font-weight="900" fill="#fff"
+                      style="font-family: Impact, Haettenschweiler, sans-serif;letter-spacing:1px;paint-order:stroke;stroke:#0b245b;stroke-width:2;">23</text>
+                <!-- 姓名条 -->
+                <rect x="42" y="150" width="96" height="18" rx="4" fill="#fff" opacity="0.12"/>
+                <text id="jerseyName" x="90" y="164" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" opacity="0.9">
+                  ANONYMOUS
+                </text>
+              </svg>
+            </div>
+            <div class="jersey-inputs">
+              <div class="ji-row">
+                <label>号码 (1-99)</label>
+                <div class="num-picker">
+                  <button class="btn num-btn" id="numMinus">–</button>
+                  <input type="number" id="playerNumber" placeholder="23" min="1" max="99" value="23">
+                  <button class="btn num-btn" id="numPlus">+</button>
+                </div>
+                <div class="num-quick">
+                  ${[0,1,2,3,6,11,23,24,30,32,33,45].map(n=>`<button class="num-chip" data-num="${n}">${n||'00'}</button>`).join('')}
+                </div>
+              </div>
+              <div class="ji-row">
+                <label>球员姓名</label>
+                <input type="text" id="playerName" placeholder="输入姓名(最多10字)" maxlength="10">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step-nav-row">
+          <button class="btn step-back" data-prev="2">← 上一步</button>
+          <button class="btn btn-primary" id="startBtn">开始生涯 🏀</button>
         </div>
       </div>
-      
-      <div class="setup-section">
-        <div class="setup-title"><span class="step">4</span>填写信息</div>
-        <div class="input-row" style="margin-bottom: 10px;">
-          <input type="text" id="playerName" placeholder="输入姓名" maxlength="10">
-        </div>
-        <div class="input-row">
-          <input type="number" id="playerNumber" placeholder="号码 (1-99)" min="1" max="99" value="23">
-        </div>
-      </div>
-      
-      <button class="btn btn-primary" id="startBtn" style="margin-top: 20px; justify-content: center;">
-        开始生涯 →
-      </button>
     </div>
   `;
 }
@@ -2229,7 +2756,30 @@ function renderSetupScreen() {
 function bindSetupEvents() {
   let selectedCountry = null;
   let selectedPosition = 'SF';
+  let selectedNumber = 23;
   
+  // 步骤切换
+  function goStep(n) {
+    document.querySelectorAll('.setup-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-dots .dot').forEach((d, idx) => {
+      d.classList.toggle('active', idx + 1 <= n);
+    });
+    const target = document.getElementById('step-mode');
+    if (n === 1) document.getElementById('step-mode').classList.add('active');
+    if (n === 2) document.getElementById('step-country').classList.add('active');
+    if (n === 3) document.getElementById('step-pos-num').classList.add('active');
+  }
+  document.querySelectorAll('.step-next').forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.disabled) return;
+      goStep(parseInt(b.dataset.next));
+    });
+  });
+  document.querySelectorAll('.step-back').forEach(b => {
+    b.addEventListener('click', () => goStep(parseInt(b.dataset.prev)));
+  });
+  
+  // 模式选择
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -2238,29 +2788,63 @@ function bindSetupEvents() {
     });
   });
   
-  document.querySelectorAll('.country-btn').forEach(btn => {
+  // 国籍选择 (国旗前)
+  document.querySelectorAll('.step-country-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.step-country-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedCountry = btn.dataset.code;
+      const next = document.querySelector('#step-country .step-next');
+      if (next) next.disabled = false;
     });
   });
   
-  document.querySelectorAll('.pos-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.pos-btn').forEach(b => {
-        b.style.background = '';
-        b.style.borderColor = '';
+  // 球场位置选择
+  document.querySelectorAll('.pos-dot').forEach(g => {
+    g.addEventListener('click', () => {
+      const pos = g.getAttribute('data-pos');
+      selectedPosition = pos;
+      document.querySelectorAll('.pos-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.getAttribute('data-pos') === pos);
       });
-      btn.style.background = 'linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2))';
-      btn.style.borderColor = 'var(--accent)';
-      selectedPosition = btn.dataset.pos;
     });
   });
+  // 默认高亮SF
+  const defaultDot = document.querySelector('.pos-dot[data-pos="SF"]');
+  if (defaultDot) defaultDot.classList.add('active');
   
+  // 号码选择: 输入框
+  const numInput = document.getElementById('playerNumber');
+  function syncNumber(val) {
+    let n = parseInt(val);
+    if (isNaN(n)) n = 23;
+    n = Math.min(99, Math.max(0, n));
+    selectedNumber = n;
+    const disp = n === 0 ? '00' : String(n);
+    numInput.value = n === 0 ? 0 : n;
+    const jn = document.getElementById('jerseyNumber');
+    if (jn) jn.textContent = disp;
+  }
+  numInput.addEventListener('input', e => syncNumber(e.target.value));
+  document.getElementById('numMinus').addEventListener('click', () => syncNumber(selectedNumber - 1));
+  document.getElementById('numPlus').addEventListener('click', () => syncNumber(selectedNumber + 1));
+  document.querySelectorAll('.num-chip').forEach(chip => {
+    chip.addEventListener('click', () => syncNumber(parseInt(chip.dataset.num)));
+  });
+  syncNumber(23);
+  
+  // 姓名实时同步到球衣
+  const nameInput = document.getElementById('playerName');
+  nameInput.addEventListener('input', () => {
+    const jname = document.getElementById('jerseyName');
+    if (jname) jname.textContent = (nameInput.value || 'ANONYMOUS').slice(0, 10).toUpperCase();
+  });
+  
+  // 开始按钮
   document.getElementById('startBtn').addEventListener('click', () => {
     if (!selectedCountry) {
-      showToast('请选择国籍');
+      showToast('请先选择国籍');
+      goStep(2);
       return;
     }
     const position = POSITIONS.find(p => p.code === selectedPosition);
@@ -2280,53 +2864,71 @@ function showToast(msg) {
 
 function renderPlayerCard() {
   const p = state;
+  const marketValue = p.phase === 'pro' ? formatSalary(p.salary * 5) : '-';
+  // 固定清白值避免随机变化
+  const cleanVal = p.cleanScore ?? 80;
   return `
     <div class="player-card">
-      <div class="player-main">
+      <div class="pc-top">
         <div class="ovr-badge">
           <span class="ovr">${p.ovr}</span>
           <span class="ovr-label">OVR</span>
         </div>
-        <div class="player-info">
-          <div class="player-name">
-            <span>${p.nationalityFlag}</span>
-            ${p.name} #${p.number}
-          </div>
-          <div class="player-meta">
-            <span>${p.age}岁</span>
-            <span>${p.position}</span>
-            <span>${p.positionName}</span>
+        <div class="pc-player">
+          <div class="pc-name-row">
+            <span class="pc-flag">${p.nationalityFlag}</span>
+            <span class="pc-name">${p.name}</span>
+            <span class="pc-number">#${p.number}</span>
+            <span class="pc-pos">${p.position}</span>
             ${p.currentInjury ? `<span class="injured-badge">🤕 ${p.currentInjury.name}</span>` : ''}
           </div>
           ${p.teamName ? `
-          <div class="team-row">
-            <div class="team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls, p.teamName)}</div>
-            <div>
-              <div class="team-name">${p.teamName}</div>
-              <div class="team-league">${p.league}</div>
-            </div>
-          </div>` : ''}
+          <div class="pc-team-row">
+            <div class="team-logo pc-team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls, p.teamName)}</div>
+            <span class="pc-team-name">${p.teamName}</span>
+            <span class="pc-league">${p.teamConf || p.league}</span>
+          </div>` : `<div class="pc-team-row" style="opacity:.65">
+            <span>${p.phase === 'high' ? COUNTRIES.find(c=>c.code===p.nationality).youthName : COUNTRIES.find(c=>c.code===p.nationality).universityName}</span>
+          </div>`}
+          <div class="pc-meta-row">
+            <span>年龄 ${p.age}</span>
+            <span>${p.positionName}</span>
+            ${marketValue !== '-' ? `<span>身价 ${marketValue}</span>` : ''}
+          </div>
         </div>
       </div>
-      <div class="stat-bars">
-        <div class="stat-bar">
-          <div class="bar-label"><span>名气</span><span>${Math.round(p.fame)}</span></div>
-          <div class="bar-fill"><div class="bar-inner bar-gold" style="width:${p.fame}%"></div></div>
+      <div class="pc-four-stats">
+        <div class="pc-stat"><span class="pcs-icon">🗓</span><span class="pcs-val">${p.yearStats.gp}</span><span class="pcs-lab">出场</span></div>
+        <div class="pc-stat"><span class="pcs-icon">🏀</span><span class="pcs-val">${p.yearStats.pts}</span><span class="pcs-lab">得分</span></div>
+        <div class="pc-stat"><span class="pcs-icon">🤝</span><span class="pcs-val">${p.yearStats.reb}</span><span class="pcs-lab">助攻</span></div>
+        <div class="pc-stat"><span class="pcs-icon">📐</span><span class="pcs-val">${p.yearStats.ast}</span><span class="pcs-lab">篮板</span></div>
+      </div>
+      <div class="pc-bars">
+        <div class="pc-bar">
+          <span class="pcb-lab">关系</span>
+          <div class="pcb-track"><div class="pcb-fill pcb-blue" style="width:${p.relation}%"></div></div>
+          <span class="pcb-val">${Math.round(p.relation)}</span>
         </div>
-        <div class="stat-bar">
-          <div class="bar-label"><span>关系</span><span>${Math.round(p.relation)}</span></div>
-          <div class="bar-fill"><div class="bar-inner bar-blue" style="width:${p.relation}%"></div></div>
+        <div class="pc-bar">
+          <span class="pcb-lab">清白</span>
+          <div class="pcb-track"><div class="pcb-fill pcb-green" style="width:${cleanVal}%"></div></div>
+          <span class="pcb-val">${cleanVal}</span>
         </div>
-        <div class="stat-bar">
-          <div class="bar-label"><span>财富</span><span>${formatSalary(p.wealth)}</span></div>
-          <div class="bar-fill"><div class="bar-inner bar-green" style="width:${Math.min(100, p.wealth/100000)}%"></div></div>
+        <div class="pc-bar">
+          <span class="pcb-lab">名气</span>
+          <div class="pcb-track"><div class="pcb-fill pcb-gold" style="width:${p.fame}%"></div></div>
+          <span class="pcb-val">${Math.round(p.fame)}</span>
+        </div>
+        <div class="pc-bar pc-bar-wealth">
+          <span class="pcb-lab">个人财富</span>
+          <div class="pcb-wealth">💰 ${formatSalary(p.wealth)}</div>
         </div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-item"><div class="stat-value">${p.yearStats.gp}</div><div class="stat-label">场次</div></div>
-        <div class="stat-item"><div class="stat-value">${p.yearStats.pts}</div><div class="stat-label">得分</div></div>
-        <div class="stat-item"><div class="stat-value">${p.yearStats.reb}</div><div class="stat-label">篮板</div></div>
-        <div class="stat-item"><div class="stat-value">${p.yearStats.ast}</div><div class="stat-label">助攻</div></div>
+      <div class="pc-restart-row">
+        <button class="btn pc-restart" id="restartBtn">
+          <span class="pcr-icon">👟</span>
+          <span>从头来过  重新选出身,开一局新的</span>
+        </button>
       </div>
     </div>
   `;
@@ -2335,23 +2937,28 @@ function renderPlayerCard() {
 function renderHighSchoolChoice() {
   const p = state;
   return `
-    <div class="screen active">
+    <div class="screen active screen-flow">
       ${renderPlayerCard()}
-      <div class="event-card">
-        <div class="event-icon">🎓</div>
-        <div class="event-title">高中入学</div>
-        <div class="event-desc">你16岁了，有三所高中想签下你，你选择哪所开始你的篮球之路？</div>
-        ${p.highSchoolChoices.map((hs, i) => `
-          <button class="btn choice-btn" data-idx="${i}">
-            <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo">${getTeamBadge(hs.logo, hs.cls, hs.name)}</div>
-              <div style="flex:1;">
-                <div class="choice-title">${hs.name}</div>
-                <div class="choice-desc">${COUNTRIES.find(c => c.code === p.nationality).youthName}</div>
+      <div class="middle-section"></div>
+      <div class="event-card event-card-bottom">
+        <div class="ev-head">
+          <span class="ev-icon">🎓</span>
+          <span class="ev-title">高中入学</span>
+        </div>
+        <div class="ev-desc">你16岁了，有三所高中想签下你，你选择哪所开始你的篮球之路？</div>
+        <div class="ev-choices">
+          ${p.highSchoolChoices.map((hs, i) => `
+            <button class="btn choice-btn" data-idx="${i}">
+              <div style="display:flex;align-items:center;gap:10px;width:100%;">
+                <div class="team-logo">${getTeamBadge(hs.logo, hs.cls, hs.name)}</div>
+                <div style="flex:1;">
+                  <div class="choice-title">${hs.name}</div>
+                  <div class="choice-desc">${COUNTRIES.find(c => c.code === p.nationality).youthName}</div>
+                </div>
               </div>
-            </div>
-          </button>
-        `).join('')}
+            </button>
+          `).join('')}
+        </div>
       </div>
     </div>
   `;
@@ -2369,23 +2976,28 @@ function bindHighSchoolEvents() {
 function renderUniversityChoice() {
   const p = state;
   return `
-    <div class="screen active">
+    <div class="screen active screen-flow">
       ${renderPlayerCard()}
-      <div class="event-card">
-        <div class="event-icon">🎓</div>
-        <div class="event-title">大学选择</div>
-        <div class="event-desc">高中生涯结束，你收到了三所大学的offer，选择你的下一站。</div>
-        ${p.universityChoices.map((uni, i) => `
-          <button class="btn choice-btn" data-idx="${i}">
-            <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo">${getTeamBadge(uni.logo, uni.cls, uni.name)}</div>
-              <div style="flex:1;">
-                <div class="choice-title">${uni.name}</div>
-                <div class="choice-desc">${uni.conf}</div>
+      <div class="middle-section"></div>
+      <div class="event-card event-card-bottom">
+        <div class="ev-head">
+          <span class="ev-icon">🎓</span>
+          <span class="ev-title">大学选择</span>
+        </div>
+        <div class="ev-desc">高中生涯结束，你收到了三所大学的offer，选择你的下一站。</div>
+        <div class="ev-choices">
+          ${p.universityChoices.map((uni, i) => `
+            <button class="btn choice-btn" data-idx="${i}">
+              <div style="display:flex;align-items:center;gap:10px;width:100%;">
+                <div class="team-logo">${getTeamBadge(uni.logo, uni.cls, uni.name)}</div>
+                <div style="flex:1;">
+                  <div class="choice-title">${uni.name}</div>
+                  <div class="choice-desc">${uni.conf}</div>
+                </div>
               </div>
-            </div>
-          </button>
-        `).join('')}
+            </button>
+          `).join('')}
+        </div>
       </div>
     </div>
   `;
@@ -2404,31 +3016,103 @@ function renderGameScreen() {
   const p = state;
   const choices = state.currentChoices || getYearChoices();
   state.currentChoices = choices;
-  const country = COUNTRIES.find(c => c.code === p.nationality);
   
-  // Build timeline
-  const recentCareer = p.career.slice(-6).reverse();
+  // 构造生涯时间线表格（仿足一把：年龄 俱乐部 能力 出场 得分 助攻）
+  // 读取 career 历史 + 根据 yearStats 推断当前年数据
+  const recentCareer = p.career.slice(-7).reverse();
+  const ovrHistory = (p._ovrLog || []).slice(-7).reverse();
+  const timelineTable = `
+    <div class="career-timeline">
+      <div class="ct-header-row">
+        <span class="ct-age">年龄</span>
+        <span class="ct-team">俱乐部</span>
+        <span class="ct-ovr">能力</span>
+        <span class="ct-col">出场</span>
+        <span class="ct-col">得分</span>
+        <span class="ct-col">助攻</span>
+      </div>
+      ${recentCareer.map((c, i) => {
+        const teamDisp = c.teamName || c.team || '-';
+        const ovrDisp = (ovrHistory[i] && ovrHistory[i].ovr) ? ovrHistory[i].ovr : '-';
+        const statS = (ovrHistory[i] && ovrHistory[i].stats) ? ovrHistory[i].stats : (c.stats ? c.stats : null);
+        const gp = statS ? statS.gp : (i === 0 ? p.yearStats.gp : '-');
+        const pts = statS ? statS.pts : (i === 0 ? p.yearStats.pts : '-');
+        const ast = statS ? statS.ast : (i === 0 ? p.yearStats.ast : '-');
+        return `
+        <div class="ct-row">
+          <span class="ct-age ct-age-ovr">${c.age}</span>
+          <span class="ct-team">
+            ${c.teamLogo ? `<span class="team-logo ct-team-logo">${getTeamBadge(c.teamLogo, 'logo-navy', teamDisp)}</span>` : ''}
+            <span>${teamDisp}</span>
+            ${c.event && c.event !== '加入' ? `<span class="ct-tag">${c.event}</span>` : ''}
+          </span>
+          <span class="ct-ovr ct-ovr-val">${ovrDisp}</span>
+          <span class="ct-col">${gp}</span>
+          <span class="ct-col">${pts}</span>
+          <span class="ct-col">${ast}</span>
+        </div>`;
+      }).join('')}
+      <!-- 补上当前赛季 (若 career 未满) -->
+      ${recentCareer.length < 3 ? `
+        <div class="ct-row">
+          <span class="ct-age ct-age-ovr">${p.age}</span>
+          <span class="ct-team">
+            ${p.teamLogo ? `<span class="team-logo ct-team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls, p.teamName || '未知')}</span>` : ''}
+            <span>${p.teamName || (p.phase==='highschool' ? COUNTRIES.find(c=>c.code===p.nationality).youthName : COUNTRIES.find(c=>c.code===p.nationality).universityName)}</span>
+          </span>
+          <span class="ct-ovr ct-ovr-val">${p.ovr}</span>
+          <span class="ct-col">${p.yearStats.gp}</span>
+          <span class="ct-col">${p.yearStats.pts}</span>
+          <span class="ct-col">${p.yearStats.ast}</span>
+        </div>
+      ` : ''}
+    </div>
+  `;
   
-  return `
-    <div class="screen active">
-      ${renderPlayerCard()}
-      
-      ${p.yearAwards.length > 0 ? `
+  // 横幅/状态条 (荣誉+伤病) 放在时间线上方
+  const bannerHtml = [
+    p.yearAwards.length > 0 ? `
       <div class="competition-banner">
         <span class="cb-icon">🏆</span>
         <span class="cb-text">${p.yearAwards.map(a => a.result).join(' · ')}</span>
-      </div>` : ''}
-      
-      ${p.currentInjury ? `
+      </div>` : '',
+    p.currentInjury ? `
       <div class="competition-banner" style="background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));border-color:rgba(239,68,68,0.3);">
         <span class="cb-icon">🤕</span>
         <span class="cb-text">伤病中：${p.currentInjury.name}，还需恢复 ${p.currentInjury.weeksMissed} 周</span>
-      </div>` : ''}
-      
-      <div class="event-card">
-        <div class="event-icon">📅</div>
-        <div class="event-title">${gameYear}赛季 · ${p.age}岁</div>
-        <div class="event-desc">${getPhaseDesc(p)}  ·  年薪 ${formatSalary(p.salary)}${p.phase === 'pro' ? '  ·  身价 ' + formatSalary(p.salary * 5) : ''}</div>
+      </div>` : '',
+    p.draftPick ? `
+      <div class="draft-card">
+        <div class="timeline-title">选秀记录</div>
+        <div class="draft-pick">
+          <div class="team-logo">${getTeamBadge(p.draftPick.logo, p.draftPick.cls, p.draftPick.team)}</div>
+          <div class="pick-num">R${p.draftPick.round}·P${p.draftPick.pick}</div>
+          <div class="pick-team">
+            <div class="pick-team-name">${p.draftPick.team}</div>
+            <div class="pick-team-league">${p.draftPick.league} · 总第${p.draftPick.overall}顺位</div>
+          </div>
+        </div>
+      </div>` : '',
+    p.honors.length > 0 ? `
+      <div>
+        <div class="timeline-title">荣誉记录</div>
+        <div class="honor-grid">
+          ${p.honors.map(h => `<span class="honor-chip">${getHonorIcon(h)} ${h}</span>`).join('')}
+        </div>
+      </div>` : ''
+  ].filter(Boolean).join('');
+  
+  // 事件卡片放在最底部 (足一把样式)
+  const evTitle = p.currentEventTitle || (p.phase + '阶段 · ' + gameYear + '赛季');
+  const evIcon = p.currentEventIcon || '🔔';
+  const eventCard = `
+    <div class="event-card event-card-bottom">
+      <div class="ev-head">
+        <span class="ev-icon">${evIcon}</span>
+        <span class="ev-title">${evTitle}</span>
+      </div>
+      <div class="ev-desc">${p.currentEventDesc || getPhaseDesc(p) + '  ·  年薪 ' + formatSalary(p.salary) + (p.phase === 'pro' ? '  ·  身价 ' + formatSalary(p.salary * 5) : '')}</div>
+      <div class="ev-choices">
         ${choices.map((c, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
@@ -2441,45 +3125,17 @@ function renderGameScreen() {
           </button>
         `).join('')}
       </div>
-      
-      ${p.draftPick ? `
-      <div class="draft-card" style="margin-bottom:16px;">
-        <div class="timeline-title">选秀记录</div>
-        <div class="draft-pick">
-          <div class="team-logo">${getTeamBadge(p.draftPick.logo, p.draftPick.cls, p.draftPick.team)}</div>
-          <div class="pick-num">R${p.draftPick.round}·P${p.draftPick.pick}</div>
-          <div class="pick-team">
-            <div class="pick-team-name">${p.draftPick.team}</div>
-            <div class="pick-team-league">${p.draftPick.league} · 总第${p.draftPick.overall}顺位</div>
-          </div>
-        </div>
-      </div>` : ''}
-      
-      ${p.honors.length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div class="timeline-title">荣誉记录</div>
-        <div class="honor-grid">
-          ${p.honors.map(h => `<span class="honor-chip">${getHonorIcon(h)} ${h}</span>`).join('')}
-        </div>
-      </div>` : ''}
-      
-      ${recentCareer.length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div class="timeline-title">生涯轨迹</div>
-        ${recentCareer.map(c => `
-          <div class="timeline-item">
-            <div class="timeline-age">${c.age}</div>
-            <div class="timeline-content">
-              <div class="timeline-main">${c.event} ${c.team}</div>
-              <div class="timeline-sub">${c.league}${c.draftPick ? ' · ' + c.draftPick : ''}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>` : ''}
-      
-      <button class="btn" id="restartBtn" style="justify-content:center;margin-top:10px;">
-        🔄 重新开始
-      </button>
+    </div>
+  `;
+  
+  return `
+    <div class="screen active screen-flow">
+      ${renderPlayerCard()}
+      <div class="middle-section">
+        ${bannerHtml}
+        ${timelineTable}
+      </div>
+      ${eventCard}
     </div>
   `;
 }
