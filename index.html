@@ -718,35 +718,35 @@ const PRO_TEAMS = {
 };
 
 const COUNTRIES = [
-  { code: 'CHN', name: '中国', flag: '🇨🇳', threshold: '中', thresholdVal: 68,
+  { code: 'CHN', name: '中国', flag: '🇨🇳', threshold: '中', thresholdVal: 55,
     youthName: '耐高', universityName: 'CUBA', proName: 'CBA', confederation: 'FIBA Asia' },
-  { code: 'USA', name: '美国', flag: '🇺🇸', threshold: '极高', thresholdVal: 78,
+  { code: 'USA', name: '美国', flag: '🇺🇸', threshold: '极高', thresholdVal: 75,
     youthName: 'High School', universityName: 'NCAA D1', proName: 'NBA', confederation: 'FIBA Americas' },
-  { code: 'ESP', name: '西班牙', flag: '🇪🇸', threshold: '极高', thresholdVal: 75,
+  { code: 'ESP', name: '西班牙', flag: '🇪🇸', threshold: '极高', thresholdVal: 72,
     youthName: '西班牙青年联赛', universityName: 'ACB大学', proName: 'ACB', confederation: 'FIBA Europe' },
-  { code: 'FRA', name: '法国', flag: '🇫🇷', threshold: '高', thresholdVal: 73,
+  { code: 'FRA', name: '法国', flag: '🇫🇷', threshold: '极高', thresholdVal: 70,
     youthName: '法国青年联赛', universityName: '法国大学联赛', proName: 'EuroLeague', confederation: 'FIBA Europe' },
-  { code: 'SRB', name: '塞尔维亚', flag: '🇷🇸', threshold: '高', thresholdVal: 73,
+  { code: 'SRB', name: '塞尔维亚', flag: '🇷🇸', threshold: '极高', thresholdVal: 70,
     youthName: '塞尔维亚青年联赛', universityName: 'Adriatic大学', proName: 'Adriatic League', confederation: 'FIBA Europe' },
-  { code: 'GRC', name: '希腊', flag: '🇬🇷', threshold: '高', thresholdVal: 72,
+  { code: 'GRC', name: '希腊', flag: '🇬🇷', threshold: '高', thresholdVal: 65,
     youthName: '希腊青年联赛', universityName: '希腊大学联赛', proName: 'Greek League', confederation: 'FIBA Europe' },
-  { code: 'TUR', name: '土耳其', flag: '🇹🇷', threshold: '中高', thresholdVal: 70,
+  { code: 'TUR', name: '土耳其', flag: '🇹🇷', threshold: '高', thresholdVal: 65,
     youthName: '土耳其青年联赛', universityName: '土耳其大学联赛', proName: 'Turkish League', confederation: 'FIBA Europe' },
-  { code: 'ITA', name: '意大利', flag: '🇮🇹', threshold: '中高', thresholdVal: 70,
+  { code: 'ITA', name: '意大利', flag: '🇮🇹', threshold: '高', thresholdVal: 65,
     youthName: '意大利青年联赛', universityName: '意大利大学联赛', proName: 'Serie A', confederation: 'FIBA Europe' },
-  { code: 'GER', name: '德国', flag: '🇩🇪', threshold: '中高', thresholdVal: 70,
+  { code: 'GER', name: '德国', flag: '🇩🇪', threshold: '高', thresholdVal: 65,
     youthName: '德国青年联赛', universityName: '德国大学联赛', proName: 'BBL', confederation: 'FIBA Europe' },
-  { code: 'ARG', name: '阿根廷', flag: '🇦🇷', threshold: '中高', thresholdVal: 70,
+  { code: 'ARG', name: '阿根廷', flag: '🇦🇷', threshold: '高', thresholdVal: 65,
     youthName: '阿根廷青年联赛', universityName: '阿根廷大学联赛', proName: 'Liga Nacional', confederation: 'FIBA Americas' },
-  { code: 'AUS', name: '澳大利亚', flag: '🇦🇺', threshold: '中', thresholdVal: 68,
+  { code: 'AUS', name: '澳大利亚', flag: '🇦🇺', threshold: '中高', thresholdVal: 60,
     youthName: '澳洲青年联赛', universityName: '澳洲大学联赛', proName: 'NBL', confederation: 'FIBA Oceania' },
-  { code: 'CAN', name: '加拿大', flag: '🇨🇦', threshold: '中', thresholdVal: 68,
+  { code: 'CAN', name: '加拿大', flag: '🇨🇦', threshold: '中高', thresholdVal: 60,
     youthName: '加拿大青年联赛', universityName: '加拿大大学联赛', proName: 'NBA', confederation: 'FIBA Americas' },
-  { code: 'JPN', name: '日本', flag: '🇯🇵', threshold: '中', thresholdVal: 67,
+  { code: 'JPN', name: '日本', flag: '🇯🇵', threshold: '中高', thresholdVal: 58,
     youthName: '日本高中联赛', universityName: '日本大学联赛', proName: 'B.League', confederation: 'FIBA Asia' },
-  { code: 'KOR', name: '韩国', flag: '🇰🇷', threshold: '中', thresholdVal: 67,
+  { code: 'KOR', name: '韩国', flag: '🇰🇷', threshold: '中高', thresholdVal: 58,
     youthName: '韩国高中联赛', universityName: '韩国大学联赛', proName: 'KBL', confederation: 'FIBA Asia' },
-  { code: 'BRA', name: '巴西', flag: '🇧🇷', threshold: '中高', thresholdVal: 70,
+  { code: 'BRA', name: '巴西', flag: '🇧🇷', threshold: '高', thresholdVal: 65,
     youthName: '巴西青年联赛', universityName: '巴西大学联赛', proName: 'NBB', confederation: 'FIBA Americas' }
 ];
 
@@ -859,11 +859,10 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function createPlayer(nationality, position, name, number) {
   const country = COUNTRIES.find(c => c.code === nationality);
   const threshold = country.thresholdVal;
-  // 位置修正: 后卫线略高, 内线略低 (反映选秀市场偏好)
-  const posBonus = { PG: 1, SG: 1, SF: 0, PF: -1, C: -1 }[position.code] || 0;
+  const posBonus = { PG: 2, SG: 1, SF: 0, PF: -1, C: -2 }[position.code] || 0;
 
-  // 国际中位数70: 各国围绕自身阈值±4分布, 16岁新秀偏低
-  // 成长曲线会在30岁前追平到潜力值附近
+  // 初始OVR: 16岁新秀围绕各国thresholdVal分布 (中国约55, 美国约75)
+  // 巅峰期(28-30岁)中位数达70: 通过潜力值控制成长上限
   const player = {
     name: name || '匿名球员',
     number: number || randInt(1, 55),
@@ -872,8 +871,10 @@ function createPlayer(nationality, position, name, number) {
     position: position.code,
     positionName: position.name,
     age: 16,
-    ovr: clamp(randInt(threshold - 5, threshold + 4) + posBonus, 45, 85),
-    potential: clamp(randInt(threshold + 3, threshold + 18), 70, 95),
+    ovr: randInt(threshold - 10, threshold + 5) + posBonus,
+    // 潜力值: 巅峰期OVR上限, 国际中位数≈72 (考虑成长波动后巅峰中位数≈70)
+    // 篮球强国(美国)潜力高, 弱国潜力低, 整体中位数≈70
+    potential: clamp(randInt(65, 80) + (threshold - 65), 55, 90),
     phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
     hsYear: 0,   // 高中第几年 (0=高一, 1=高二, 2=高三)
     uniYear: 0,  // 大学第几年 (0=大一, 1=大二, 2=大三, 3=大四)
@@ -938,12 +939,29 @@ function advanceYear() {
   // 大学年级递增
   if (p.phase === 'university') p.uniYear++;
   
-  // OVR变化: 30岁前上升, 30岁后下降 (随机性+年龄修正+慢性伤病影响)
+  // OVR变化: 受潜力值约束, 趋向潜力值而非无限增长
+  // 30岁前上升, 30岁后下降 (随机性+年龄修正+慢性伤病影响)
   const ageMod = getAgeModifier(p.age);
   const chronicPenalty = p.chronicInjuries > 0 ? -randInt(0, p.chronicInjuries) : 0;
-  const change = randInt(-2, 3) + ageMod + chronicPenalty;
+  const potDiff = p.potential - p.ovr;
+  let change;
+  if (p.age <= 30) {
+    if (potDiff > 5) {
+      // 远低于潜力: 快速成长 (ageMod全生效)
+      change = randInt(1, 3) + ageMod + chronicPenalty;
+    } else if (potDiff > 0) {
+      // 接近潜力: 缓慢增长 (ageMod减半, 避免超过潜力太多)
+      change = randInt(0, 1) + Math.floor(ageMod / 2) + chronicPenalty;
+    } else {
+      // 达到/超过潜力: 强制波动下降 (忽略ageMod, 防止继续增长)
+      change = randInt(-3, 0) + chronicPenalty;
+    }
+  } else {
+    // 30岁后: 下降期
+    change = ageMod + chronicPenalty + randInt(-1, 1);
+  }
   p.ovr = clamp(p.ovr + change, 40, 99);
-  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (年龄修正:${ageMod}, 慢性伤病:${chronicPenalty}, 随机:${change - ageMod - chronicPenalty})`);
+  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (年龄修正:${ageMod}, 慢性伤病:${chronicPenalty}, 潜力差:${potDiff}, 随机:${change - ageMod - chronicPenalty})`);
   
   // 潜力值: 25岁后逐年下降, 不低于当前OVR
   if (p.age > 25) {
@@ -1061,11 +1079,11 @@ function advanceYear() {
 }
 
 function getAgeModifier(age) {
-  // 30岁前上升期, 30岁后下降期 (有随机波动)
-  if (age <= 18) return randInt(2, 4);      // 高中: 快速成长
-  if (age <= 22) return randInt(2, 4);      // 大学: 继续成长
-  if (age <= 25) return randInt(1, 3);      // 职业早期: 稳步提升
-  if (age <= 28) return randInt(0, 2);      // 巅峰期: 缓慢提升
+  // 30岁前上升期, 30岁后下降期 (受潜力值约束, 成长速度适中)
+  if (age <= 18) return randInt(1, 3);      // 高中: 成长期
+  if (age <= 22) return randInt(1, 3);      // 大学: 继续成长
+  if (age <= 25) return randInt(0, 2);      // 职业早期: 稳步提升
+  if (age <= 28) return randInt(-1, 1);     // 巅峰期: 微幅波动
   if (age <= 30) return randInt(-1, 1);     // 30岁: 开始波动
   if (age <= 33) return randInt(-2, 0);     // 下降初期
   if (age <= 36) return randInt(-3, -1);    // 下降中期
