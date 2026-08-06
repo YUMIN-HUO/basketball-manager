@@ -872,9 +872,8 @@ function createPlayer(nationality, position, name, number) {
     positionName: position.name,
     age: 16,
     ovr: randInt(threshold - 10, threshold + 5) + posBonus,
-    // 潜力值: 巅峰期OVR上限, 国际中位数≈72 (考虑成长波动后巅峰中位数≈70)
-    // 篮球强国(美国)潜力高, 弱国潜力低, 整体中位数≈70
-    potential: clamp(randInt(65, 80) + (threshold - 65), 55, 90),
+    // 潜力值(天赋): 纯随机,不受国籍影响 (国际中位数≈70)
+    potential: randInt(55, 88),
     phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
     hsYear: 0,   // 高中第几年 (0=高一, 1=高二, 2=高三)
     uniYear: 0,  // 大学第几年 (0=大一, 1=大二, 2=大三, 3=大四)
