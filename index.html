@@ -718,35 +718,35 @@ const PRO_TEAMS = {
 };
 
 const COUNTRIES = [
-  { code: 'CHN', name: '中国', flag: '🇨🇳', threshold: '中', thresholdVal: 55, 
+  { code: 'CHN', name: '中国', flag: '🇨🇳', threshold: '中', thresholdVal: 68,
     youthName: '耐高', universityName: 'CUBA', proName: 'CBA', confederation: 'FIBA Asia' },
-  { code: 'USA', name: '美国', flag: '🇺🇸', threshold: '极高', thresholdVal: 75,
+  { code: 'USA', name: '美国', flag: '🇺🇸', threshold: '极高', thresholdVal: 78,
     youthName: 'High School', universityName: 'NCAA D1', proName: 'NBA', confederation: 'FIBA Americas' },
-  { code: 'ESP', name: '西班牙', flag: '🇪🇸', threshold: '极高', thresholdVal: 72,
+  { code: 'ESP', name: '西班牙', flag: '🇪🇸', threshold: '极高', thresholdVal: 75,
     youthName: '西班牙青年联赛', universityName: 'ACB大学', proName: 'ACB', confederation: 'FIBA Europe' },
-  { code: 'FRA', name: '法国', flag: '🇫🇷', threshold: '极高', thresholdVal: 70,
+  { code: 'FRA', name: '法国', flag: '🇫🇷', threshold: '高', thresholdVal: 73,
     youthName: '法国青年联赛', universityName: '法国大学联赛', proName: 'EuroLeague', confederation: 'FIBA Europe' },
-  { code: 'SRB', name: '塞尔维亚', flag: '🇷🇸', threshold: '极高', thresholdVal: 70,
+  { code: 'SRB', name: '塞尔维亚', flag: '🇷🇸', threshold: '高', thresholdVal: 73,
     youthName: '塞尔维亚青年联赛', universityName: 'Adriatic大学', proName: 'Adriatic League', confederation: 'FIBA Europe' },
-  { code: 'GRC', name: '希腊', flag: '🇬🇷', threshold: '高', thresholdVal: 65,
+  { code: 'GRC', name: '希腊', flag: '🇬🇷', threshold: '高', thresholdVal: 72,
     youthName: '希腊青年联赛', universityName: '希腊大学联赛', proName: 'Greek League', confederation: 'FIBA Europe' },
-  { code: 'TUR', name: '土耳其', flag: '🇹🇷', threshold: '高', thresholdVal: 65,
+  { code: 'TUR', name: '土耳其', flag: '🇹🇷', threshold: '中高', thresholdVal: 70,
     youthName: '土耳其青年联赛', universityName: '土耳其大学联赛', proName: 'Turkish League', confederation: 'FIBA Europe' },
-  { code: 'ITA', name: '意大利', flag: '🇮🇹', threshold: '高', thresholdVal: 65,
+  { code: 'ITA', name: '意大利', flag: '🇮🇹', threshold: '中高', thresholdVal: 70,
     youthName: '意大利青年联赛', universityName: '意大利大学联赛', proName: 'Serie A', confederation: 'FIBA Europe' },
-  { code: 'GER', name: '德国', flag: '🇩🇪', threshold: '高', thresholdVal: 65,
+  { code: 'GER', name: '德国', flag: '🇩🇪', threshold: '中高', thresholdVal: 70,
     youthName: '德国青年联赛', universityName: '德国大学联赛', proName: 'BBL', confederation: 'FIBA Europe' },
-  { code: 'ARG', name: '阿根廷', flag: '🇦🇷', threshold: '高', thresholdVal: 65,
+  { code: 'ARG', name: '阿根廷', flag: '🇦🇷', threshold: '中高', thresholdVal: 70,
     youthName: '阿根廷青年联赛', universityName: '阿根廷大学联赛', proName: 'Liga Nacional', confederation: 'FIBA Americas' },
-  { code: 'AUS', name: '澳大利亚', flag: '🇦🇺', threshold: '中高', thresholdVal: 60,
+  { code: 'AUS', name: '澳大利亚', flag: '🇦🇺', threshold: '中', thresholdVal: 68,
     youthName: '澳洲青年联赛', universityName: '澳洲大学联赛', proName: 'NBL', confederation: 'FIBA Oceania' },
-  { code: 'CAN', name: '加拿大', flag: '🇨🇦', threshold: '中高', thresholdVal: 60,
+  { code: 'CAN', name: '加拿大', flag: '🇨🇦', threshold: '中', thresholdVal: 68,
     youthName: '加拿大青年联赛', universityName: '加拿大大学联赛', proName: 'NBA', confederation: 'FIBA Americas' },
-  { code: 'JPN', name: '日本', flag: '🇯🇵', threshold: '中高', thresholdVal: 58,
+  { code: 'JPN', name: '日本', flag: '🇯🇵', threshold: '中', thresholdVal: 67,
     youthName: '日本高中联赛', universityName: '日本大学联赛', proName: 'B.League', confederation: 'FIBA Asia' },
-  { code: 'KOR', name: '韩国', flag: '🇰🇷', threshold: '中高', thresholdVal: 58,
+  { code: 'KOR', name: '韩国', flag: '🇰🇷', threshold: '中', thresholdVal: 67,
     youthName: '韩国高中联赛', universityName: '韩国大学联赛', proName: 'KBL', confederation: 'FIBA Asia' },
-  { code: 'BRA', name: '巴西', flag: '🇧🇷', threshold: '高', thresholdVal: 65,
+  { code: 'BRA', name: '巴西', flag: '🇧🇷', threshold: '中高', thresholdVal: 70,
     youthName: '巴西青年联赛', universityName: '巴西大学联赛', proName: 'NBB', confederation: 'FIBA Americas' }
 ];
 
@@ -859,8 +859,11 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function createPlayer(nationality, position, name, number) {
   const country = COUNTRIES.find(c => c.code === nationality);
   const threshold = country.thresholdVal;
-  const posBonus = { PG: 2, SG: 1, SF: 0, PF: -1, C: -2 }[position.code] || 0;
-  
+  // 位置修正: 后卫线略高, 内线略低 (反映选秀市场偏好)
+  const posBonus = { PG: 1, SG: 1, SF: 0, PF: -1, C: -1 }[position.code] || 0;
+
+  // 国际中位数70: 各国围绕自身阈值±4分布, 16岁新秀偏低
+  // 成长曲线会在30岁前追平到潜力值附近
   const player = {
     name: name || '匿名球员',
     number: number || randInt(1, 55),
@@ -869,8 +872,8 @@ function createPlayer(nationality, position, name, number) {
     position: position.code,
     positionName: position.name,
     age: 16,
-    ovr: randInt(threshold - 10, threshold + 5) + posBonus,
-    potential: randInt(70, 95),
+    ovr: clamp(randInt(threshold - 5, threshold + 4) + posBonus, 45, 85),
+    potential: clamp(randInt(threshold + 3, threshold + 18), 70, 95),
     phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
     hsYear: 0,   // 高中第几年 (0=高一, 1=高二, 2=高三)
     uniYear: 0,  // 大学第几年 (0=大一, 1=大二, 2=大三, 3=大四)
@@ -1073,50 +1076,97 @@ function getAgeModifier(age) {
 function checkNationalTeam(p) {
   const country = COUNTRIES.find(c => c.code === p.nationality);
   if (!country) return;
-  
-  // Check which competitions occur this year
+
+  // 国家队入选门槛: 职业球员 + OVR≥72 (国际中位数70, 国家队需高于中位数)
+  // 非职业球员(高中/大学)不入选国家队
+  if (p.phase !== 'pro') return;
+  if (p.ovr < 72) {
+    log('NATIONAL', `未达国家队标准: OVR=${p.ovr} < 72 (需≥72且为职业球员)`);
+    return;
+  }
+
+  // 各国籍所属洲的赛事映射 (美国不能参加亚洲杯)
+  // FIBA洲际组织: FIBA Asia, FIBA Americas, FIBA Europe, FIBA Africa, FIBA Oceania
+  const continentalCupMap = {
+    'FIBA Asia': 'asiaCup',
+    'FIBA Americas': 'ameriCup',
+    'FIBA Europe': 'euroBasket',
+    'FIBA Africa': 'afroBasket',
+    'FIBA Oceania': 'asiaCup'  // 澳洲参加亚洲赛事(现实:FIBA并入亚太大区)
+  };
+
   for (const [key, comp] of Object.entries(COMPETITIONS)) {
-    if (comp.years.includes(gameYear)) {
-      // Player must be at least 18 and have decent OVR
-      if (p.age >= 18 && p.ovr >= 65) {
-        const nationalTeamBonus = randInt(-5, 10);
-        const winChance = (p.ovr - 60 + nationalTeamBonus) / 80;
-        
-        if (Math.random() < clamp(winChance, 0.1, 0.9)) {
-          p.yearAwards.push({
-            type: 'national',
-            competition: comp.name,
-            result: '参加了' + comp.name,
-            icon: '🌍'
-          });
-          
-          if (p.ovr >= 80 || Math.random() < 0.3) {
-            const honors = HONORS.national;
-            const honor = key.startsWith('olympics') ? 
-              (Math.random() < 0.15 ? '奥运会金牌' : '参与奥运会') :
-              key.startsWith('fiba') ?
-                (Math.random() < 0.2 ? 'FIBA世界杯冠军' : '参与FIBA世界杯') :
-              key.startsWith('asia') ?
-                (Math.random() < 0.25 ? '亚洲杯冠军' : '参与亚洲杯') :
-              key.startsWith('euro') ?
-                (Math.random() < 0.2 ? '欧锦赛冠军' : '参与欧锦赛') :
-              key.startsWith('afro') ?
-                (Math.random() < 0.3 ? '非洲杯冠军' : '参与非洲杯') :
-              key.startsWith('ameri') ?
-                (Math.random() < 0.2 ? '美洲杯冠军' : '参与美洲杯') :
-                '参与国际赛事';
-            
-            if (honor.includes('冠军') || honor.includes('金牌')) {
-              p.honors.push(honor);
-              p.ovr = clamp(p.ovr + 2, 40, 99);
-              p.fame = clamp(p.fame + 10, 0, 100);
-              p.wealth += 500000;
-              p.yearAwards[p.yearAwards.length - 1].result = '赢得了' + comp.name + '！';
-              p.yearAwards[p.yearAwards.length - 1].icon = '🏆';
-            }
-          }
-        }
+    if (!comp.years.includes(gameYear)) continue;
+
+    // 世界大赛(世界杯/奥运会): 所有国家都可参加
+    // 洲际比赛: 只有所属洲的国家才能参加
+    if (comp.type === 'continental') {
+      const allowedKey = continentalCupMap[country.confederation];
+      if (key !== allowedKey) {
+        log('NATIONAL', `${country.name}不参加${comp.name} (所属:${country.confederation})`);
+        continue;
       }
+    }
+
+    log('NATIONAL', `${country.name}球员符合${comp.name}参赛条件: OVR=${p.ovr}`);
+
+    // 国家队实力匹配: 基于该国篮球实力阈值 + 球员OVR
+    // 美国队夺冠概率最高, 亚洲/非洲队伍较难
+    const countryStrength = country.thresholdVal;
+    const strengthBonus = (countryStrength - 70) * 2;  // 阈值78的美国: +16; 阈值68的中国: -4
+    const playerContribution = (p.ovr - 72) * 2;        // OVR越高贡献越大
+    const randomFactor = randInt(-10, 15);
+    const totalScore = strengthBonus + playerContribution + randomFactor;
+
+    // 参赛资格: OVR≥72即可入选 (已检查)
+    p.yearAwards.push({
+      type: 'national',
+      competition: comp.name,
+      result: '参加了' + comp.name,
+      icon: '🌍'
+    });
+    log('NATIONAL', `入选${comp.name}国家队 | 国家实力修正:${strengthBonus} 球员贡献:${playerContribution} 随机:${randomFactor} → 总分:${totalScore}`);
+
+    // 夺冠判定: 综合国家实力+球员贡献
+    // 强队(美国): totalScore常>20, 夺冠概率高
+    // 弱队(亚洲): totalScore常<10, 夺冠概率低
+    const winThreshold = comp.type === 'world' ? 15 : 10;
+    if (totalScore >= winThreshold && (p.ovr >= 78 || Math.random() < 0.4)) {
+      let honor;
+      if (key === 'olympics') {
+        honor = totalScore >= 30 ? '奥运会金牌' : totalScore >= 20 ? '奥运会奖牌' : '参与奥运会';
+      } else if (key === 'fibaWorldCup') {
+        honor = totalScore >= 30 ? 'FIBA世界杯冠军' : totalScore >= 20 ? 'FIBA世界杯奖牌' : '参与FIBA世界杯';
+      } else if (key === 'asiaCup') {
+        honor = totalScore >= 20 ? '亚洲杯冠军' : totalScore >= 12 ? '亚洲杯奖牌' : '参与亚洲杯';
+      } else if (key === 'euroBasket') {
+        honor = totalScore >= 25 ? '欧锦赛冠军' : totalScore >= 15 ? '欧锦赛奖牌' : '参与欧锦赛';
+      } else if (key === 'ameriCup') {
+        honor = totalScore >= 25 ? '美洲杯冠军' : totalScore >= 15 ? '美洲杯奖牌' : '参与美洲杯';
+      } else if (key === 'afroBasket') {
+        honor = totalScore >= 18 ? '非洲杯冠军' : totalScore >= 10 ? '非洲杯奖牌' : '参与非洲杯';
+      } else {
+        honor = '参与国际赛事';
+      }
+
+      if (honor.includes('冠军') || honor.includes('金牌')) {
+        p.honors.push(honor);
+        p.ovr = clamp(p.ovr + 2, 40, 99);
+        p.fame = clamp(p.fame + 10, 0, 100);
+        p.wealth += 500000;
+        p.yearAwards[p.yearAwards.length - 1].result = '赢得' + comp.name + '冠军！';
+        p.yearAwards[p.yearAwards.length - 1].icon = '🏆';
+        log('NATIONAL', `🏆 ${comp.name}夺冠! 荣誉:${honor} | OVR+2 名气+10 奖金50万`);
+      } else if (honor.includes('奖牌')) {
+        p.honors.push(honor);
+        p.fame = clamp(p.fame + 5, 0, 100);
+        p.wealth += 200000;
+        p.yearAwards[p.yearAwards.length - 1].result = '获得' + comp.name + '奖牌';
+        p.yearAwards[p.yearAwards.length - 1].icon = '🥈';
+        log('NATIONAL', `🥈 ${comp.name}获奖牌 | 名气+5 奖金20万`);
+      }
+    } else {
+      log('NATIONAL', `${comp.name}: 未获奖 (总分${totalScore} < 阈值${winThreshold} 或 OVR不足)`);
     }
   }
 }
@@ -1281,49 +1331,78 @@ function declareDraft() {
   const p = state;
   p.draftDeclared = true;
   p.phase = 'pro';
-  
-  // === 真实选秀逻辑 ===
-  // NBA选秀: 2轮, 共60顺位 (30队×2轮)
-  // 选秀顺位基于OVR + 年龄 + 随机因素
-  // OVR 85+: 乐透区(前14顺位)
-  // OVR 75-84: 首轮中后段
-  // OVR 65-74: 次轮
-  // OVR <65: 可能落选
-  
-  // 选秀顺位基于: OVR + 潜力 + 年龄(年轻球员有更高上限,顺位bonus)
-  // NBA球探更看重年轻球员的"上限"(upside)
+  const country = COUNTRIES.find(c => c.code === p.nationality);
+
+  // === 真实选秀逻辑 (NBA规则) ===
+  // NBA选秀条件:
+  // 1. 年满19岁 + 高中毕业至少1年 (one-and-done规则)
+  // 2. 国际球员: 年满22岁自动获得参选资格, <22需主动声明
+  // 选秀: 2轮共60顺位 (30队×2轮)
+  // 所有国籍球员均可参加NBA选秀, 但低OVR球员可能落选后进入本国联赛
+
+  log('DRAFT', `=== 选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential}`);
+
+  // 选秀顺位基于: OVR + 潜力 + 年龄(年轻球员有更高上限)
   const ageBonus = p.age <= 19 ? -3 : p.age <= 20 ? -1 : p.age >= 23 ? 2 : 0;
   const potBonus = p.potential >= 90 ? -2 : p.potential >= 85 ? -1 : 0;
+  // 国际球员bonus: 非美国球员有"国际神秘感"加成,球探更感兴趣
+  const intlBonus = p.nationality !== 'USA' ? -1 : 0;
 
   let draftPosition;
   let drafted = true;
+  let draftLeague = 'NBA';  // 默认参选NBA
 
   if (p.ovr >= 85) {
-    // 乐透秀: 1-14顺位 (OVR越高顺位越靠前)
-    draftPosition = clamp(randInt(1, 14) - Math.floor((p.ovr - 85) / 2) + ageBonus + potBonus, 1, 14);
-    log('DRAFT', `选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 潜力修正:${potBonus} → 预估顺位:${draftPosition}`);
+    // 乐透秀: 1-14顺位
+    draftPosition = clamp(randInt(1, 14) - Math.floor((p.ovr - 85) / 2) + ageBonus + potBonus + intlBonus, 1, 14);
+    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 潜力修正:${potBonus} 国际加成:${intlBonus} → 预估顺位:${draftPosition}`);
   } else if (p.ovr >= 75) {
     // 首轮中后段: 15-30顺位
-    draftPosition = clamp(randInt(15, 30) + ageBonus, 15, 30);
-    log('DRAFT', `选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
+    draftPosition = clamp(randInt(15, 30) + ageBonus + intlBonus, 15, 30);
+    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 潜力=${p.potential} 年龄=${p.age} | 年龄修正:${ageBonus} 国际加成:${intlBonus} → 预估顺位:${draftPosition}`);
   } else if (p.ovr >= 65) {
     // 次轮: 31-60顺位
     draftPosition = clamp(randInt(31, 60) + ageBonus, 31, 60);
-    log('DRAFT', `选秀评估: OVR=${p.ovr} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
+    log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 年龄=${p.age} | 年龄修正:${ageBonus} → 预估顺位:${draftPosition}`);
   } else {
-    // OVR < 65: 60%概率落选 (低OVR难获青睐)
-    if (Math.random() < 0.6) {
+    // OVR < 65: 70%概率NBA落选 (低OVR难获NBA青睐)
+    if (Math.random() < 0.7) {
       drafted = false;
-      log('DRAFT', `选秀评估: OVR=${p.ovr} < 65, 落选概率高`);
+      log('DRAFT', `NBA选秀评估: OVR=${p.ovr} < 65, NBA落选概率高`);
     } else {
       draftPosition = randInt(45, 60);
-      log('DRAFT', `选秀评估: OVR=${p.ovr} 勉强入选 → 预估顺位:${draftPosition}`);
+      log('DRAFT', `NBA选秀评估: OVR=${p.ovr} 勉强入选 → 预估顺位:${draftPosition}`);
     }
   }
   
   if (!drafted) {
-    // 落选 → 自由球员
+    // NBA落选 → 检查是否能进入本国联赛
+    // OVR≥60: 可签约本国联赛球队(CBA/EuroLeague等)
+    // OVR<60: 成为自由球员
     p.draftPick = null;
+
+    if (p.ovr >= 60 && p.nationality !== 'USA') {
+      // 签约本国联赛
+      const homeTeams = PRO_TEAMS[p.nationality];
+      if (homeTeams && homeTeams.length > 0) {
+        const draftTeam = pick(homeTeams);
+        p.salary = randInt(100000, 300000);  // 本国联赛底薪
+        p.teamName = draftTeam.name;
+        p.teamLogo = draftTeam.logo;
+        p.teamLogoCls = draftTeam.cls;
+        p.league = draftTeam.league;
+        p.team = draftTeam;
+        p.career.push({
+          age: p.age, event: 'NBA落选·签约本国联赛', team: draftTeam.name, league: draftTeam.league,
+          draftPick: 'NBA落选'
+        });
+        log('DRAFT', `❌ NBA落选 → ✅ 签约${country.proName}: ${draftTeam.name} | OVR=${p.ovr} | 起薪${formatSalary(p.salary)}`);
+        p.fame = clamp(p.fame + 2, 0, 100);
+        return;
+      }
+    }
+
+    // OVR<60或美国球员落选: 自由球员
     p.salary = 50000;
     p.teamName = '自由球员';
     p.teamLogo = 'FA';
@@ -1337,12 +1416,13 @@ function declareDraft() {
     log('DRAFT', `❌ 选秀落选 | OVR=${p.ovr} | 成为自由球员 | 起薪${formatSalary(p.salary)}`);
     return;
   }
-  
+
   const round = draftPosition <= 30 ? 1 : 2;
   const pickNum = draftPosition <= 30 ? draftPosition : draftPosition - 30;
-  
-  // 选秀球队: 根据国籍选联赛, NBA球队有30支
-  const proTeams = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
+
+  // 选秀球队: NBA选秀所有球队都来自NBA联盟(30支)
+  // 国际球员被NBA选中后去NBA打球, 不限于本国联赛
+  const proTeams = PRO_TEAMS.USA;  // NBA球队池
   const draftTeam = pick(proTeams);
   
   p.draftPick = {
@@ -1393,19 +1473,62 @@ function declareDraft() {
 function getTransferChoices() {
   const p = state;
   const country = COUNTRIES.find(c => c.code === p.nationality);
-  const allTeams = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
-  
-  // Better OVR = more offers from better teams
-  const numOffers = p.ovr >= 85 ? 4 : p.ovr >= 75 ? 3 : p.ovr >= 65 ? 2 : 1;
-  const offers = pickN(allTeams, Math.min(numOffers + 1, allTeams.length));
-  
-  return offers.map((team, i) => ({
-    type: 'transfer',
-    title: `加盟 ${team.name}`,
-    desc: `${team.league} · 年薪 ${formatSalary(Math.round(p.salary * (0.7 + Math.random() * 0.6)))}`,
-    team: team,
-    salary: Math.round(p.salary * (0.7 + Math.random() * 0.6))
-  }));
+
+  // 球队按实力排序: 数组顺序即实力排序(前面的强)
+  // 程序化赋予strength: 球队池中越靠前实力越强
+  const getTeamStrength = (team, pool) => {
+    const idx = pool.indexOf(team);
+    return Math.round(90 - (idx / pool.length) * 30);  // 90→60分布
+  };
+
+  // 球员所在联赛的球队池 (转会通常在同联赛内)
+  // NBA球员在NBA内转会, 其他联赛同理
+  let teamPool;
+  if (p.league === 'NBA' || p.nationality === 'USA' || p.nationality === 'CAN') {
+    teamPool = PRO_TEAMS.USA;
+  } else {
+    teamPool = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
+  }
+
+  // 排除当前球队 (避免"转会到原队"的bug)
+  const availableTeams = teamPool.filter(t => t.name !== p.teamName);
+  if (availableTeams.length === 0) return [];
+
+  // 按实力排序(强队在前)
+  const sortedTeams = availableTeams.map(t => ({
+    team: t,
+    strength: getTeamStrength(t, teamPool)
+  })).sort((a, b) => b.strength - a.strength);
+
+  // OVR越高, 强队越愿意接收; OVR低, 只能去弱队
+  // 匹配逻辑: 球员OVR决定能去的球队实力上限
+  const playerTier = p.ovr >= 85 ? 0 : p.ovr >= 78 ? 1 : p.ovr >= 72 ? 2 : 3;
+  const numOffers = p.ovr >= 85 ? 3 : p.ovr >= 75 ? 2 : 1;
+
+  // 高OVR: 从强队中选; 低OVR: 从中下游球队选
+  const startIdx = playerTier === 0 ? 0 :
+                   playerTier === 1 ? Math.floor(sortedTeams.length * 0.2) :
+                   playerTier === 2 ? Math.floor(sortedTeams.length * 0.4) :
+                   Math.floor(sortedTeams.length * 0.6);
+  const endIdx = Math.min(startIdx + numOffers + 2, sortedTeams.length);
+  const candidates = sortedTeams.slice(startIdx, endIdx);
+
+  // 随机选2-3支, 按实力排序展示
+  const offers = pickN(candidates, Math.min(2, candidates.length));
+
+  return offers.map(({team, strength}) => {
+    // 薪资基于球队实力和球员OVR
+    const salaryMultiplier = 0.6 + (strength / 100) * 0.8;  // 强队薪资高
+    const newSalary = Math.round(p.salary * salaryMultiplier * (0.9 + Math.random() * 0.3));
+    return {
+      type: 'transfer',
+      title: `加盟 ${team.name}`,
+      desc: `${team.league} · 实力${strength} · 年薪 ${formatSalary(newSalary)}`,
+      team: team,
+      salary: newSalary,
+      tag: '转会'
+    };
+  });
 }
 
 function getYearChoices() {
