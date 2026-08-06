@@ -166,11 +166,13 @@
     background: rgba(255,255,255,0.03); border-radius: 8px;
   }
   .team-logo {
-    width: 36px; height: 36px; border-radius: 8px;
+    width: 40px; height: 40px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px; color: white;
-    flex-shrink: 0;
+    font-weight: 800; font-size: 13px; color: white;
+    flex-shrink: 0; position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
   }
+  .team-logo svg { width: 100%; height: 100%; border-radius: 50%; }
   .team-name { font-size: 14px; font-weight: 600; }
   .team-league { font-size: 11px; color: var(--text-dim); }
 
@@ -366,10 +368,9 @@
     border-radius: 10px; margin-bottom: 8px;
   }
   .draft-pick .pick-num {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: var(--accent); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 16px;
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    background: rgba(255,107,53,0.1); padding: 4px 8px; border-radius: 6px;
+    flex-shrink: 0;
   }
   .draft-pick .pick-team { flex: 1; min-width: 0; }
   .draft-pick .pick-team-name { font-weight: 600; font-size: 14px; }
@@ -912,6 +913,89 @@ function pickN(arr, n) {
   return result;
 }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// === SVG图片式队徽生成 ===
+// 为每个球队生成圆形盾牌式SVG队徽,看起来更像真实图片
+const LOGO_COLORS = {
+  'logo-red': ['#d32f2f', '#8b0000'],
+  'logo-navy': ['#0f1b3d', '#1a2d5a'],
+  'logo-blue': ['#1565c0', '#0d47a1'],
+  'logo-green': ['#2e7d32', '#1b5e20'],
+  'logo-purple': ['#6a1b9a', '#4a148c'],
+  'logo-orange': ['#e65100', '#bf360c'],
+  'logo-gold': ['#b8860b', '#8b6508'],
+  'logo-teal': ['#00695c', '#004d40'],
+  'logo-crimson': ['#8b0000', '#5a0000'],
+  'logo-royal': ['#1a237e', '#0d1442'],
+  'logo-sunset': ['#ff6f00', '#c43e00'],
+  'logo-forest': ['#1b5e20', '#0d3311'],
+  'logo-steel': ['#455a64', '#263238'],
+  'logo-maroon': ['#5d1a1a', '#3d0f0f'],
+  'logo-emerald': ['#00695c', '#004d40'],
+  'logo-silver': ['#546e7a', '#37474f'],
+  'logo-black': ['#212121', '#000000'],
+  'logo-athletic': ['#c8102e', '#7a0a1c'],
+  'logo-classic': ['#1e3a5f', '#0f1f33'],
+  'logo-modern': ['#3d2b1f', '#1a0f08'],
+  'logo-bright': ['#ff6b35', '#c44a1a']
+};
+function getTeamBadge(logo, cls) {
+  const colors = LOGO_COLORS[cls] || ['#444', '#222'];
+  const c1 = colors[0], c2 = colors[1];
+  // 基于logo文字生成唯一图案种子
+  let seed = 0;
+  for (let i = 0; i < logo.length; i++) seed += logo.charCodeAt(i);
+  const pattern = seed % 4;  // 4种背景图案
+  const shortLogo = logo.length > 4 ? logo.substring(0, 4) : logo;
+
+  let bgPattern = '';
+  if (pattern === 0) {
+    // 斜条纹
+    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><rect width="4" height="8" fill="rgba(255,255,255,0.08)"/></pattern>`;
+  } else if (pattern === 1) {
+    // 圆点
+    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="10" height="10"><circle cx="5" cy="5" r="1.5" fill="rgba(255,255,255,0.1)"/></pattern>`;
+  } else if (pattern === 2) {
+    // 横条
+    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="10" height="6"><rect width="10" height="3" fill="rgba(255,255,255,0.06)"/></pattern>`;
+  } else {
+    // 棋盘格
+    bgPattern = `<pattern id="p${seed}" patternUnits="userSpaceOnUse" width="8" height="8"><rect width="4" height="4" fill="rgba(255,255,255,0.05)"/><rect x="4" y="4" width="4" height="4" fill="rgba(255,255,255,0.05)"/></pattern>`;
+  }
+
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <defs>${bgPattern}</defs>
+    <circle cx="20" cy="20" r="19" fill="${c2}"/>
+    <circle cx="20" cy="20" r="19" fill="url(#p${seed})"/>
+    <circle cx="20" cy="20" r="16" fill="${c1}" opacity="0.9"/>
+    <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+    <circle cx="20" cy="20" r="13" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    <text x="20" y="25" text-anchor="middle" font-size="11" font-weight="800" fill="white" font-family="Arial,sans-serif">${shortLogo}</text>
+  </svg>`;
+}
+
+// === 荣誉图标映射 ===
+function getHonorIcon(honor) {
+  if (honor.includes('奥运') && honor.includes('金牌')) return '🥇';
+  if (honor.includes('世界杯') && honor.includes('冠军')) return '🏆';
+  if (honor.includes('冠军')) return '🏆';
+  if (honor.includes('金牌')) return '🥇';
+  if (honor.includes('MVP')) return '⭐';
+  if (honor.includes('最佳')) return '🏅';
+  if (honor.includes('得分王') || honor.includes('助攻王') || honor.includes('篮板王')) return '🎯';
+  if (honor.includes('全明星')) return '🌟';
+  if (honor.includes('新秀')) return '🌱';
+  return '🎖️';
+}
+
+// === 按球队名查找球队数据 ===
+function findTeamByName(name) {
+  for (const code in PRO_TEAMS) {
+    const team = PRO_TEAMS[code].find(t => t.name === name);
+    if (team) return team;
+  }
+  return null;
+}
 
 // ============= GAME INITIALIZATION =============
 // 真实篮球青训体系：
@@ -2137,7 +2221,7 @@ function renderPlayerCard() {
           </div>
           ${p.teamName ? `
           <div class="team-row">
-            <div class="team-logo ${p.teamLogoCls}">${p.teamLogo}</div>
+            <div class="team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls)}</div>
             <div>
               <div class="team-name">${p.teamName}</div>
               <div class="team-league">${p.league}</div>
@@ -2181,7 +2265,7 @@ function renderHighSchoolChoice() {
         ${p.highSchoolChoices.map((hs, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo ${hs.cls}">${hs.logo}</div>
+              <div class="team-logo">${getTeamBadge(hs.logo, hs.cls)}</div>
               <div style="flex:1;">
                 <div class="choice-title">${hs.name}</div>
                 <div class="choice-desc">${COUNTRIES.find(c => c.code === p.nationality).youthName}</div>
@@ -2215,7 +2299,7 @@ function renderUniversityChoice() {
         ${p.universityChoices.map((uni, i) => `
           <button class="btn choice-btn" data-idx="${i}">
             <div style="display:flex;align-items:center;gap:10px;width:100%;">
-              <div class="team-logo ${uni.cls}">${uni.logo}</div>
+              <div class="team-logo">${getTeamBadge(uni.logo, uni.cls)}</div>
               <div style="flex:1;">
                 <div class="choice-title">${uni.name}</div>
                 <div class="choice-desc">${uni.conf}</div>
@@ -2268,7 +2352,8 @@ function renderGameScreen() {
         <div class="event-desc">${getPhaseDesc(p)}  ·  年薪 ${formatSalary(p.salary)}${p.phase === 'pro' ? '  ·  身价 ' + formatSalary(p.salary * 5) : ''}</div>
         ${choices.map((c, i) => `
           <button class="btn choice-btn" data-idx="${i}">
-            <div style="display:flex;align-items:flex-start;gap:10px;width:100%;">
+            <div style="display:flex;align-items:center;gap:10px;width:100%;">
+              ${c.team ? `<div class="team-logo">${getTeamBadge(c.team.logo, c.team.cls)}</div>` : ''}
               <div style="flex:1;">
                 <div class="choice-title">${c.title} ${c.tag ? `<span class="choice-tag">${c.tag}</span>` : ''}</div>
                 <div class="choice-desc">${c.desc}</div>
@@ -2282,10 +2367,11 @@ function renderGameScreen() {
       <div class="draft-card" style="margin-bottom:16px;">
         <div class="timeline-title">选秀记录</div>
         <div class="draft-pick">
-          <div class="pick-num">${p.draftPick.round}×${p.draftPick.pick}</div>
+          <div class="team-logo">${getTeamBadge(p.draftPick.logo, p.draftPick.cls)}</div>
+          <div class="pick-num">R${p.draftPick.round}·P${p.draftPick.pick}</div>
           <div class="pick-team">
             <div class="pick-team-name">${p.draftPick.team}</div>
-            <div class="pick-team-league">${p.draftPick.league}</div>
+            <div class="pick-team-league">${p.draftPick.league} · 总第${p.draftPick.overall}顺位</div>
           </div>
         </div>
       </div>` : ''}
@@ -2294,7 +2380,7 @@ function renderGameScreen() {
       <div style="margin-bottom:16px;">
         <div class="timeline-title">荣誉记录</div>
         <div class="honor-grid">
-          ${p.honors.map(h => `<span class="honor-chip">🏆 ${h}</span>`).join('')}
+          ${p.honors.map(h => `<span class="honor-chip">${getHonorIcon(h)} ${h}</span>`).join('')}
         </div>
       </div>` : ''}
       
@@ -2383,15 +2469,31 @@ function renderRetirementScreen() {
         
         ${p.honors.length > 0 ? `
         <div style="margin-bottom:16px;">
-          <div class="timeline-title" style="text-align:left;">🏆 生涯荣誉</div>
+          <div class="timeline-title" style="text-align:left;">荣誉墙</div>
           <div class="honor-grid">
-            ${p.honors.map(h => `<span class="honor-chip">${h}</span>`).join('')}
+            ${p.honors.map(h => `<span class="honor-chip">${getHonorIcon(h)} ${h}</span>`).join('')}
           </div>
         </div>` : ''}
-        
+
         ${p.career.length > 0 ? `
         <div style="text-align:left;margin-bottom:20px;">
-          <div class="timeline-title">📖 生涯轨迹</div>
+          <div class="timeline-title">效力球队</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+            ${p.career.filter((c, i, arr) => arr.findIndex(x => x.team === c.team) === i).map(c => {
+              const teamData = findTeamByName(c.team);
+              const badge = teamData ? getTeamBadge(teamData.logo, teamData.cls) : getTeamBadge(c.team.substring(0,2), 'logo-steel');
+              return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:rgba(255,255,255,0.03);border-radius:10px;min-width:72px;">
+                <div class="team-logo" style="width:48px;height:48px;">${badge}</div>
+                <div style="font-size:11px;font-weight:600;text-align:center;">${c.team}</div>
+                <div style="font-size:9px;color:var(--text-dim);">${c.league}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        ${p.career.length > 0 ? `
+        <div style="text-align:left;margin-bottom:20px;">
+          <div class="timeline-title">生涯轨迹</div>
           ${p.career.map(c => `
             <div class="timeline-item">
               <div class="timeline-age">${c.age}</div>
