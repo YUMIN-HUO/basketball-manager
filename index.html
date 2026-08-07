@@ -2007,42 +2007,41 @@ function advanceYear() {
   // 大学年级递增
   if (p.phase === 'university') p.uniYear++;
   
-  // OVR变化: 固定基础成长 + 潜力值乘数(潜力越高提升越快)
-  // 高中: 快速成长期 | 大学: 稳步提升期 | 职业: 先升后降
-  const potMultiplier = 0.5 + (p.potential / 100) * 1.5; // 0.5x ~ 2.0x
+  // OVR变化: 向潜力值渐近的成长模型
+  // 潜力值 = OVR天花板,越接近潜力值增长越慢,自然形成峰值分布
+  // 潜力95-99(5%)→峰值95+ | 90-94(10%)→峰值90+ | 80-89(30%)→峰值80+ | 55-79(55%)→峰值60-79
+  const gap = p.potential - p.ovr;  // 与潜力值的差距
   let change;
-  
+
   if (p.phase === 'highschool') {
-    // 高中: 每年固定+3~5,潜力高者+更多
-    const baseGrowth = randInt(3, 5);
-    change = Math.round(baseGrowth * potMultiplier * 0.7);
+    // 高中: 向潜力值快速靠近 (成长率0.25)
+    change = Math.round(gap * 0.25 + rand(-1, 2));
   } else if (p.phase === 'university') {
-    // 大学: 每年固定+2~4,潜力高者+更多
-    const baseGrowth = randInt(2, 4);
-    change = Math.round(baseGrowth * potMultiplier * 0.8);
+    // 大学: 稳步趋近 (成长率0.18)
+    change = Math.round(gap * 0.18 + rand(-1, 1));
   } else if (p.phase === 'pro' && p.age <= 25) {
-    // 职业新秀期: 每年固定+2~3,潜力高者+更多
-    const baseGrowth = randInt(2, 3);
-    change = Math.round(baseGrowth * potMultiplier * 0.9);
+    // 职业新秀期: 缓慢趋近 (成长率0.12)
+    change = Math.round(gap * 0.12 + rand(-1, 1));
   } else if (p.age <= 30) {
-    // 黄金期: 微幅波动,偶尔+1
-    change = Math.round(randInt(-1, 1) + potMultiplier * 0.3);
+    // 黄金期: 微幅趋近或持平 (成长率0.05)
+    change = Math.round(gap * 0.05 + randInt(-1, 0));
   } else {
-    // 30岁后: 下降期,年龄越大下降越多
+    // 30岁后: 下降期,高潜力球员下降更慢
     const declineRate = p.age >= 36 ? randInt(-4, -2) : p.age >= 33 ? randInt(-3, -1) : randInt(-2, 0);
-    change = Math.round(declineRate * (2 - potMultiplier * 0.3));
+    const potSave = Math.round((p.potential - 70) * 0.05); // 潜力越高衰退越慢
+    change = declineRate + potSave;
   }
-  
+
   // 伤病惩罚
   const chronicPenalty = p.chronicInjuries > 0 ? -randInt(0, p.chronicInjuries) : 0;
   change += chronicPenalty;
-  
-  // 边界保护
-  if (p.age <= 18 && change < 2) change = 2;
-  
+
+  // 边界保护: 年轻球员至少有微量成长
+  if (p.age <= 18 && change < 1) change = 1;
+
   p.ovr = clamp(p.ovr + change, 40, 99);
   growAbilities(p, change);  // 同步分项能力值
-  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (潜力乘数:${potMultiplier.toFixed(2)}x, 基础成长:${change - chronicPenalty}, 伤病:${chronicPenalty})`);
+  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (潜力:${p.potential} 差距:${gap} 成长:${change - chronicPenalty} 伤病:${chronicPenalty})`);
   
   // === 伤病系统 ===
   // 概率基于年龄和打球强度 (年龄越大概率越高)
