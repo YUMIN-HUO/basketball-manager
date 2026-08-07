@@ -1427,9 +1427,10 @@ const LOGO_COLORS = {
 function getFallbackBadge(logo, cls) {
   const colors = LOGO_COLORS[cls] || ['#444', '#222'];
   const c1 = colors[0], c2 = colors[1];
+  const safeLogo = logo || '??';
   let seed = 0;
-  for (let i = 0; i < logo.length; i++) seed += logo.charCodeAt(i);
-  const shortLogo = logo.length > 4 ? logo.substring(0, 4) : logo;
+  for (let i = 0; i < safeLogo.length; i++) seed += safeLogo.charCodeAt(i);
+  const shortLogo = safeLogo.length > 4 ? safeLogo.substring(0, 4) : safeLogo;
   return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
     <circle cx="20" cy="20" r="19" fill="${c2}"/>
     <circle cx="20" cy="20" r="16" fill="${c1}"/>
@@ -1770,26 +1771,25 @@ function advanceYear() {
   if (p.salary > p.peakSalary) p.peakSalary = p.salary;
   if (p.wealth > p.peakWealth) p.peakWealth = p.wealth;
   
-  // 联赛奖项模拟 (仅职业阶段)
+  // 联赛奖项模拟 (仅职业阶段) - 概率大幅降低
   if (p.phase === 'pro' && p.teamName) {
     // 按联赛梯队调整奖项名称和概率
     const isNBA = p.league === 'NBA';
     const isEuroLeague = p.league === 'EuroLeague';
     const isCBA = p.league === 'CBA';
-    const isTop3 = isNBA || isEuroLeague || isCBA;  // 第一/二梯队
+    const isTop3 = isNBA || isEuroLeague || isCBA;
     
-    // 总冠军概率: NBA最难拿, 其他联赛略易
+    // 总冠军概率 (大幅降低)
     const winProb = isNBA 
-      ? (p.ovr >= 90 ? 0.40 : p.ovr >= 85 ? 0.22 : p.ovr >= 80 ? 0.10 : 0.02)
+      ? (p.ovr >= 90 ? 0.15 : p.ovr >= 85 ? 0.08 : p.ovr >= 80 ? 0.03 : 0.005)
       : isEuroLeague
-      ? (p.ovr >= 88 ? 0.35 : p.ovr >= 82 ? 0.18 : p.ovr >= 75 ? 0.08 : 0.02)
+      ? (p.ovr >= 88 ? 0.12 : p.ovr >= 82 ? 0.06 : p.ovr >= 75 ? 0.03 : 0.005)
       : isCBA
-      ? (p.ovr >= 85 ? 0.40 : p.ovr >= 78 ? 0.20 : p.ovr >= 70 ? 0.10 : 0.03)
-      : (p.ovr >= 82 ? 0.35 : p.ovr >= 75 ? 0.18 : p.ovr >= 68 ? 0.10 : 0.03);
+      ? (p.ovr >= 85 ? 0.15 : p.ovr >= 78 ? 0.07 : p.ovr >= 70 ? 0.03 : 0.008)
+      : (p.ovr >= 82 ? 0.10 : p.ovr >= 75 ? 0.05 : p.ovr >= 68 ? 0.02 : 0.008);
     
     // 总冠军
     if (Math.random() < winProb) {
-      // 冠军奖杯名称按联赛区分
       const champName = isNBA ? 'NBA总冠军(奥布莱恩杯)' 
         : isEuroLeague ? '欧冠EL总冠军' 
         : isCBA ? 'CBA总冠军(至尊鼎)' 
@@ -1802,8 +1802,8 @@ function advanceYear() {
       p.wealth += isNBA ? 3000000 : isEuroLeague ? 1000000 : isCBA ? 500000 : 300000;
       log('AWARD', `🏆 ${champName}! ${p.teamName}`);
       
-      // FMVP (总决赛MVP): 含金量最高个人荣誉
-      const fmvpProb = p.ovr >= 90 ? 0.55 : p.ovr >= 85 ? 0.40 : p.ovr >= 80 ? 0.20 : 0.05;
+      // FMVP (总决赛MVP): 含金量最高个人荣誉,概率很低
+      const fmvpProb = p.ovr >= 90 ? 0.25 : p.ovr >= 85 ? 0.15 : p.ovr >= 80 ? 0.05 : 0.02;
       if (Math.random() < fmvpProb) {
         const fmvpLabel = isNBA ? 'NBA总决赛FMVP' : isEuroLeague ? '欧冠四强赛MVP(Final Four MVP)' : isCBA ? 'CBA总决赛FMVP' : `${p.league}FMVP`;
         p.leagueAwards.push({ year: p.age, type: 'fmvp', league: p.league, team: p.teamName, icon: '👑', label: fmvpLabel });
@@ -1814,9 +1814,9 @@ function advanceYear() {
       }
     }
     
-    // 常规赛MVP: OVR>=85有概率, NBA最难
-    const mvpProb = isNBA ? (p.ovr >= 92 ? 0.18 : p.ovr >= 88 ? 0.10 : p.ovr >= 85 ? 0.05 : 0)
-      : (p.ovr >= 88 ? 0.15 : p.ovr >= 85 ? 0.08 : p.ovr >= 80 ? 0.04 : 0);
+    // 常规赛MVP: 非常稀有
+    const mvpProb = isNBA ? (p.ovr >= 92 ? 0.04 : p.ovr >= 88 ? 0.02 : 0.01)
+      : (p.ovr >= 88 ? 0.03 : p.ovr >= 85 ? 0.015 : 0.005);
     if (mvpProb > 0 && Math.random() < mvpProb) {
       const mvpLabel = isEuroLeague ? '欧冠常规赛MVP' : `${p.league}常规赛MVP`;
       p.leagueAwards.push({ year: p.age, type: 'mvp', league: p.league, team: p.teamName, icon: '⭐', label: mvpLabel });
@@ -1825,10 +1825,10 @@ function advanceYear() {
       log('AWARD', `⭐ ${mvpLabel}!`);
     }
     
-    // DPOY 最佳防守球员: OVR>=82, 防守型位置(C/PF)概率更高
+    // DPOY 最佳防守球员: 稀有
     if (p.ovr >= 82) {
-      const posBonus = (p.position === 'C' || p.position === 'PF') ? 0.08 : 0.04;
-      const dpoyProb = isNBA ? posBonus * 0.7 : posBonus;
+      const posBonus = (p.position === 'C' || p.position === 'PF') ? 0.03 : 0.015;
+      const dpoyProb = isNBA ? posBonus * 0.5 : posBonus;
       if (Math.random() < dpoyProb) {
         const dpoyLabel = `${p.league}最佳防守球员(DPOY)`;
         p.leagueAwards.push({ year: p.age, type: 'dpoy', league: p.league, team: p.teamName, icon: '🛡️', label: dpoyLabel });
@@ -1838,30 +1838,29 @@ function advanceYear() {
       }
     }
     
-    // 最佳阵容一阵: OVR>=85
-    if (p.ovr >= 85 && Math.random() < 0.35) {
+    // 最佳阵容一阵: OVR>=85,概率较低
+    if (p.ovr >= 85 && Math.random() < 0.08) {
       const allNbaLabel = isNBA ? 'NBA最佳阵容一阵' : `${p.league}最佳阵容一阵`;
       p.leagueAwards.push({ year: p.age, type: 'allnba', league: p.league, team: p.teamName, icon: '🥇', label: allNbaLabel });
       p.honors.push(allNbaLabel);
       log('AWARD', `🥇 ${allNbaLabel}!`);
-    } else if (p.ovr >= 80 && Math.random() < 0.25) {
-      // 最佳阵容二阵
+    } else if (p.ovr >= 80 && Math.random() < 0.06) {
       const allNba2Label = isNBA ? 'NBA最佳阵容二阵' : `${p.league}最佳阵容二阵`;
       p.leagueAwards.push({ year: p.age, type: 'allnba2', league: p.league, team: p.teamName, icon: '🥈', label: allNba2Label });
       p.honors.push(allNba2Label);
       log('AWARD', `🥈 ${allNba2Label}!`);
     }
     
-    // 最佳防守阵容
-    if (p.ovr >= 80 && (p.position === 'C' || p.position === 'PF' || p.position === 'SF') && Math.random() < 0.20) {
+    // 最佳防守阵容: 稀有
+    if (p.ovr >= 80 && (p.position === 'C' || p.position === 'PF' || p.position === 'SF') && Math.random() < 0.05) {
       const defLabel = isNBA ? 'NBA最佳防守一阵' : `${p.league}最佳防守一阵`;
       p.leagueAwards.push({ year: p.age, type: 'alldef', league: p.league, team: p.teamName, icon: '🔒', label: defLabel });
       p.honors.push(defLabel);
       log('AWARD', `🔒 ${defLabel}!`);
     }
     
-    // 单项数据王: 得分王/助攻王/篮板王/抢断王/盖帽王
-    if (p.ovr >= 82 && Math.random() < 0.20) {
+    // 单项数据王: 稀有
+    if (p.ovr >= 82 && Math.random() < 0.06) {
       const statTypes = [
         { key: 'pts', label: '得分王', icon: '🏀' },
         { key: 'ast', label: '助攻王', icon: '🅿️' },
@@ -1877,16 +1876,16 @@ function advanceYear() {
       log('AWARD', `${statType.icon} ${statLabel}!`);
     }
     
-    // 全明星: OVR>=78即可入选
-    if (p.ovr >= 78 && Math.random() < 0.50) {
-      const isStarter = p.ovr >= 85 && Math.random() < 0.60;
+    // 全明星: 相对常见但仍需实力
+    if (p.ovr >= 78 && Math.random() < 0.20) {
+      const isStarter = p.ovr >= 85 && Math.random() < 0.30;
       const allStarLabel = isNBA ? (isStarter ? 'NBA全明星首发' : 'NBA全明星') : `${p.league}全明星`;
       p.leagueAwards.push({ year: p.age, type: 'allstar', league: p.league, team: p.teamName, icon: '✨', label: allStarLabel, starter: isStarter });
       p.honors.push(allStarLabel);
       p.fame = clamp(p.fame + 2, 0, 100);
       
-      // 全明星MVP
-      if (isStarter && Math.random() < 0.15) {
+      // 全明星MVP: 非常稀有
+      if (isStarter && Math.random() < 0.03) {
         const asMvpLabel = isNBA ? 'NBA全明星MVP' : `${p.league}全明星MVP`;
         p.leagueAwards.push({ year: p.age, type: 'as_mvp', league: p.league, team: p.teamName, icon: '🌟', label: asMvpLabel });
         p.honors.push(asMvpLabel);
@@ -1895,24 +1894,24 @@ function advanceYear() {
       }
     }
     
-    // 最快进步球员 MIP: 25岁以下
-    if (p.age <= 25 && p.ovr >= 78 && Math.random() < 0.08) {
+    // 最快进步球员 MIP: 年轻球员
+    if (p.age <= 25 && p.ovr >= 78 && Math.random() < 0.02) {
       const mipLabel = `${p.league}最快进步球员(MIP)`;
       p.leagueAwards.push({ year: p.age, type: 'mip', league: p.league, team: p.teamName, icon: '📈', label: mipLabel });
       p.honors.push(mipLabel);
       log('AWARD', `📈 ${mipLabel}!`);
     }
     
-    // 最佳第六人 SMOY: OVR>=75, 非首发级别
-    if (p.ovr >= 75 && p.ovr < 85 && Math.random() < 0.06) {
+    // 最佳第六人 SMOY
+    if (p.ovr >= 75 && p.ovr < 85 && Math.random() < 0.015) {
       const smoyLabel = isNBA ? 'NBA最佳第六人(SMOY)' : `${p.league}最佳第六人`;
       p.leagueAwards.push({ year: p.age, type: 'smoy', league: p.league, team: p.teamName, icon: '🔌', label: smoyLabel });
       p.honors.push(smoyLabel);
       log('AWARD', `🔌 ${smoyLabel}!`);
     }
     
-    // 最佳新秀阵容: 年龄<=22且职业前2年
-    if (p.age <= 22 && p.ovr >= 70 && Math.random() < 0.30) {
+    // 最佳新秀阵容
+    if (p.age <= 22 && p.ovr >= 70 && Math.random() < 0.10) {
       const rookieLabel = isNBA ? 'NBA最佳新秀一阵' : `${p.league}最佳新秀`;
       p.leagueAwards.push({ year: p.age, type: 'allrookie', league: p.league, team: p.teamName, icon: '🌱', label: rookieLabel });
       p.honors.push(rookieLabel);
@@ -3731,7 +3730,7 @@ function renderRetirementScreen() {
   p.career.forEach(c => {
     if (c.team && c.team !== '') {
       if (!teamSeasons[c.team]) {
-        teamSeasons[c.team] = { team: c.team, league: c.league, logo: c.teamLogo, logoCls: c.teamLogoCls, seasons: [], ovr: c.ovr };
+        teamSeasons[c.team] = { team: c.team, league: c.league || '未知联赛', logo: c.teamLogo || '', logoCls: c.teamLogoCls || 'logo-steel', seasons: [], ovr: c.ovr || 60 };
       }
       teamSeasons[c.team].seasons.push(c.age);
     }
@@ -3831,7 +3830,10 @@ function renderRetirementScreen() {
           ${uniqueTeams.map(t => {
             const seasons = t.seasons.sort((a,b) => a-b);
             const seasonRange = seasons.length === 1 ? `${seasons[0]}岁` : `${seasons[0]}-${seasons[seasons.length-1]}岁`;
-            const badge = t.logo ? getTeamBadge(t.logo, t.logoCls || 'logo-steel', t.team) : getTeamBadge(t.team.substring(0,2), 'logo-steel', t.team);
+            const hasLogo = t.logo && t.logo.trim() !== '';
+            const badge = hasLogo 
+              ? getTeamBadge(t.logo, t.logoCls || 'logo-steel', t.team) 
+              : getTeamBadge((t.team || '??').substring(0,2), t.logoCls || 'logo-steel', t.team);
             const isChampion = p.championshipYears.some(y => seasons.includes(y));
             return `
               <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-card);border-radius:12px;margin-bottom:8px;border-left:3px solid ${isChampion ? '#ffd700' : 'var(--accent)'};">
