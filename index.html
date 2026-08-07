@@ -1193,23 +1193,213 @@ const INJURIES = [
   { name: '流感', severity: 1, recovery: [1, 2] }
 ];
 
-const RANDOM_EVENTS = [
-  { icon: '🔥', title: '火热手感', desc: '你在训练中表现出色，教练对你赞不绝口。', effect: { ovr: 2, fame: 3 } },
-  { icon: '💪', title: '刻苦训练', desc: '你每天加练三小时，身体和技术都在提升。', effect: { ovr: 1, relation: 2 } },
-  { icon: '⭐', title: '新星崛起', desc: '你在关键比赛中爆砍高分，一战成名！', effect: { ovr: 3, fame: 5 } },
-  { icon: '📰', title: '媒体关注', desc: '媒体采访让你曝光度大增，赞助商也找上门来。', effect: { fame: 4, wealth: 5 } },
-  { icon: '🎯', title: '技惊四座', desc: '你在国际比赛中命中关键球，载入史册。', effect: { ovr: 2, fame: 6 } },
-  { icon: '🏆', title: '团队氛围', desc: '球队团结一心，战斗力爆棚。', effect: { relation: 4 } },
-  { icon: '👕', title: '球衣销售', desc: '你的球衣成为畅销品，球队给你分成。', effect: { wealth: 4, fame: 2 } },
-  { icon: '📈', title: '身价暴涨', desc: '经纪人告诉你，有豪门俱乐部对你感兴趣。', effect: { wealth: 5 } },
-  { icon: '🎓', title: '学业出色', desc: '你在学业上也保持优秀，导师给予肯定。', effect: { relation: 2 } },
-  { icon: '💼', title: '商业合作', desc: '品牌商邀请你代言，收入可观。', effect: { wealth: 6 } },
-  { icon: '🎪', title: '伤病初愈', desc: '从伤病中完全恢复，状态比之前更好。', effect: { ovr: 1 } },
-  { icon: '🏥', title: '小伤不断', desc: '小伤影响了你的状态，需要调整。', effect: { ovr: -1, relation: -1 } },
-  { icon: '😤', title: '更衣室矛盾', desc: '与队友发生争执，气氛变得紧张。', effect: { relation: -3 } },
-  { icon: '📉', title: '状态下滑', desc: '连续的比赛让你疲惫不堪。', effect: { ovr: -1 } },
-  { icon: '🎂', title: '生日派对', desc: '队友为你举办了惊喜派对，士气高涨。', effect: { relation: 3 } }
-];
+// === 生涯随机事件系统 (每年随机触发,玩家选择影响后续发展) ===
+// 阶段: rookie(新秀1-3年) / growth(成长4-7年) / peak(巅峰8-12年) / late(后期13+年) / offcourt(全生涯通用)
+// effects支持: ovr / fame / relation / wealth(美元) / salary(倍率) / injuryChanceMod / fatigue / chance+success+fail
+const STORY_EVENTS = {
+  rookie: [
+    {
+      id: 'rookie_training', icon: '🏋️', title: '新秀赛季训练选择',
+      desc: '休赛期球队安排专项集训，你拥有全部空闲时间，选择训练重心？',
+      choices: [
+        { title: '死磕短板防守体能', desc: '防守+8、体能+7、伤病概率-5%，人气小幅下降', effects: { ovr: 3, fame: -2, injuryChanceMod: -0.05, fatigue: 5 } },
+        { title: '打磨进攻技术', desc: '三分+9、中投+8，教练好感-5，防守成长停滞', effects: { ovr: 4, relation: -5 } }
+      ]
+    },
+    {
+      id: 'rookie_garbage_time', icon: '⏱️', title: '垃圾时间出场机会',
+      desc: '球队大比分领先，剩余5分钟垃圾时间，教练询问你是否上场刷数据？',
+      choices: [
+        { title: '主动请缨上场', desc: '个人数据小幅提升，管理层关注度+6，队友好感-4', effects: { fame: 4, relation: -4, wealth: 50000 } },
+        { title: '主动让位替补新人', desc: '队友好感+8，球队氛围评价+5，个人曝光无提升', effects: { relation: 8, fame: -1 } }
+      ]
+    },
+    {
+      id: 'rookie_extra_training', icon: '🌙', title: '赛后加练邀约',
+      desc: '队内老核心邀请你每晚留下来加练1小时，但会占用你的休息时间？',
+      choices: [
+        { title: '准时参加加练', desc: '综合能力稳步提升，前辈好感+10，疲劳值+10%', effects: { ovr: 2, relation: 5, fatigue: 10 } },
+        { title: '婉拒邀约自主休息', desc: '疲劳清零、伤病概率降低，前辈好感-8', effects: { fatigue: -15, injuryChanceMod: -0.03, relation: -4 } }
+      ]
+    },
+    {
+      id: 'rookie_summer_league', icon: '☀️', title: '夏季联赛抉择',
+      desc: '休赛期你可以选择出战夏季联赛，或跟随主力队观摩训练？',
+      choices: [
+        { title: '出战夏季联赛', desc: '实战经验+12，新秀排名提升，体能消耗大', effects: { ovr: 3, fame: 3, fatigue: 15, injuryChanceMod: 0.03 } },
+        { title: '跟随主力观摩学习', desc: '战术理解+10，教练信任+7，无实战数据加成', effects: { ovr: 1, relation: 4 } }
+      ]
+    },
+    {
+      id: 'rookie_media', icon: '🎤', title: '媒体首次采访',
+      desc: '媒体首次单独采访，询问你新赛季的目标定位？',
+      choices: [
+        { title: '高调表态冲击首发', desc: '野心人设拉满，人气+8，队内竞争压力提升', effects: { fame: 8, relation: -3 } },
+        { title: '低调服从球队', desc: '团队人设加分，教练好感+9，舆论关注度下降', effects: { relation: 5, fame: -2 } }
+      ]
+    }
+  ],
+  growth: [
+    {
+      id: 'growth_starter_battle', icon: '⚔️', title: '首发位置争夺战',
+      desc: '你和队内老将竞争首发位置，最后一场热身赛决定名额，你会？',
+      choices: [
+        { title: '全力单打刷分', desc: '个人数据爆炸，大概率锁定首发，团队配合-6', effects: { ovr: 2, fame: 4, relation: -3 } },
+        { title: '主打团队配合', desc: '球队胜率提升，教练极度认可，首发概率对半开', effects: { ovr: 1, relation: 6, fame: 2 } }
+      ]
+    },
+    {
+      id: 'growth_injury_risk', icon: '🤕', title: '伤病隐患抉择',
+      desc: '赛季中段你出现轻微膝盖劳损，队医建议轮休2场，关键卡位战即将开打？',
+      choices: [
+        { title: '带伤出战关键战', desc: '球队地位+10、铁血人设吸粉，伤病恶化概率+15%', effects: { fame: 5, relation: 5, injuryChanceMod: 0.15, fatigue: 10 } },
+        { title: '遵从医嘱轮休养伤', desc: '伤病彻底恢复，状态稳定，管理层敬业评价-7', effects: { injuryChanceMod: -0.05, fatigue: -10, relation: -4 } }
+      ]
+    },
+    {
+      id: 'growth_contract', icon: '📝', title: '合同提前续约邀请',
+      desc: '球队提前1年给出中等薪资续约合同，你可以选择签约或观望自由市场？',
+      choices: [
+        { title: '提前签约留队', desc: '薪资稳定+20%，球队核心地位锁定，后续难加盟豪门', effects: { salary: 1.2, relation: 5 } },
+        { title: '拒绝续约观望', desc: '有机会签顶薪/豪门，本赛季出场优先级下降', effects: { salary: 1.0, relation: -3, fame: 1 } }
+      ]
+    },
+    {
+      id: 'growth_team_conflict', icon: '💢', title: '队内矛盾调解',
+      desc: '球队主力后卫和内线中锋爆发训练冲突，全队僵持，身为核心的你如何选择？',
+      choices: [
+        { title: '主动出面调解', desc: '队内氛围大幅提升，领袖气质+8，消耗心态值', effects: { relation: 8, fatigue: 5 } },
+        { title: '置身事外专注训练', desc: '个人状态不受影响，球队凝聚力下降-5', effects: { ovr: 1, relation: -5 } }
+      ]
+    },
+    {
+      id: 'growth_role_change', icon: '🔄', title: '打法转型选择',
+      desc: '教练建议你转型为无球3D球员，放弃大量球权，专注防守投射？',
+      choices: [
+        { title: '听从教练转型', desc: '防守、三分大幅提升，适配体系，持球进攻停滞', effects: { ovr: 3, relation: 3 } },
+        { title: '坚持持球核心打法', desc: '个人攻坚能力保留，与教练产生分歧', effects: { ovr: 1, relation: -3 } }
+      ]
+    }
+  ],
+  peak: [
+    {
+      id: 'peak_reinforce', icon: '🤝', title: '球队补强抉择',
+      desc: '你是球队绝对核心，休赛期球队有两个补强方案，由你最终敲定？',
+      choices: [
+        { title: '引进顶级持球帮手', desc: '球队实力暴涨、冲冠概率提升，个人球权数据下滑', effects: { relation: 5, fame: 3, ovr: -1 } },
+        { title: '引进功能性角色球员', desc: '个人数据、效率拉满，球队上限有限', effects: { ovr: 2, fame: -2 } }
+      ]
+    },
+    {
+      id: 'peak_rest', icon: '😴', title: '常规赛轮休争议',
+      desc: '多线作战赛程密集，媒体球迷呼吁你轮休保状态，管理层希望你全勤冲战绩？',
+      choices: [
+        { title: '选择性轮休蓄力', desc: '季后赛状态拉满、伤病概率极低，被质疑摆烂', effects: { fatigue: -20, injuryChanceMod: -0.05, fame: -3 } },
+        { title: '坚持全勤冲战绩', desc: '常规赛战绩、个人荣誉排名飙升，季后赛体能不足', effects: { fame: 4, fatigue: 15, injuryChanceMod: 0.05 } }
+      ]
+    },
+    {
+      id: 'peak_national', icon: '🌍', title: '国家队征召冲突',
+      desc: '休赛期有高强度国家队大赛征召，但会消耗大量体能，影响下赛季俱乐部备战？',
+      choices: [
+        { title: '义无反顾为国出战', desc: '国家队荣誉+1，人气、历史地位提升，下赛季初期低迷', effects: { fame: 8, fatigue: 20, injuryChanceMod: 0.05, wealth: 200000 } },
+        { title: '婉拒专注俱乐部', desc: '俱乐部备战完美、状态稳定，国民口碑大幅下降', effects: { fame: -6, relation: 3, fatigue: -10 } }
+      ]
+    },
+    {
+      id: 'peak_final_shot', icon: '🎯', title: '关键比赛绝杀球选择权',
+      desc: '总决赛最后10秒平局，球权在你手中，战术安排有两个选择？',
+      choices: [
+        { title: '自己持球强攻绝杀', desc: '成功则封神涨粉、历史高光+1，失败则背负骂名', effects: { chance: 0.5, success: { fame: 15, ovr: 2, wealth: 1500000 }, fail: { fame: -8, relation: -3 } } },
+        { title: '传球空位队友', desc: '团队口碑拉满，输球不背锅，无个人高光荣誉', effects: { relation: 6, fame: 1 } }
+      ]
+    },
+    {
+      id: 'peak_max_contract', icon: '💎', title: '顶薪合同交易否决权',
+      desc: '豪门给出超级顶薪但无交易否决权；母队薪资略低，但给予绝对核心尊重和否决权？',
+      choices: [
+        { title: '加盟豪门冲冠拿顶薪', desc: '薪资、球队实力拉满，个人话语权较低', effects: { salary: 1.5, relation: -3 } },
+        { title: '留守母队拿尊重', desc: '球队绝对老大，生涯稳定，夺冠窗口、薪资上限更低', effects: { salary: 1.2, relation: 5 } }
+      ]
+    }
+  ],
+  late: [
+    {
+      id: 'late_style', icon: '🧓', title: '生涯末期打法调整',
+      desc: '身体素质大幅下滑，你需要调整生涯末期打法？',
+      choices: [
+        { title: '转型组织投射老将', desc: '职业生涯大幅延长，对抗能力持续弱化', effects: { ovr: -1, injuryChanceMod: -0.05, fatigue: -10 } },
+        { title: '坚守原有攻坚打法', desc: '偶尔打出高光，伤病概率飙升、退役加快', effects: { ovr: 1, injuryChanceMod: 0.10, fatigue: 10 } }
+      ]
+    },
+    {
+      id: 'late_young_rival', icon: '🌱', title: '年轻新人竞争',
+      desc: '球队重点培养年轻新星，逐渐挤压你的出场时间，你如何应对？',
+      choices: [
+        { title: '主动带新人传授经验', desc: '队内声望拉满，退役后大概率留队任职', effects: { relation: 8, fame: 3, fatigue: 5 } },
+        { title: '全力竞争保住时间', desc: '短期出场稳定，队内氛围紧张，新人好感归零', effects: { ovr: 1, relation: -6 } }
+      ]
+    },
+    {
+      id: 'late_last_title', icon: '🏆', title: '最后夺冠窗口期',
+      desc: '你仅剩最后一次冲冠机会，可降薪加盟争冠强队，或顶薪留守弱队养老？',
+      choices: [
+        { title: '降薪抱团冲最后一冠', desc: '夺冠概率大幅提升，生涯荣誉有望圆满，薪资缩水', effects: { salary: 0.6, fame: 3 } },
+        { title: '顶薪留守母队养老', desc: '薪资最大化，无夺冠希望，留有忠诚口碑', effects: { salary: 1.3, fame: -1 } }
+      ]
+    },
+    {
+      id: 'late_retire_plan', icon: '🌅', title: '退役规划选择',
+      desc: '生涯末期，你开始规划退役后的人生？',
+      choices: [
+        { title: '提前淡出专注商业', desc: '场外财富、人气保值，赛场生涯收尾平淡', effects: { wealth: 2000000, fame: -3, ovr: -1 } },
+        { title: '坚持打到打不动为止', desc: '收获全员尊重、铁血生涯口碑，末期数据难看', effects: { fame: 5, ovr: -2, injuryChanceMod: 0.05 } }
+      ]
+    }
+  ],
+  offcourt: [
+    {
+      id: 'off_endorsement', icon: '💼', title: '商业代言冲突',
+      desc: '知名运动品牌给出高薪代言，但要求你减少训练出席商业活动？',
+      choices: [
+        { title: '接受代言兼顾商业', desc: '薪资收入暴涨，训练质量下降，能力小幅滑坡', effects: { wealth: 1500000, ovr: -1, fatigue: 5 } },
+        { title: '拒绝多余商业专注赛场', desc: '能力稳定提升，赛场口碑极佳，场外收入减少', effects: { ovr: 2, fame: 2 } }
+      ]
+    },
+    {
+      id: 'off_haters', icon: '📱', title: '舆论黑粉风波',
+      desc: '比赛失误引发全网黑粉嘲讽，舆论两极分化，你如何回应？',
+      choices: [
+        { title: '公开发声正面辩解', desc: '洗掉部分负面舆论，维持热度，争议度提升', effects: { fame: 2, relation: -1 } },
+        { title: '沉默专注赛场用表现证明', desc: '口碑慢慢回暖，沉稳人设加分，短期热度下跌', effects: { fame: 2, relation: 2, ovr: 1 } }
+      ]
+    },
+    {
+      id: 'off_private_coach', icon: '🧠', title: '特训名师邀约',
+      desc: '顶级私人特训师高价邀约，特训效果极佳，但需要缺席球队合练3天？',
+      choices: [
+        { title: '自费参加私人特训', desc: '单项能力大幅暴涨，球队教练好感-6，团队磨合下降', effects: { ovr: 4, relation: -3, fatigue: 8 } },
+        { title: '放弃特训跟随球队合练', desc: '团队默契提升，队内地位稳定，个人能力无爆发增长', effects: { relation: 3, ovr: 1 } }
+      ]
+    },
+    {
+      id: 'off_teammate_help', icon: '🤜', title: '队友求助风波',
+      desc: '队内年轻队友状态低迷、心态崩盘，私下找你求助占用大量个人时间？',
+      choices: [
+        { title: '耐心开导一对一指导', desc: '领袖气质、队内声望大幅提升，个人休息训练被压缩', effects: { relation: 6, fatigue: 8, fame: 2 } },
+        { title: '简单安慰专注自身', desc: '个人状态不受影响，队内亲和力小幅下降', effects: { ovr: 1, relation: -2 } }
+      ]
+    },
+    {
+      id: 'off_bad_call', icon: '⚖️', title: '客场争议判罚',
+      desc: '关键客场比赛遭遇明显误判，球队吃亏失分，你当众表态？',
+      choices: [
+        { title: '当众质疑判罚表达不满', desc: '收获球迷共情，被联盟警告罚款，口碑两极分化', effects: { fame: 3, wealth: -80000, relation: -2 } },
+        { title: '赛后低调尊重判罚', desc: '联盟好感+5，职业素养加分，球迷觉得软弱', effects: { relation: 3, fame: -1 } }
+      ]
+    }
+  ]
+};
 
 const HONORS = {
   highSchool: ['高中联赛MVP', '高中联赛总冠军', '高中全明星', '最佳新秀', '最佳防守球员'],
@@ -1554,7 +1744,11 @@ function createPlayer(nationality, position, name, number) {
     peakWealth: 0,       // 生涯最高身价
     internationalResults: [],  // 国际大赛成绩记录
     leagueAwards: [],          // 联赛奖项(MVP/FMVP/总冠军等)
-    championshipYears: []      // 夺冠赛季
+    championshipYears: [],     // 夺冠赛季
+    proYears: 0,               // 职业生涯年数 (用于判定生涯阶段)
+    injuryChanceMod: 0,        // 伤病概率加成修正 (事件加减,逐年衰减)
+    fatigue: 0,                // 疲劳值 0-100 (影响伤病概率与成长)
+    _storyEventHistory: []     // 已触发事件id历史 (避免短期重复)
   };
   
   // Pick initial high school
@@ -1586,7 +1780,8 @@ function advanceYear() {
   const prevOvr = p.ovr;
   p.age++;
   gameYear++;
-  
+  if (p.phase === 'pro') p.proYears++;
+
   log('YEAR', `--- ${gameYear}年 | ${p.name} ${p.age}岁 | 阶段:${p.phase} | OVR:${p.ovr} ---`);
   
   // 高中年级递增
@@ -1635,7 +1830,8 @@ function advanceYear() {
   const baseInjuryChance = 0.12;
   const ageInjuryMod = p.age > 30 ? (p.age - 30) * 0.02 : 0;
   const chronicMod = p.chronicInjuries * 0.03;
-  const injuryChance = baseInjuryChance + ageInjuryMod + chronicMod;
+  const fatigueMod = p.fatigue * 0.001;        // 疲劳值影响 (0-100 → 0-0.1)
+  const injuryChance = baseInjuryChance + ageInjuryMod + chronicMod + fatigueMod + p.injuryChanceMod;
   
   if (!p.currentInjury && Math.random() < injuryChance) {
     const injury = pick(INJURIES);
@@ -1918,23 +2114,23 @@ function advanceYear() {
     }
   }
   
-  // 随机事件
-  if (Math.random() < 0.4) {
-    const evt = pick(RANDOM_EVENTS);
-    if (evt.effect.ovr) p.ovr = clamp(p.ovr + evt.effect.ovr, 40, 99);
-    if (evt.effect.fame) p.fame = clamp(p.fame + evt.effect.fame, 0, 100);
-    if (evt.effect.relation) p.relation = clamp(p.relation + evt.effect.relation, 0, 100);
-    if (evt.effect.wealth) p.wealth += evt.effect.wealth * 10000;
-    p.yearEvents.push({ ...evt });
-    log('EVENT', `${evt.icon} ${evt.title}: ${evt.desc}`);
+  // 疲劳与伤病修正逐年衰减 (避免永久累积)
+  p.fatigue = clamp(p.fatigue - 12, 0, 100);
+  p.injuryChanceMod = p.injuryChanceMod * 0.5;
+
+  // 生涯随机事件 (每年随机触发,玩家互动选择)
+  // 仅在未退役时生成;退役路径由checkRetirement处理
+  if (!p.retired) {
+    p._pendingStoryEvent = getStoryEvent(p);
+    log('STORY', `📌 触发事件: ${p._pendingStoryEvent.icon} ${p._pendingStoryEvent.title}`);
   }
-  
+
   // 国家队赛事
   checkNationalTeam(p);
-  
+
   // 阶段转换
   checkPhaseTransition(p);
-  
+
   // 退役检查
   checkRetirement(p);
 
@@ -2990,10 +3186,122 @@ function calcDraftSalary(draftPosition, league) {
   return null; // null表示用OVR计算
 }
 
+// ============= 生涯随机事件 =============
+// 按球员生涯阶段挑选随机事件 (避免短期重复)
+function getStoryEvent(p) {
+  let stage;
+  if (p.phase !== 'pro') {
+    stage = 'youth'; // 高中/大学阶段: 仅使用通用场外事件
+  } else if (p.proYears <= 3) {
+    stage = 'rookie';
+  } else if (p.proYears <= 7) {
+    stage = 'growth';
+  } else if (p.proYears <= 12) {
+    stage = 'peak';
+  } else {
+    stage = 'late';
+  }
+
+  // 非职业阶段只用场外事件; 职业阶段 60%阶段事件 + 40%场外事件
+  let pool;
+  if (stage === 'youth') {
+    pool = STORY_EVENTS.offcourt;
+  } else {
+    pool = Math.random() < 0.6 ? STORY_EVENTS[stage] : STORY_EVENTS.offcourt;
+  }
+
+  // 避免最近5次重复
+  const recent = (p._storyEventHistory || []).slice(-5);
+  let available = pool.filter(e => !recent.includes(e.id));
+  if (available.length === 0) available = pool;
+
+  const evt = pick(available);
+  p._storyEventHistory = p._storyEventHistory || [];
+  p._storyEventHistory.push(evt.id);
+  if (p._storyEventHistory.length > 20) p._storyEventHistory.shift();
+  return evt;
+}
+
+// 应用玩家选择的event效果 (支持概率性结果 chance+success+fail)
+function applyStoryEffects(choice, p) {
+  let eff = choice.effects || {};
+  let outcomeLabel = '';
+
+  // 概率性结果: 先判定成功/失败, 再用对应效果集
+  if (eff.chance != null) {
+    const ok = Math.random() < eff.chance;
+    eff = ok ? (eff.success || {}) : (eff.fail || {});
+    outcomeLabel = ok ? ' ✅成功' : ' ❌失败';
+  }
+
+  if (eff.ovr) p.ovr = clamp(p.ovr + eff.ovr, 40, 99);
+  if (eff.fame) p.fame = clamp(p.fame + eff.fame, 0, 100);
+  if (eff.relation) p.relation = clamp(p.relation + eff.relation, 0, 100);
+  if (eff.wealth) p.wealth += eff.wealth;
+  if (eff.salary && p.salary > 0) p.salary = Math.round(p.salary * eff.salary);
+  if (eff.injuryChanceMod) p.injuryChanceMod += eff.injuryChanceMod;
+  if (eff.fatigue) p.fatigue = clamp(p.fatigue + eff.fatigue, 0, 100);
+
+  // 更新生涯峰值
+  if (p.ovr > p.peakOvr) p.peakOvr = p.ovr;
+  if (p.salary > p.peakSalary) p.peakSalary = p.salary;
+  if (p.wealth > p.peakWealth) p.peakWealth = p.wealth;
+
+  log('STORY', `✅ 选择: ${choice.title}${outcomeLabel} | OVR:${p.ovr} 名气:${Math.round(p.fame)} 关系:${Math.round(p.relation)} 疲劳:${Math.round(p.fatigue)}`);
+  p.yearEvents.push({ type: 'story', icon: '', title: choice.title, outcome: outcomeLabel.trim() });
+}
+
+// 渲染事件选择界面 (覆盖层样式, 复用ev-choices)
+function renderStoryEventScreen() {
+  const p = state;
+  const evt = p._pendingStoryEvent;
+  const stageLabel = p.phase !== 'pro' ? '青训阶段' :
+    p.proYears <= 3 ? '新秀阶段' :
+    p.proYears <= 7 ? '成长阶段' :
+    p.proYears <= 12 ? '巅峰阶段' : '生涯后期';
+
+  return `
+    <div class="screen active">
+      <div class="player-card" style="text-align:center;padding:clamp(14px,4vw,20px);">
+        <div style="font-size:clamp(10px,2.6vw,12px);color:var(--text-dim);margin-bottom:6px;letter-spacing:1px;">${stageLabel} · ${gameYear}赛季事件</div>
+        <div style="font-size:clamp(34px,9vw,48px);margin-bottom:clamp(8px,2vw,12px);">${evt.icon}</div>
+        <div style="font-size:clamp(16px,4.4vw,20px);font-weight:800;color:#fff;margin-bottom:clamp(8px,2vw,10px);word-break:break-word;line-height:1.25;">${evt.title}</div>
+        <div style="font-size:clamp(12px,3vw,14px);color:var(--text-dim);line-height:1.6;word-break:break-word;">${evt.desc}</div>
+      </div>
+      <div style="font-size:clamp(11px,2.8vw,13px);font-weight:700;color:var(--text-dim);margin:clamp(8px,2vw,12px) 0 clamp(6px,1.6vw,8px);padding-left:clamp(4px,1vw,6px);border-left:3px solid var(--accent);">你的选择</div>
+      <div class="ev-choices">
+        ${evt.choices.map((c, i) => `
+          <button class="btn choice-btn" data-idx="${i}">
+            <div style="display:flex;align-items:center;gap:clamp(8px,2vw,10px);width:100%;">
+              <div style="flex:1;min-width:0;">
+                <div class="choice-title">${c.title}</div>
+                <div class="choice-desc">${c.desc}</div>
+              </div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function bindStoryEventEvents() {
+  const p = state;
+  const evt = p._pendingStoryEvent;
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      applyStoryEffects(evt.choices[idx], p);
+      p._pendingStoryEvent = null;
+      render();
+    });
+  });
+}
+
 // ============= RENDERING =============
 function render() {
   const app = document.getElementById('app');
-  
+
   if (!state) {
     app.innerHTML = renderSetupScreen();
     bindSetupEvents();
@@ -3025,7 +3333,14 @@ function render() {
     bindDraftResultEvents();
     return;
   }
-  
+
+  // Story event screen (yearly random event)
+  if (state._pendingStoryEvent) {
+    app.innerHTML = renderStoryEventScreen();
+    bindStoryEventEvents();
+    return;
+  }
+
   // Main game screen
   app.innerHTML = renderGameScreen();
   bindGameEvents();
