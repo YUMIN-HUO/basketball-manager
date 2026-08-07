@@ -2192,6 +2192,7 @@ function chooseDecision(choice) {
     advanceYear();
   } else if (choice.type === 'draft') {
     declareDraft(choice.region);
+    render();
     return;
   } else if (choice.type === 'decline_draft') {
     advanceYear();
