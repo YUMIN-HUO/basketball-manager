@@ -515,11 +515,12 @@
     border-radius: 6px; padding: 4px 2px;
     box-shadow: 0 2px 6px rgba(33,85,184,0.3);
   }
-  .ct-team { display: flex; align-items: center; gap: 6px; min-width: 0; }
-  .ct-team-logo { width: 22px; height: 22px; flex-shrink: 0; }
+  .ct-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ct-team-logo { width: 28px; height: 28px; flex-shrink: 0; }
   .ct-team > span:last-child {
-    color: #d9dfe9; font-weight: 600; font-size: 12px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: #d9dfe9; font-weight: 700; font-size: 13px;
+    white-space: normal; overflow: visible; text-overflow: clip;
+    line-height: 1.3;
   }
   .ct-ovr { text-align: center; }
   .ct-ovr-val {
@@ -1269,6 +1270,14 @@ function getDecisionsPerYear() {
 function rand(min, max) { return Math.random() * (max - min) + min; }
 function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+// 巅峰潜力值加权随机: 95-99(5%), 90-94(10%), 80-89(30%), 55-79(55%)
+function rollPotential() {
+  const r = Math.random();
+  if (r < 0.05) return randInt(95, 99);
+  if (r < 0.15) return randInt(90, 94);
+  if (r < 0.45) return randInt(80, 89);
+  return randInt(55, 79);
+}
 function pickN(arr, n) {
   const copy = [...arr]; const result = [];
   for (let i = 0; i < n && copy.length; i++) {
@@ -1388,12 +1397,16 @@ function getTeamBadge(logo, cls, teamName) {
   }
 
   if (imgUrl) {
-    // 真实图片队徽,带onerror降级到SVG
-    const fallback = getFallbackBadge(logo, cls);
-    return `<img src="${imgUrl}" alt="${teamName || logo}" style="width:100%;height:100%;object-fit:contain;" onerror="this.outerHTML='${fallback.replace(/'/g, '&#39;')}'">`;
+    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" onload="this.style.display='block'" style="width:100%;height:100%;object-fit:contain;display:block" onerror="replaceFallbackBadge(this)">`;
   }
   // 3. 无真实队徽: 生成SVG兜底
   return getFallbackBadge(logo, cls);
+}
+
+function replaceFallbackBadge(imgEl) {
+  const logo = imgEl.dataset.logo || imgEl.alt || '';
+  const cls = imgEl.dataset.cls || '';
+  imgEl.outerHTML = getFallbackBadge(logo, cls);
 }
 
 // SVG兜底队徽 (用于无真实logo的球队)
@@ -1482,8 +1495,9 @@ function createPlayer(nationality, position, name, number) {
     positionName: position.name,
     age: 16,
     ovr: randInt(threshold - 10, threshold + 5) + posBonus,
-    // 潜力值(天赋): 纯随机,不受国籍影响 (国际中位数≈70)
-    potential: randInt(55, 88),
+    // 潜力值(天赋): 加权随机分布,不受国籍影响
+    // 95-99(5%), 90-94(10%), 80-89(30%), 55-79(55%)
+    potential: rollPotential(),
     phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
     hsYear: 0,   // 高中第几年 (0=高一, 1=高二, 2=高三)
     uniYear: 0,  // 大学第几年 (0=大一, 1=大二, 2=大三, 3=大四)
@@ -1920,23 +1934,15 @@ function evaluateDraftStock(p) {
 }
 
 function checkRetirement(p) {
-  // 1. 年龄硬上限: 42岁强制退役
-  if (p.age >= 42) {
+  // 1. 年龄硬上限: 45岁强制退役
+  if (p.age >= 45) {
     p.retired = true;
-    p.retirementReason = '年龄太大（42岁），身体无法承受职业联赛强度';
-    log('RETIRE', `🏁 强制退役: 年龄达到42岁上限`);
+    p.retirementReason = '年龄太大（45岁），身体无法承受职业联赛强度';
+    log('RETIRE', `🏁 强制退役: 年龄达到45岁上限`);
     return;
   }
 
-  // 2. 职业阶段 OVR < 60: 无球队签约
-  if (p.phase === 'pro' && p.ovr < 60) {
-    p.retired = true;
-    p.retirementReason = `能力值过低（OVR ${p.ovr}），没有球队愿意续约`;
-    log('RETIRE', `🏁 被迫退役: OVR=${p.ovr} < 60, 无球队签约`);
-    return;
-  }
-
-  // 3. 连续出场不足: 最近3年出场率<30%, 俱乐部不续约
+  // 2. 连续出场不足: 最近3年出场率<30%, 俱乐部不续约
   if (p.phase === 'pro' && p.recentGames.length >= 3) {
     const maxGames = p.league === 'NBA' ? 82 : 50;
     const avgGames = p.recentGames.reduce((a, b) => a + b, 0) / p.recentGames.length;
@@ -1949,7 +1955,7 @@ function checkRetirement(p) {
     }
   }
 
-  // 4. 严重伤病导致退役: 赛季报销 + OVR大幅下降
+  // 3. 严重伤病导致退役: 赛季报销 + OVR大幅下降
   if (p.phase === 'pro' && p.currentInjury && p.currentInjury.severity >= 3 && p.currentInjury.weeksMissed >= 10) {
     p.retired = true;
     p.retirementReason = `严重伤病（${p.currentInjury.name}）无法恢复，被迫退役`;
@@ -1957,16 +1963,15 @@ function checkRetirement(p) {
     return;
   }
 
-  // 5. 无人报价退役: 检查转会市场是否有球队愿意接收
-  // OVR<65 + 年龄>30 + 无转会报价 → 退役
-  if (p.phase === 'pro' && p.age >= 30 && p.ovr < 68) {
+  // 4. 无人报价退役: 没有俱乐部愿意续约 → 强制退役
+  if (p.phase === 'pro' && p.age >= 22) {
     const transferChoices = getTransferChoices();
     if (transferChoices.length === 0) {
       p.noOfferYears++;
       if (p.noOfferYears >= 2) {
         p.retired = true;
-        p.retirementReason = `连续${p.noOfferYears}年无球队报价，被迫挂靴`;
-        log('RETIRE', `🏁 无人报价退役: 连续${p.noOfferYears}年无转会报价`);
+        p.retirementReason = `连续${p.noOfferYears}年无俱乐部愿意续约，被迫退役`;
+        log('RETIRE', `🏁 无队续约退役: 连续${p.noOfferYears}年无转会报价`);
         return;
       }
     } else {
@@ -1974,17 +1979,20 @@ function checkRetirement(p) {
     }
   }
 
-  // 6. 38岁以上 + OVR < 70: 高概率退役
-  if (p.phase === 'pro' && p.age >= 38 && p.ovr < 70) {
-    if (Math.random() < 0.5) {
+  // 5. 自然退役: 40岁以上逐渐增加退役概率 (中位数40岁)
+  if (p.phase === 'pro' && p.age >= 40) {
+    const retireProb = p.age >= 44 ? 0.8 :
+                      p.age >= 42 ? 0.5 :
+                      p.age >= 40 ? 0.25 : 0.1;
+    if (Math.random() < retireProb) {
       p.retired = true;
-      p.retirementReason = `年龄偏大（${p.age}岁）且状态下滑（OVR ${p.ovr}），选择挂靴`;
-      log('RETIRE', `🏁 自然退役: 年龄${p.age} + OVR${p.ovr}`);
+      p.retirementReason = `年龄偏大（${p.age}岁），状态下滑选择退役`;
+      log('RETIRE', `🏁 自然退役: 年龄${p.age}`);
       return;
     }
   }
 
-  // 7. 慢性伤病过多: 35岁+ 且慢性伤病>=3
+  // 6. 慢性伤病过多: 35岁+ 且慢性伤病>=3
   if (p.phase === 'pro' && p.age >= 35 && p.chronicInjuries >= 3) {
     if (Math.random() < 0.4) {
       p.retired = true;
@@ -2135,7 +2143,7 @@ function chooseDecision(choice) {
       p.league = choice.team.league || choice.team.conf || (p.phase === 'highschool' ? COUNTRIES.find(c => c.code === p.nationality).youthName : COUNTRIES.find(c => c.code === p.nationality).universityName);
       p.team = choice.team;
       if (choice.salary) p.salary = choice.salary;
-      const phaseLabel = p.phase === 'highschool' ? '转学' : '转学';
+      const phaseLabel = p.phase === 'pro' ? '转会' : '转学';
       p.career.push({
         age: p.age, event: phaseLabel, team: choice.team.name, league: p.league
       });
@@ -2513,7 +2521,7 @@ function getYearChoices() {
   });
   
   // Retirement option
-  if (p.age >= 38 || (p.phase === 'pro' && p.ovr < 65)) {
+  if (p.age >= 40 || (p.phase === 'pro' && p.ovr < 60)) {
     choices.push({
       type: 'retire',
       title: '考虑退役',
