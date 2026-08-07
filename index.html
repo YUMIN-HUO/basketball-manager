@@ -2014,17 +2014,17 @@ function advanceYear() {
   let change;
 
   if (p.phase === 'highschool') {
-    // 高中: 向潜力值快速靠近 (成长率0.25)
-    change = Math.round(gap * 0.25 + rand(-1, 2));
+    // 高中: 向潜力值快速靠近 (成长率0.30)
+    change = Math.round(gap * 0.30 + rand(-1, 2));
   } else if (p.phase === 'university') {
-    // 大学: 稳步趋近 (成长率0.18)
-    change = Math.round(gap * 0.18 + rand(-1, 1));
+    // 大学: 稳步趋近 (成长率0.22)
+    change = Math.round(gap * 0.22 + rand(-1, 1));
   } else if (p.phase === 'pro' && p.age <= 25) {
-    // 职业新秀期: 缓慢趋近 (成长率0.12)
-    change = Math.round(gap * 0.12 + rand(-1, 1));
+    // 职业新秀期: 缓慢趋近 (成长率0.15)
+    change = Math.round(gap * 0.15 + rand(-1, 1));
   } else if (p.age <= 30) {
-    // 黄金期: 微幅趋近或持平 (成长率0.05)
-    change = Math.round(gap * 0.05 + randInt(-1, 0));
+    // 黄金期: 微幅趋近或持平 (成长率0.08)
+    change = Math.round(gap * 0.08 + randInt(-1, 0));
   } else {
     // 30岁后: 下降期,高潜力球员下降更慢
     const declineRate = p.age >= 36 ? randInt(-4, -2) : p.age >= 33 ? randInt(-3, -1) : randInt(-2, 0);
