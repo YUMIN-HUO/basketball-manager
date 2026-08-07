@@ -2159,12 +2159,11 @@ function chooseDecision(choice) {
     p.wealth += randInt(100000, 500000);
     p.fame = clamp(p.fame + randInt(1, 3), 0, 100);
   } else if (choice.title && choice.title.includes('请求续约')) {
-    if (p.ovr >= 70) {
-      p.salary = Math.round(p.salary * (1.1 + Math.random() * 0.3));
-      p.relation = clamp(p.relation + 3, 0, 100);
-    } else {
-      p.relation = clamp(p.relation - 2, 0, 100);
-    }
+    // 续约: 按当前联赛梯队+OVR重新计算薪资,有涨薪
+    const baseSalary = calcSalary(p.ovr, p.league);
+    const renewalBonus = 1.0 + Math.random() * 0.3;  // 续约涨薪0~30%
+    p.salary = Math.round(baseSalary * renewalBonus);
+    p.relation = clamp(p.relation + 3, 0, 100);
   } else if (choice.title && choice.title.includes('留守大学')) {
     // Small boost for staying
     p.ovr = clamp(p.ovr + 1, 40, 99);
@@ -2199,7 +2198,7 @@ function chooseDecision(choice) {
     advanceYear();
   } else if (choice.type === 'g_league') {
     p.phase = 'pro';
-    p.salary = Math.round(p.salary * 0.3);
+    p.salary = calcSalary(p.ovr, 'NBL');  // G联盟薪资较低,按第三梯队计算
     advanceYear();
   } else if (choice.type === 'retire') {
     p.retired = true;
@@ -2282,7 +2281,7 @@ function declareDraft(draftRegion) {
     // 落选秀可签约该地区联赛球队(双向合同)
     if (p.ovr >= 65 && Math.random() < 0.3) {
       const draftTeam = pick(regionTeams);
-      p.salary = randInt(50000, 100000);
+      p.salary = draftTeam.league === 'NBA' ? randInt(500000, 600000) : calcSalary(p.ovr, draftTeam.league);
       p.teamName = draftTeam.name;
       p.teamLogo = draftTeam.logo;
       p.teamLogoCls = draftTeam.cls;
@@ -2305,7 +2304,7 @@ function declareDraft(draftRegion) {
       const homeTeams = (p.nationality !== region) ? (PRO_TEAMS[p.nationality] || regionTeams) : regionTeams;
       if (homeTeams && homeTeams.length > 0) {
         const draftTeam = pick(homeTeams);
-        p.salary = randInt(100000, 300000);
+        p.salary = calcSalary(p.ovr, draftTeam.league);
         p.teamName = draftTeam.name;
         p.teamLogo = draftTeam.logo;
         p.teamLogoCls = draftTeam.cls;
@@ -2325,7 +2324,7 @@ function declareDraft(draftRegion) {
     }
 
     // 自由球员
-    p.salary = 50000;
+    p.salary = calcSalary(p.ovr, 'CEBL');  // 自由球员按最低梯队计算
     p.teamName = '自由球员';
     p.teamLogo = 'FA';
     p.teamLogoCls = 'logo-steel';
@@ -2361,18 +2360,9 @@ function declareDraft(draftRegion) {
     regionLeague: regionLeagueName
   };
 
-  // 薪资: 基于选秀顺位
-  let baseSalary;
-  if (draftPosition <= 5) {
-    baseSalary = randInt(2500000, 4000000);
-  } else if (draftPosition <= 14) {
-    baseSalary = randInt(1500000, 2500000);
-  } else if (draftPosition <= 30) {
-    baseSalary = randInt(800000, 1500000);
-  } else {
-    baseSalary = randInt(100000, 500000);
-  }
-  p.salary = baseSalary;
+  // 薪资: NBA按顺位,其他联赛按OVR+联赛梯队
+  const draftSalary = calcDraftSalary(draftPosition, draftTeam.league);
+  p.salary = draftSalary != null ? draftSalary : calcSalary(p.ovr, draftTeam.league);
   p.teamName = draftTeam.name;
   p.teamLogo = draftTeam.logo;
   p.teamLogoCls = draftTeam.cls;
@@ -2445,9 +2435,10 @@ function getTransferChoices() {
   const offers = pickN(candidates, Math.min(2, candidates.length));
 
   return offers.map(({team, strength}) => {
-    // 薪资基于球队实力和球员OVR
-    const salaryMultiplier = 0.6 + (strength / 100) * 0.8;  // 强队薪资高
-    const newSalary = Math.round(p.salary * salaryMultiplier * (0.9 + Math.random() * 0.3));
+    // 薪资: 按目标联赛梯队+球员OVR计算,强队有加成
+    const baseSalary = calcSalary(p.ovr, team.league);
+    const strengthBonus = 0.8 + (strength / 100) * 0.5;  // 强队薪资加成0.8x~1.3x
+    const newSalary = Math.round(baseSalary * strengthBonus);
     return {
       type: 'transfer',
       title: `加盟 ${team.name}`,
@@ -2604,9 +2595,184 @@ function getYearChoices() {
 }
 
 function formatSalary(amount) {
+  if (amount >= 100000000) return (amount / 100000000).toFixed(1) + '亿';
   if (amount >= 10000000) return (amount / 10000000).toFixed(1) + '千万';
   if (amount >= 10000) return (amount / 10000).toFixed(0) + '万';
   return amount + '元';
+}
+
+// === 全球联赛薪资系统 ===
+// 按联赛梯队和球员OVR计算年薪(美元)
+// 数据来源: 真实全球篮球联赛薪资标准
+const LEAGUE_SALARY_TIERS = {
+  // 第一梯队: NBA (全球薪资天花板)
+  'NBA': {
+    superstar:  [45000000, 62600000],  // OVR 95+: 超级巨星顶薪
+    allstar:    [28000000, 44000000],   // OVR 88-94: 全明星主力
+    starter:    [12000000, 27000000],   // OVR 80-87: 轮换中产
+    rotation:   [4000000, 11000000],    // OVR 70-79: 轮换/底薪
+    minimum:    [2100000, 3500000],     // OVR 65-69: 底薪
+    rookie:     [1200000, 2100000],     // OVR 60-64: 新秀底薪
+    twoway:     [500000, 600000]        // OVR <60: 双向合同
+  },
+  // 第二梯队: EuroLeague / CBA顶级外援
+  'EuroLeague': {
+    superstar:  [3000000, 5400000],     // OVR 92+: 超级球星
+    allstar:    [1500000, 2900000],     // OVR 85-91: 球队首发核心
+    starter:    [500000, 1400000],      // OVR 78-84: 轮换角色球员
+    rotation:   [200000, 450000],       // OVR 70-77: 边缘替补
+    minimum:    [80000, 180000],        // OVR 60-69: 底薪
+    rookie:     [40000, 75000]          // OVR <60: 新人
+  },
+  'CBA': {
+    superstar:  [1000000, 3000000],     // OVR 88+: 大牌外援(前NBA球员)
+    allstar:    [400000, 950000],       // OVR 80-87: 稳定主力外援
+    starter:    [200000, 380000],       // OVR 72-79: 功能性角色外援
+    rotation:   [120000, 200000],       // OVR 65-71: 本土普通球员
+    minimum:    [60000, 120000],        // OVR 60-64: 本土底薪
+    rookie:     [30000, 60000]          // OVR <60: 本土新人
+  },
+  // 第三梯队: 西班牙ACB、土耳其BSL、日本B.League、澳洲NBL
+  'ACB': {
+    superstar:  [800000, 2000000],      // OVR 88+: 顶级外援
+    allstar:    [300000, 700000],       // OVR 80-87: 首发主力
+    starter:    [100000, 280000],       // OVR 72-79: 轮换球员
+    rotation:   [50000, 100000],        // OVR 65-71
+    minimum:    [30000, 50000],         // OVR 60-64
+    rookie:     [15000, 30000]          // OVR <60: 底薪新人
+  },
+  'Turkish League': {
+    superstar:  [800000, 2000000],
+    allstar:    [300000, 700000],
+    starter:    [100000, 280000],
+    rotation:   [50000, 100000],
+    minimum:    [30000, 50000],
+    rookie:     [15000, 30000]
+  },
+  'B.League': {
+    superstar:  [600000, 1000000],      // OVR 88+: 顶级外援
+    allstar:    [250000, 500000],       // OVR 80-87: 主力外援
+    starter:    [120000, 220000],       // OVR 72-79: 轮换外援
+    rotation:   [60000, 120000],        // OVR 65-71: 本土主力
+    minimum:    [30000, 60000],         // OVR 60-64
+    rookie:     [15000, 30000]          // OVR <60
+  },
+  'NBL': {
+    superstar:  [400000, 700000],       // OVR 88+: 大牌外援
+    allstar:    [180000, 350000],       // OVR 80-87: 首发外援
+    starter:    [80000, 150000],        // OVR 72-79: 轮换球员
+    rotation:   [40000, 80000],         // OVR 65-71: 本土球员
+    minimum:    [20000, 40000],         // OVR 60-64
+    rookie:     [10000, 20000]          // OVR <60
+  },
+  // 第四梯队: 德/法/意本土联赛、韩国KBL
+  'BBL': {
+    superstar:  [400000, 650000],       // OVR 85+: 核心外援
+    allstar:    [180000, 350000],       // OVR 78-84: 首发主力
+    starter:    [80000, 160000],        // OVR 70-77: 轮换球员
+    rotation:   [40000, 80000],         // OVR 65-69
+    minimum:    [20000, 40000],         // OVR 60-64
+    rookie:     [10000, 20000]          // OVR <60: 底薪新人
+  },
+  'Serie A': {
+    superstar:  [400000, 650000],
+    allstar:    [180000, 350000],
+    starter:    [80000, 160000],
+    rotation:   [40000, 80000],
+    minimum:    [20000, 40000],
+    rookie:     [10000, 20000]
+  },
+  'KBL': {
+    superstar:  [500000, 700000],       // OVR 85+: 外援上限
+    allstar:    [300000, 550000],       // OVR 78-84: 主力外援
+    starter:    [150000, 300000],       // OVR 70-77: 本土顶薪
+    rotation:   [80000, 150000],        // OVR 65-69
+    minimum:    [40000, 80000],         // OVR 60-64
+    rookie:     [20000, 40000]          // OVR <60
+  },
+  // 第五梯队: 亚得里亚海联赛、希腊联赛、南美联赛、CEBL
+  'Adriatic': {
+    superstar:  [300000, 600000],
+    allstar:    [150000, 300000],
+    starter:    [60000, 150000],
+    rotation:   [30000, 60000],
+    minimum:    [15000, 30000],
+    rookie:     [8000, 15000]
+  },
+  'Greek League': {
+    superstar:  [300000, 600000],
+    allstar:    [150000, 300000],
+    starter:    [60000, 150000],
+    rotation:   [30000, 60000],
+    minimum:    [15000, 30000],
+    rookie:     [8000, 15000]
+  },
+  'Liga Nacional': {
+    superstar:  [100000, 250000],       // OVR 85+: 顶级外援
+    allstar:    [50000, 100000],        // OVR 78-84
+    starter:    [30000, 50000],         // OVR 70-77
+    rotation:   [15000, 30000],         // OVR 65-69
+    minimum:    [8000, 15000],          // OVR 60-64
+    rookie:     [5000, 8000]            // OVR <60
+  },
+  'NBB': {
+    superstar:  [100000, 250000],
+    allstar:    [50000, 100000],
+    starter:    [30000, 50000],
+    rotation:   [15000, 30000],
+    minimum:    [8000, 15000],
+    rookie:     [5000, 8000]
+  },
+  'CEBL': {
+    superstar:  [80000, 150000],
+    allstar:    [50000, 80000],
+    starter:    [30000, 50000],
+    rotation:   [15000, 30000],
+    minimum:    [8000, 15000],
+    rookie:     [5000, 8000]
+  }
+};
+
+// 默认薪资表(未知联赛使用第四梯队)
+const DEFAULT_SALARY_TIER = {
+  superstar:  [400000, 650000],
+  allstar:    [180000, 350000],
+  starter:    [80000, 160000],
+  rotation:   [40000, 80000],
+  minimum:    [20000, 40000],
+  rookie:     [10000, 20000]
+};
+
+// 按OVR获取薪资档位key
+function getSalaryTierKey(ovr) {
+  if (ovr >= 92) return 'superstar';
+  if (ovr >= 85) return 'allstar';
+  if (ovr >= 78) return 'starter';
+  if (ovr >= 70) return 'rotation';
+  if (ovr >= 65) return 'minimum';
+  return 'rookie';
+}
+
+// 按联赛和OVR计算薪资
+function calcSalary(ovr, league) {
+  const tier = LEAGUE_SALARY_TIERS[league] || DEFAULT_SALARY_TIER;
+  const tierKey = getSalaryTierKey(ovr);
+  const range = tier[tierKey] || tier.rookie;
+  return randInt(range[0], range[1]);
+}
+
+// 按选秀顺位和联赛计算新秀薪资(NBA有特殊顺位薪资表)
+function calcDraftSalary(draftPosition, league) {
+  if (league === 'NBA') {
+    // NBA新秀合同: 基于顺位的固定工资表
+    if (draftPosition <= 1) return randInt(10000000, 12000000);   // 状元
+    if (draftPosition <= 5) return randInt(7000000, 10000000);    // 前5
+    if (draftPosition <= 14) return randInt(3500000, 7000000);    // 乐透
+    if (draftPosition <= 30) return randInt(2100000, 3500000);    // 首轮
+    return randInt(500000, 1100000);                              // 次轮
+  }
+  // 其他联赛: 用calcSalary按OVR计算(选秀后OVR已经确定)
+  return null; // null表示用OVR计算
 }
 
 // ============= RENDERING =============
@@ -3561,21 +3727,21 @@ const SIM_TESTS = {
         this.assert(true, `OVR${s.ovr}选秀结果: ${state.draftPick?'第'+state.draftPick.overall+'顺位':'落选'}`);
       }
 
-      // 验证薪资符合新秀合同
-      if (state.draftPick) {
+      // 验证薪资符合新秀合同(NBA标准)
+      if (state.draftPick && state.league === 'NBA') {
         const dp = state.draftPick.overall;
         if (dp <= 5) {
-          this.assert(state.salary >= 2500000 && state.salary <= 4000000,
-            `前5顺位薪资250-400万`, `(实际=${state.salary})`);
+          this.assert(state.salary >= 7000000 && state.salary <= 12000000,
+            `前5顺位薪资700-1200万`, `(实际=${state.salary})`);
         } else if (dp <= 14) {
-          this.assert(state.salary >= 1500000 && state.salary <= 2500000,
-            `乐透秀薪资150-250万`, `(实际=${state.salary})`);
+          this.assert(state.salary >= 3500000 && state.salary <= 7000000,
+            `乐透秀薪资350-700万`, `(实际=${state.salary})`);
         } else if (dp <= 30) {
-          this.assert(state.salary >= 800000 && state.salary <= 1500000,
-            `首轮秀薪资80-150万`, `(实际=${state.salary})`);
+          this.assert(state.salary >= 2100000 && state.salary <= 3500000,
+            `首轮秀薪资210-350万`, `(实际=${state.salary})`);
         } else {
-          this.assert(state.salary >= 100000 && state.salary <= 500000,
-            `次轮秀薪资10-50万`, `(实际=${state.salary})`);
+          this.assert(state.salary >= 500000 && state.salary <= 1100000,
+            `次轮秀薪资50-110万`, `(实际=${state.salary})`);
         }
       }
 
