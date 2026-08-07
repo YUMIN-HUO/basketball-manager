@@ -1529,7 +1529,13 @@ function createPlayer(nationality, position, name, number) {
     retirementReason: '',
     careerTitle: '',     // 结局称号 (基于生涯数据生成)
     yearEvents: [],
-    yearAwards: []
+    yearAwards: [],
+    peakOvr: 0,          // 生涯最高OVR
+    peakSalary: 0,       // 生涯最高年薪
+    peakWealth: 0,       // 生涯最高身价
+    internationalResults: [],  // 国际大赛成绩记录
+    leagueAwards: [],          // 联赛奖项(MVP/FMVP/总冠军等)
+    championshipYears: []      // 夺冠赛季
   };
   
   // Pick initial high school
@@ -1537,6 +1543,10 @@ function createPlayer(nationality, position, name, number) {
   player.highSchoolChoices = hs;
   
   log('INIT', `创建球员: ${player.name} #${player.number} | ${country.name} ${position.code} | 初始OVR=${player.ovr} 潜力=${player.potential}`, { nationality, position: position.code, ovr: player.ovr });
+  
+  player.peakOvr = player.ovr;
+  player.peakSalary = 0;
+  player.peakWealth = 0;
   
   return player;
 }
@@ -1736,6 +1746,97 @@ function advanceYear() {
     if (perfScore > 20) p.wealth += Math.round(p.salary * 0.1);
   }
   
+  // 更新生涯峰值
+  if (p.ovr > p.peakOvr) p.peakOvr = p.ovr;
+  if (p.salary > p.peakSalary) p.peakSalary = p.salary;
+  if (p.wealth > p.peakWealth) p.peakWealth = p.wealth;
+  
+  // 联赛奖项模拟 (仅职业阶段)
+  if (p.phase === 'pro' && p.teamName) {
+    const winProb = p.ovr >= 88 ? 0.45 : p.ovr >= 82 ? 0.25 : p.ovr >= 75 ? 0.10 : 0.03;
+    
+    // 总冠军
+    if (Math.random() < winProb) {
+      const award = {
+        year: p.age,
+        type: 'champion',
+        league: p.league,
+        team: p.teamName,
+        icon: '🏆',
+        label: `${p.league}总冠军`
+      };
+      p.leagueAwards.push(award);
+      p.championshipYears.push(p.age);
+      p.yearAwards.push({ icon: '🏆', result: `随${p.teamName}夺得${p.league}总冠军！` });
+      p.honors.push(`${p.league}总冠军`);
+      p.wealth += 2000000;
+      log('AWARD', `🏆 ${p.league}总冠军! ${p.teamName}`);
+      
+      // FMVP (总决赛MVP): OVR>=85有50%概率
+      if (p.ovr >= 85 && Math.random() < 0.5) {
+        const fmvp = {
+          year: p.age,
+          type: 'fmvp',
+          league: p.league,
+          team: p.teamName,
+          icon: '👑',
+          label: `${p.league}FMVP`
+        };
+        p.leagueAwards.push(fmvp);
+        p.honors.push(`${p.league}FMVP`);
+        p.fame = clamp(p.fame + 8, 0, 100);
+        p.wealth += 1000000;
+        log('AWARD', `👑 FMVP!`);
+      }
+    }
+    
+    // 常规赛MVP: OVR>=88有一定概率
+    if (p.ovr >= 88 && Math.random() < 0.15) {
+      const mvp = {
+        year: p.age,
+        type: 'mvp',
+        league: p.league,
+        team: p.teamName,
+        icon: '⭐',
+        label: `${p.league}常规赛MVP`
+      };
+      p.leagueAwards.push(mvp);
+      p.honors.push(`${p.league}常规赛MVP`);
+      p.fame = clamp(p.fame + 5, 0, 100);
+      log('AWARD', `⭐ 常规赛MVP!`);
+    }
+    
+    // 最佳一阵/最佳防守阵容
+    if (p.ovr >= 85 && Math.random() < 0.3) {
+      const allNba = {
+        year: p.age,
+        type: 'allnba',
+        league: p.league,
+        team: p.teamName,
+        icon: '🥇',
+        label: `${p.league}最佳阵容一阵`
+      };
+      p.leagueAwards.push(allNba);
+      p.honors.push(`${p.league}最佳阵容一阵`);
+      log('AWARD', `🥇 最佳阵容一阵!`);
+    }
+    
+    // 最快进步球员
+    if (p.age <= 25 && p.ovr >= 78 && Math.random() < 0.08) {
+      const mostImproved = {
+        year: p.age,
+        type: 'most_improved',
+        league: p.league,
+        team: p.teamName,
+        icon: '📈',
+        label: `${p.league}最快进步球员`
+      };
+      p.leagueAwards.push(mostImproved);
+      p.honors.push(`${p.league}最快进步球员`);
+      log('AWARD', `📈 最快进步球员!`);
+    }
+  }
+  
   // 随机事件
   if (Math.random() < 0.4) {
     const evt = pick(RANDOM_EVENTS);
@@ -1780,96 +1881,120 @@ function checkNationalTeam(p) {
   const country = COUNTRIES.find(c => c.code === p.nationality);
   if (!country) return;
 
-  // 国家队入选门槛: 职业球员 + OVR≥72 (国际中位数70, 国家队需高于中位数)
-  // 非职业球员(高中/大学)不入选国家队
   if (p.phase !== 'pro') return;
   if (p.ovr < 72) {
     log('NATIONAL', `未达国家队标准: OVR=${p.ovr} < 72 (需≥72且为职业球员)`);
     return;
   }
 
-  // 各国籍所属洲的赛事映射 (美国不能参加亚洲杯)
-  // FIBA洲际组织: FIBA Asia, FIBA Americas, FIBA Europe, FIBA Africa, FIBA Oceania
   const continentalCupMap = {
     'FIBA Asia': 'asiaCup',
     'FIBA Americas': 'ameriCup',
     'FIBA Europe': 'euroBasket',
     'FIBA Africa': 'afroBasket',
-    'FIBA Oceania': 'asiaCup'  // 澳洲参加亚洲赛事(现实:FIBA并入亚太大区)
+    'FIBA Oceania': 'asiaCup'
   };
+
+  // 国家队参赛统计
+  let natGP = 0, natPts = 0, natReb = 0, natAst = 0;
 
   for (const [key, comp] of Object.entries(COMPETITIONS)) {
     if (!comp.years.includes(gameYear)) continue;
 
-    // 世界大赛(世界杯/奥运会): 所有国家都可参加
-    // 洲际比赛: 只有所属洲的国家才能参加
     if (comp.type === 'continental') {
       const allowedKey = continentalCupMap[country.confederation];
       if (key !== allowedKey) {
-        log('NATIONAL', `${country.name}不参加${comp.name} (所属:${country.confederation})`);
+        log('NATIONAL', `${country.name}不参加${comp.name}`);
         continue;
       }
     }
 
     log('NATIONAL', `${country.name}球员符合${comp.name}参赛条件: OVR=${p.ovr}`);
 
-    // 国家队实力匹配: 基于该国篮球实力阈值 + 球员OVR
-    // 美国队夺冠概率最高, 亚洲/非洲队伍较难
     const countryStrength = country.thresholdVal;
-    const strengthBonus = (countryStrength - 70) * 2;  // 阈值78的美国: +16; 阈值68的中国: -4
-    const playerContribution = (p.ovr - 72) * 2;        // OVR越高贡献越大
+    const strengthBonus = (countryStrength - 70) * 2;
+    const playerContribution = (p.ovr - 72) * 2;
     const randomFactor = randInt(-10, 15);
     const totalScore = strengthBonus + playerContribution + randomFactor;
 
-    // 参赛资格: OVR≥72即可入选 (已检查)
+    // 国家队数据 (5-10场比赛)
+    const natGames = randInt(5, 10);
+    const natPtsPerGame = Math.max(5, Math.round(p.ovr * 0.25 + randInt(2, 8)));
+    natGP += natGames;
+    natPts += natPtsPerGame * natGames;
+    natReb += Math.round(natGames * randInt(3, 8));
+    natAst += Math.round(natGames * randInt(2, 6));
+
+    // 晋级轮次判定 (基于totalScore)
+    // 世界杯: 32强→16强→8强→4强→决赛→冠军
+    // 洲际赛: 16强→8强→4强→决赛→冠军
+    let roundReached, roundLabel;
+    
+    if (comp.type === 'world') {
+      if (totalScore >= 35) { roundReached = 6; roundLabel = '🏆 冠军'; }
+      else if (totalScore >= 28) { roundReached = 5; roundLabel = '🥈 亚军/决赛'; }
+      else if (totalScore >= 22) { roundReached = 4; roundLabel = '🥉 四强'; }
+      else if (totalScore >= 16) { roundReached = 3; roundLabel = '八强'; }
+      else if (totalScore >= 10) { roundReached = 2; roundLabel = '十六强'; }
+      else { roundReached = 1; roundLabel = '三十二强'; }
+    } else {
+      if (totalScore >= 25) { roundReached = 5; roundLabel = '🏆 冠军'; }
+      else if (totalScore >= 18) { roundReached = 4; roundLabel = '🥈 决赛'; }
+      else if (totalScore >= 12) { roundReached = 3; roundLabel = '四强'; }
+      else if (totalScore >= 6) { roundReached = 2; roundLabel = '八强'; }
+      else { roundReached = 1; roundLabel = '十六强'; }
+    }
+
+    // 记录国际大赛成绩
+    const intlResult = {
+      year: p.age,
+      competition: comp.name,
+      competitionType: comp.type,
+      round: roundLabel,
+      roundLevel: roundReached,
+      country: country.name,
+      flag: country.flag,
+      gp: natGames,
+      pts: natPtsPerGame * natGames,
+      avgPts: natPtsPerGame
+    };
+    p.internationalResults.push(intlResult);
+
     p.yearAwards.push({
       type: 'national',
       competition: comp.name,
-      result: '参加了' + comp.name,
-      icon: '🌍'
+      result: `${roundLabel} (${natGames}场${natPtsPerGame}分)`,
+      icon: roundReached >= 5 ? '🏆' : roundReached >= 3 ? '🥉' : '🌍'
     });
-    log('NATIONAL', `入选${comp.name}国家队 | 国家实力修正:${strengthBonus} 球员贡献:${playerContribution} 随机:${randomFactor} → 总分:${totalScore}`);
 
-    // 夺冠判定: 综合国家实力+球员贡献
-    // 强队(美国): totalScore常>20, 夺冠概率高
-    // 弱队(亚洲): totalScore常<10, 夺冠概率低
-    const winThreshold = comp.type === 'world' ? 15 : 10;
-    if (totalScore >= winThreshold && (p.ovr >= 78 || Math.random() < 0.4)) {
+    // 荣誉和奖励
+    if (roundReached >= 5) {
       let honor;
-      if (key === 'olympics') {
-        honor = totalScore >= 30 ? '奥运会金牌' : totalScore >= 20 ? '奥运会奖牌' : '参与奥运会';
-      } else if (key === 'fibaWorldCup') {
-        honor = totalScore >= 30 ? 'FIBA世界杯冠军' : totalScore >= 20 ? 'FIBA世界杯奖牌' : '参与FIBA世界杯';
-      } else if (key === 'asiaCup') {
-        honor = totalScore >= 20 ? '亚洲杯冠军' : totalScore >= 12 ? '亚洲杯奖牌' : '参与亚洲杯';
-      } else if (key === 'euroBasket') {
-        honor = totalScore >= 25 ? '欧锦赛冠军' : totalScore >= 15 ? '欧锦赛奖牌' : '参与欧锦赛';
-      } else if (key === 'ameriCup') {
-        honor = totalScore >= 25 ? '美洲杯冠军' : totalScore >= 15 ? '美洲杯奖牌' : '参与美洲杯';
-      } else if (key === 'afroBasket') {
-        honor = totalScore >= 18 ? '非洲杯冠军' : totalScore >= 10 ? '非洲杯奖牌' : '参与非洲杯';
-      } else {
-        honor = '参与国际赛事';
-      }
-
-      if (honor.includes('冠军') || honor.includes('金牌')) {
-        p.honors.push(honor);
-        p.ovr = clamp(p.ovr + 2, 40, 99);
-        p.fame = clamp(p.fame + 10, 0, 100);
-        p.wealth += 500000;
-        p.yearAwards[p.yearAwards.length - 1].result = '赢得' + comp.name + '冠军！';
-        p.yearAwards[p.yearAwards.length - 1].icon = '🏆';
-        log('NATIONAL', `🏆 ${comp.name}夺冠! 荣誉:${honor} | OVR+2 名气+10 奖金50万`);
-      } else if (honor.includes('奖牌')) {
-        p.honors.push(honor);
-        p.fame = clamp(p.fame + 5, 0, 100);
-        p.wealth += 200000;
-        p.yearAwards[p.yearAwards.length - 1].result = '获得' + comp.name + '奖牌';
-        p.yearAwards[p.yearAwards.length - 1].icon = '🥈';
-        log('NATIONAL', `🥈 ${comp.name}获奖牌 | 名气+5 奖金20万`);
-      }
+      if (key === 'olympics') honor = '奥运会金牌';
+      else if (key === 'fibaWorldCup') honor = 'FIBA世界杯冠军';
+      else if (key === 'asiaCup') honor = '亚洲杯冠军';
+      else if (key === 'euroBasket') honor = '欧锦赛冠军';
+      else if (key === 'ameriCup') honor = '美洲杯冠军';
+      else if (key === 'afroBasket') honor = '非洲杯冠军';
+      else honor = comp.name + '冠军';
+      
+      p.honors.push(honor);
+      p.ovr = clamp(p.ovr + 2, 40, 99);
+      p.fame = clamp(p.fame + 10, 0, 100);
+      p.wealth += 500000;
+      log('NATIONAL', `🏆 ${comp.name}夺冠! | OVR+2 名气+10`);
+    } else if (roundReached >= 3) {
+      let honor;
+      if (key === 'olympics') honor = '奥运会奖牌';
+      else if (key === 'fibaWorldCup') honor = 'FIBA世界杯奖牌';
+      else honor = comp.name + '奖牌';
+      
+      p.honors.push(honor);
+      p.fame = clamp(p.fame + 5, 0, 100);
+      p.wealth += 200000;
+      log('NATIONAL', `🥈 ${comp.name}获奖牌`);
     } else {
-      log('NATIONAL', `${comp.name}: 未获奖 (总分${totalScore} < 阈值${winThreshold} 或 OVR不足)`);
+      log('NATIONAL', `${comp.name}: ${roundLabel}`);
     }
   }
 }
@@ -3509,79 +3634,215 @@ function renderRetirementScreen() {
   const p = state;
   const country = COUNTRIES.find(c => c.code === p.nationality);
   
-  const careerStats = [
-    { val: p.age, lbl: '退役年龄' },
-    { val: p.stats.gp, lbl: '总场次' },
-    { val: p.stats.pts, lbl: '总得分' },
-    { val: p.stats.reb, lbl: '总篮板' },
-    { val: p.stats.ast, lbl: '总助攻' },
-    { val: p.stats.ppg, lbl: '场均得分' },
-    { val: p.honors.length, lbl: '荣誉数量' },
-    { val: formatSalary(p.wealth), lbl: '生涯总收入' }
-  ];
+  // 按球队分组统计赛季数
+  const teamSeasons = {};
+  p.career.forEach(c => {
+    if (c.team && c.team !== '') {
+      if (!teamSeasons[c.team]) {
+        teamSeasons[c.team] = { team: c.team, league: c.league, logo: c.teamLogo, logoCls: c.teamLogoCls, seasons: [], ovr: c.ovr };
+      }
+      teamSeasons[c.team].seasons.push(c.age);
+    }
+  });
+  
+  const uniqueTeams = Object.values(teamSeasons);
+  
+  // 联赛奖项按类型分组
+  const awardGroups = {
+    champion: p.leagueAwards.filter(a => a.type === 'champion'),
+    fmvp: p.leagueAwards.filter(a => a.type === 'fmvp'),
+    mvp: p.leagueAwards.filter(a => a.type === 'mvp'),
+    allnba: p.leagueAwards.filter(a => a.type === 'allnba'),
+    most_improved: p.leagueAwards.filter(a => a.type === 'most_improved')
+  };
+  
+  const hasAwards = p.leagueAwards.length > 0;
+  const hasIntl = p.internationalResults.length > 0;
+  
+  // 国家队累计统计
+  let totalNatGP = 0, totalNatPts = 0, totalNatReb = 0, totalNatAst = 0;
+  p.internationalResults.forEach(r => {
+    totalNatGP += r.gp;
+    totalNatPts += r.pts;
+  });
+  
+  // 计算场均
+  const avgNatPts = totalNatGP > 0 ? (totalNatPts / totalNatGP).toFixed(1) : '0';
   
   return `
     <div class="screen active">
-      <div class="retire-card">
-        <div class="retire-title">🏀 生涯总结</div>
-        <div class="retire-sub">${p.name} · ${p.number}号 · ${p.position} · ${country.name}</div>
-        <div style="font-size:14px;color:var(--text-dim);margin-bottom:16px;">
+      <div style="max-width:480px;margin:0 auto;padding:16px 120px 80px;">
+        
+        <!-- 生涯称号 (最顶部) -->
+        ${p.careerTitle ? `
+        <div style="margin:0 0 16px;padding:16px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,107,53,0.1));border:1px solid rgba(255,215,0,0.4);border-radius:16px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;letter-spacing:2px;">👑 生涯称号</div>
+          <div style="font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${p.careerTitle}</div>
+        </div>` : ''}
+        
+        <!-- 基本信息卡片 -->
+        <div style="background:linear-gradient(135deg,#1a1f36,#2d3561);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,#2155b8,#1a3c83);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0;">${p.number}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+              <div style="font-size:12px;color:var(--text-dim);">${country.flag} ${country.name} · ${p.position} · 第${p.number}号</div>
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">📊 巅峰能力值</div>
+              <div style="font-size:24px;font-weight:900;color:#ff9e67;">${p.peakOvr}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">💰 最高身价</div>
+              <div style="font-size:24px;font-weight:900;color:#4ade80;">${formatSalary(p.peakSalary || 0)}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">🏀 总场次</div>
+              <div style="font-size:18px;font-weight:800;color:#fff;">${p.stats.gp}场</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">📈 生涯总收入</div>
+              <div style="font-size:18px;font-weight:800;color:#fff;">${formatSalary(p.wealth)}</div>
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
+            <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 4px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">${p.stats.ppg}</div>
+              <div style="font-size:9px;color:var(--text-dim);">场均分</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 4px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">${p.stats.rpg}</div>
+              <div style="font-size:9px;color:var(--text-dim);">场均板</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 4px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">${p.stats.apg}</div>
+              <div style="font-size:9px;color:var(--text-dim);">场均助</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 效力球队 + 赛季数 -->
+        ${uniqueTeams.length > 0 ? `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:6px;">🏟️ 效力球队生涯</div>
+          ${uniqueTeams.map(t => {
+            const seasons = t.seasons.sort((a,b) => a-b);
+            const seasonRange = seasons.length === 1 ? `${seasons[0]}岁` : `${seasons[0]}-${seasons[seasons.length-1]}岁`;
+            const badge = t.logo ? getTeamBadge(t.logo, t.logoCls || 'logo-steel', t.team) : getTeamBadge(t.team.substring(0,2), 'logo-steel', t.team);
+            const isChampion = p.championshipYears.some(y => seasons.includes(y));
+            return `
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-card);border-radius:12px;margin-bottom:8px;border-left:3px solid ${isChampion ? '#ffd700' : 'var(--accent)'};">
+                <div style="width:40px;height:40px;flex-shrink:0;">${badge}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.team}</div>
+                  <div style="font-size:11px;color:var(--text-dim);">${t.league} · ${seasons.length}个赛季 · ${seasonRange}</div>
+                </div>
+                ${isChampion ? '<div style="font-size:16px;" title="曾随队夺冠">🏆</div>' : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>` : ''}
+        
+        <!-- 国际大赛成绩 -->
+        ${hasIntl ? `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:6px;">🌍 国家队生涯</div>
+          
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+            <div style="text-align:center;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 4px;">
+              <div style="font-size:16px;font-weight:800;color:#fff;">${totalNatGP}</div>
+              <div style="font-size:9px;color:var(--text-dim);">国家队场次</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 4px;">
+              <div style="font-size:16px;font-weight:800;color:#fff;">${totalNatPts}</div>
+              <div style="font-size:9px;color:var(--text-dim);">国家队总得分</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 4px;">
+              <div style="font-size:16px;font-weight:800;color:#fff;">${avgNatPts}</div>
+              <div style="font-size:9px;color:var(--text-dim);">场均得分</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 4px;">
+              <div style="font-size:16px;font-weight:800;color:#ffd700;">${p.internationalResults.filter(r => r.roundLevel >= 5).length}</div>
+              <div style="font-size:9px;color:var(--text-dim);">国际冠军</div>
+            </div>
+          </div>
+          
+          ${p.internationalResults.map(r => `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg-card);border-radius:10px;margin-bottom:6px;">
+              <div style="font-size:20px;flex-shrink:0;">${r.roundLevel >= 5 ? '🏆' : r.roundLevel >= 3 ? '🥉' : '🌍'}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.competition}</div>
+                <div style="font-size:10px;color:var(--text-dim);">${r.flag} ${r.country} · ${r.year}岁 · ${r.gp}场${r.avgPts}分</div>
+              </div>
+              <div style="font-size:11px;font-weight:600;color:${r.roundLevel >= 5 ? '#ffd700' : r.roundLevel >= 3 ? '#ff9e67' : 'var(--text-dim)'};flex-shrink:0;">${r.round}</div>
+            </div>
+          `).join('')}
+        </div>` : ''}
+        
+        <!-- 联赛奖项 -->
+        ${hasAwards ? `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:6px;">🏆 联赛荣誉</div>
+          
+          ${awardGroups.champion.length > 0 ? `
+          <div style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,107,53,0.05));border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#ffd700;margin-bottom:6px;">🏆 总冠军 ×${awardGroups.champion.length}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${awardGroups.champion.map(a => `<span style="font-size:11px;background:rgba(255,215,0,0.15);color:#ffd700;padding:4px 8px;border-radius:6px;">${a.year}岁 ${a.team}</span>`).join('')}
+            </div>
+          </div>` : ''}
+          
+          ${awardGroups.fmvp.length > 0 ? `
+          <div style="background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,107,53,0.05));border:1px solid rgba(255,107,53,0.3);border-radius:12px;padding:12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#ff9e67;margin-bottom:6px;">👑 FMVP ×${awardGroups.fmvp.length}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${awardGroups.fmvp.map(a => `<span style="font-size:11px;background:rgba(255,107,53,0.15);color:#ff9e67;padding:4px 8px;border-radius:6px;">${a.year}岁 ${a.league}</span>`).join('')}
+            </div>
+          </div>` : ''}
+          
+          ${awardGroups.mvp.length > 0 ? `
+          <div style="background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.05));border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#4ade80;margin-bottom:6px;">⭐ 常规赛MVP ×${awardGroups.mvp.length}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${awardGroups.mvp.map(a => `<span style="font-size:11px;background:rgba(74,222,128,0.15);color:#4ade80;padding:4px 8px;border-radius:6px;">${a.year}岁 ${a.league}</span>`).join('')}
+            </div>
+          </div>` : ''}
+          
+          ${awardGroups.allnba.length > 0 ? `
+          <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:6px;">🥇 最佳阵容 ×${awardGroups.allnba.length}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${awardGroups.allnba.map(a => `<span style="font-size:11px;background:rgba(255,255,255,0.1);color:#fff;padding:4px 8px;border-radius:6px;">${a.year}岁 ${a.league}</span>`).join('')}
+            </div>
+          </div>` : ''}
+          
+          ${awardGroups.most_improved.length > 0 ? `
+          <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:6px;">📈 最快进步 ×${awardGroups.most_improved.length}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${awardGroups.most_improved.map(a => `<span style="font-size:11px;background:rgba(255,255,255,0.1);color:#fff;padding:4px 8px;border-radius:6px;">${a.year}岁 ${a.league}</span>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>` : ''}
+        
+        <!-- 其他荣誉 (旧honors系统保留) -->
+        ${p.honors.length > 0 && !hasAwards && !hasIntl ? `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;">🎖️ 其他荣誉</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${p.honors.map(h => `<span style="font-size:11px;background:rgba(255,255,255,0.1);color:#fff;padding:4px 8px;border-radius:6px;">${getHonorIcon(h)} ${h}</span>`).join('')}
+          </div>
+        </div>` : ''}
+        
+        <!-- 退役原因 -->
+        <div style="text-align:center;color:var(--text-dim);font-size:12px;margin:16px 0;">
           ${p.retirementReason}
         </div>
         
-        <div class="career-stats">
-          ${careerStats.map(s => `
-            <div class="career-stat">
-              <div class="val">${s.val}</div>
-              <div class="lbl">${s.lbl}</div>
-            </div>
-          `).join('')}
-        </div>
-        
-        ${p.honors.length > 0 ? `
-        <div style="margin-bottom:16px;">
-          <div class="timeline-title" style="text-align:left;">荣誉墙</div>
-          <div class="honor-grid">
-            ${p.honors.map(h => `<span class="honor-chip">${getHonorIcon(h)} ${h}</span>`).join('')}
-          </div>
-        </div>` : ''}
-
-        ${p.career.length > 0 ? `
-        <div style="text-align:left;margin-bottom:20px;">
-          <div class="timeline-title">效力球队</div>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
-            ${p.career.filter((c, i, arr) => arr.findIndex(x => x.team === c.team) === i).map(c => {
-              const teamData = findTeamByName(c.team);
-              const badge = teamData ? getTeamBadge(teamData.logo, teamData.cls, teamData.name) : getTeamBadge(c.team.substring(0,2), 'logo-steel', c.team);
-              return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:rgba(255,255,255,0.03);border-radius:10px;min-width:72px;">
-                <div class="team-logo" style="width:48px;height:48px;">${badge}</div>
-                <div style="font-size:11px;font-weight:600;text-align:center;">${c.team}</div>
-                <div style="font-size:9px;color:var(--text-dim);">${c.league}</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>` : ''}
-
-        ${p.career.length > 0 ? `
-        <div style="text-align:left;margin-bottom:20px;">
-          <div class="timeline-title">生涯轨迹</div>
-          ${p.career.map(c => `
-            <div class="timeline-item">
-              <div class="timeline-age">${c.age}</div>
-              <div class="timeline-content">
-                <div class="timeline-main">${c.event} ${c.team}</div>
-                <div class="timeline-sub">${c.league}${c.draftPick ? ' · ' + c.draftPick : ''}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>` : ''}
-
-        ${p.careerTitle ? `
-        <div style="margin:24px 0 20px;padding:20px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,107,53,0.1));border:1px solid rgba(255,215,0,0.4);border-radius:16px;text-align:center;">
-          <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;letter-spacing:2px;">生涯称号</div>
-          <div style="font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${p.careerTitle}</div>
-        </div>` : ''}
-
         <button class="btn btn-primary" id="restartBtn" style="justify-content:center;">
           🔄 再来一局
         </button>
