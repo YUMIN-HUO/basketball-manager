@@ -451,6 +451,38 @@
   .pcs-val { font-size: clamp(16px, 4.6vw, 20px); font-weight: 900; color: #fff; line-height: 1; }
   .pcs-lab { font-size: clamp(9px, 2.4vw, 10.5px); color: var(--text-dim); font-weight: 600; }
 
+  /* 36分钟标准化数据 */
+  .pc-stats36 {
+    margin: clamp(6px, 1.8vw, 10px) 0;
+    padding: clamp(8px, 2vw, 10px) clamp(10px, 2.6vw, 14px);
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: clamp(8px, 2.2vw, 10px);
+  }
+  .pc-s36-title { font-size: clamp(10px, 2.6vw, 11px); font-weight: 700; color: #5d90ff; margin-bottom: clamp(4px, 1.2vw, 6px); }
+  .pc-s36-row { display: flex; flex-wrap: wrap; gap: clamp(4px, 1.4vw, 8px); font-size: clamp(11px, 2.8vw, 13px); font-weight: 700; color: #fff; }
+  .pc-s36-shot { display: flex; gap: clamp(6px, 1.8vw, 10px); margin-top: clamp(3px, 1vw, 5px); font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); font-weight: 600; }
+
+  /* 14项分项能力值 */
+  .pc-abilities { margin: clamp(6px, 1.8vw, 10px) 0; }
+  .pc-ab-title {
+    font-size: clamp(10px, 2.6vw, 11px); font-weight: 700; color: var(--text-dim);
+    cursor: pointer; user-select: none; padding: clamp(4px, 1.2vw, 6px) 0;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .pc-ab-arrow { font-size: clamp(8px, 2vw, 9px); transition: transform .2s; }
+  .pc-ab-title.collapsed .pc-ab-arrow { transform: rotate(-90deg); }
+  .pc-ab-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(3px, 1vw, 5px) clamp(8px, 2.4vw, 12px);
+    margin-top: clamp(4px, 1.2vw, 6px);
+  }
+  .pc-ab-grid.hidden { display: none; }
+  .pc-ab-item { display: grid; grid-template-columns: clamp(28px, 8vw, 34px) 1fr clamp(22px, 6vw, 26px); align-items: center; gap: clamp(4px, 1.2vw, 6px); }
+  .pc-ab-label { font-size: clamp(9px, 2.4vw, 10px); font-weight: 600; color: var(--text-dim); }
+  .pc-ab-bar { height: clamp(5px, 1.4vw, 6px); background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+  .pc-ab-fill { height: 100%; border-radius: 6px; transition: width .3s; }
+  .pc-ab-val { font-size: clamp(9px, 2.4vw, 10px); font-weight: 800; color: #fff; text-align: right; }
+
   /* 关系/清白/名气/财富条 */
   .pc-bars { display: flex; flex-direction: column; gap: clamp(4px, 1.4vw, 6px); }
   .pc-bar { display: grid; grid-template-columns: clamp(36px, 10vw, 44px) 1fr clamp(28px, 8vw, 34px); align-items: center; gap: clamp(6px, 1.8vw, 8px); }
@@ -761,6 +793,99 @@ const POSITIONS = [
   { code: 'PF', name: '大前锋', desc: '篮板、内线、防守' },
   { code: 'C',  name: '中锋',     desc: '篮下统治、盖帽、篮板' }
 ];
+
+// ============= 联赛档次 & OVR上限 =============
+const LEAGUE_TIERS = {
+  NBA:        { tier: 'T0', cap: 99, label: 'NBA/欧冠' },
+  EuroLeague: { tier: 'T0', cap: 99, label: 'NBA/欧冠' },
+  CBA:        { tier: 'T1', cap: 95, label: 'CBA/NBL/西甲/法甲' },
+  NBL:        { tier: 'T1', cap: 95, label: 'CBA/NBL/西甲/法甲' },
+  ACB:        { tier: 'T1', cap: 95, label: 'CBA/NBL/西甲/法甲' },
+  LNB:        { tier: 'T1', cap: 95, label: 'CBA/NBL/西甲/法甲' },
+  BBL:        { tier: 'T2', cap: 88, label: '次级职业联赛' },
+};
+const AMATEUR_CAP = 75;
+function getLeagueCap(league) {
+  if (!league || league === '') return AMATEUR_CAP;
+  return (LEAGUE_TIERS[league] && LEAGUE_TIERS[league].cap) || 88;
+}
+
+// ============= 14项分项能力值 =============
+const SUB_ABILITY_DEFS = [
+  { key: 'layup',    label: '上篮', icon: '🎯', group: 'offense' },
+  { key: 'dunk',     label: '扣篮', icon: '💥', group: 'offense' },
+  { key: 'three',    label: '三分', icon: '🏹', group: 'offense' },
+  { key: 'mid',      label: '中投', icon: '📐', group: 'offense' },
+  { key: 'ft',       label: '罚球', icon: '🥅', group: 'offense' },
+  { key: 'ball',     label: '控球', icon: '🎾', group: 'playmaking' },
+  { key: 'pass',     label: '传球', icon: '🤝', group: 'playmaking' },
+  { key: 'lateral',  label: '横移', icon: '👟', group: 'defense' },
+  { key: 'drb',      label: '防板', icon: '🛡️', group: 'defense' },
+  { key: 'orb',      label: '攻板', icon: '⚔️', group: 'defense' },
+  { key: 'stl',      label: '抢断', icon: '✋', group: 'defense' },
+  { key: 'blk',      label: '盖帽', icon: '🚫', group: 'defense' },
+  { key: 'stamina',  label: '耐力', icon: '💪', group: 'physical' },
+  { key: 'strength', label: '对抗', icon: '🏋️', group: 'physical' },
+];
+
+// 位置能力偏移 (相对于OVR的加减值, 决定各位置的能力分布特征)
+const POSITION_ABILITY_OFFSETS = {
+  PG: { layup:5, dunk:-12, three:6, mid:4, ft:5, ball:13, pass:13, lateral:8, drb:-5, orb:-10, stl:8, blk:-12, stamina:3, strength:-8 },
+  SG: { layup:3, dunk:-4, three:9, mid:6, ft:4, ball:6, pass:3, lateral:6, drb:-3, orb:-8, stl:5, blk:-7, stamina:2, strength:-3 },
+  SF: { layup:2, dunk:4, three:4, mid:4, ft:2, ball:1, pass:1, lateral:4, drb:1, orb:-2, stl:3, blk:1, stamina:2, strength:4 },
+  PF: { layup:0, dunk:6, three:-5, mid:-2, ft:-3, ball:-8, pass:-5, lateral:-8, drb:8, orb:8, stl:-3, blk:6, stamina:3, strength:8 },
+  C:  { layup:3, dunk:9, three:-13, mid:-6, ft:-8, ball:-12, pass:-8, lateral:-12, drb:13, orb:13, stl:-5, blk:11, stamina:2, strength:13 }
+};
+
+// ============= 36分钟标准化数据基准表 (按位置×OVR区间) =============
+// 每个区间: { pts, reb, ast, stl, blk, to, fg, tp, ftp } 均为[min,max]
+const STATS_36MIN_TABLES = {
+  PG: [
+    { max:99, pts:[26,32],  reb:[4.5,6], ast:[10.5,13], stl:[2.1,2.8], blk:[0.1,0.4], to:[3.2,4.2], fg:[0.45,0.48], tp:[0.38,0.43], ftp:[0.88,0.95] },
+    { max:94, pts:[21,25.5],reb:[3.8,5], ast:[8.5,10.4],stl:[1.7,2.0], blk:[0.1,0.3], to:[2.8,3.6], fg:[0.43,0.47], tp:[0.36,0.40], ftp:[0.85,0.90] },
+    { max:89, pts:[16,20.5],reb:[3.2,4.5],ast:[7.0,8.4], stl:[1.3,1.6], blk:[0.1,0.3], to:[2.5,3.2], fg:[0.42,0.46], tp:[0.34,0.38], ftp:[0.80,0.87] },
+    { max:84, pts:[12,15.5],reb:[2.8,4], ast:[5.5,6.9], stl:[1.0,1.2], blk:[0.1,0.2], to:[2.0,2.8], fg:[0.41,0.45], tp:[0.33,0.37], ftp:[0.75,0.82] },
+    { max:79, pts:[8,11.5], reb:[2.5,3.5],ast:[4.0,5.4], stl:[0.7,0.9], blk:[0,0.2],  to:[1.8,2.5], fg:[0.40,0.44], tp:[0.31,0.35], ftp:[0.70,0.78] },
+    { max:74, pts:[5,7.5],  reb:[2,3],   ast:[2.5,3.9], stl:[0.5,0.7], blk:[0,0.1],  to:[1.5,2.2], fg:[0.38,0.42], tp:[0.28,0.33], ftp:[0.65,0.72] },
+    { max:0,  pts:[3,5],    reb:[1.5,2.5],ast:[1.5,2.4], stl:[0.3,0.5], blk:[0,0.1],  to:[1.2,1.8], fg:[0.36,0.40], tp:[0.25,0.30], ftp:[0.60,0.68] },
+  ],
+  SG: [
+    { max:99, pts:[28,34],  reb:[4,5.2], ast:[4,5.5],  stl:[1.6,2.2], blk:[0.2,0.5], to:[2.8,3.5], fg:[0.46,0.50], tp:[0.40,0.46], ftp:[0.87,0.93] },
+    { max:94, pts:[23,27.5],reb:[3.5,4.8],ast:[3.2,4], stl:[1.3,1.6], blk:[0.2,0.4], to:[2.5,3.2], fg:[0.45,0.48], tp:[0.38,0.42], ftp:[0.84,0.89] },
+    { max:89, pts:[18,22.5],reb:[3.2,4.5],ast:[2.8,3.8],stl:[1.1,1.3],blk:[0.1,0.3], to:[2.2,2.8], fg:[0.44,0.47], tp:[0.36,0.40], ftp:[0.80,0.86] },
+    { max:84, pts:[14,17.5],reb:[3,4],   ast:[2.5,3.5],stl:[0.9,1.1], blk:[0.1,0.3], to:[1.8,2.5], fg:[0.43,0.46], tp:[0.35,0.39], ftp:[0.76,0.82] },
+    { max:79, pts:[9,13.5], reb:[2.5,3.5],ast:[2,3],   stl:[0.7,0.9], blk:[0.1,0.2], to:[1.5,2.2], fg:[0.41,0.45], tp:[0.33,0.37], ftp:[0.72,0.78] },
+    { max:74, pts:[6,8.5],  reb:[2,3],   ast:[1.5,2.5],stl:[0.5,0.7], blk:[0,0.2],  to:[1.2,1.8], fg:[0.39,0.43], tp:[0.30,0.34], ftp:[0.68,0.74] },
+    { max:0,  pts:[3,5],    reb:[1.5,2.5],ast:[1,2],   stl:[0.3,0.5], blk:[0,0.1],  to:[1,1.5],  fg:[0.37,0.41], tp:[0.27,0.31], ftp:[0.62,0.70] },
+  ],
+  SF: [
+    { max:99, pts:[27,33],  reb:[7.5,9.5],ast:[5,6.8], stl:[1.8,2.4], blk:[0.7,1.3], to:[2.8,3.5], fg:[0.48,0.52], tp:[0.37,0.42], ftp:[0.83,0.89] },
+    { max:94, pts:[22,26.5],reb:[6,7.4], ast:[4,5.5], stl:[1.5,1.8], blk:[0.5,1.0], to:[2.5,3.2], fg:[0.46,0.50], tp:[0.36,0.40], ftp:[0.80,0.86] },
+    { max:89, pts:[17,21.5],reb:[5,5.9], ast:[3.2,4.5],stl:[1.2,1.5], blk:[0.4,0.8], to:[2.2,2.8], fg:[0.45,0.48], tp:[0.34,0.38], ftp:[0.78,0.84] },
+    { max:84, pts:[13,16.5],reb:[4.5,5.5],ast:[2.5,3.5],stl:[1.0,1.3],blk:[0.3,0.6], to:[1.8,2.5], fg:[0.44,0.47], tp:[0.33,0.37], ftp:[0.75,0.81] },
+    { max:79, pts:[9,12.5], reb:[4,5],   ast:[2,3],   stl:[0.8,1.0], blk:[0.2,0.5], to:[1.5,2.2], fg:[0.42,0.46], tp:[0.31,0.35], ftp:[0.72,0.78] },
+    { max:74, pts:[6,8.5],  reb:[3.5,4.5],ast:[1.5,2.5],stl:[0.6,0.8],blk:[0.1,0.4], to:[1.2,1.8], fg:[0.40,0.44], tp:[0.29,0.33], ftp:[0.68,0.74] },
+    { max:0,  pts:[3,5],    reb:[3,4],   ast:[1,2],   stl:[0.4,0.6], blk:[0.1,0.3], to:[1,1.5],  fg:[0.38,0.42], tp:[0.26,0.30], ftp:[0.62,0.70] },
+  ],
+  PF: [
+    { max:99, pts:[24,30],  reb:[11,14], ast:[3.5,5],  stl:[1.2,1.8], blk:[1.8,2.6], to:[2.5,3.2], fg:[0.50,0.55], tp:[0.36,0.40], ftp:[0.78,0.85] },
+    { max:94, pts:[19,23.5],reb:[9,10.9],ast:[2.8,4], stl:[1.0,1.4], blk:[1.5,2.0], to:[2.2,2.8], fg:[0.48,0.52], tp:[0.35,0.39], ftp:[0.76,0.82] },
+    { max:89, pts:[15,18.5],reb:[7.5,8.9],ast:[2.2,3.2],stl:[0.8,1.1],blk:[1.2,1.6], to:[1.8,2.5], fg:[0.47,0.50], tp:[0.34,0.38], ftp:[0.74,0.80] },
+    { max:84, pts:[10,14.5],reb:[6,7.4], ast:[1.8,2.8],stl:[0.6,0.9], blk:[0.8,1.2], to:[1.5,2.2], fg:[0.45,0.49], tp:[0.33,0.37], ftp:[0.72,0.78] },
+    { max:79, pts:[7,9.5], reb:[5,6],   ast:[1.5,2.2],stl:[0.5,0.7], blk:[0.6,0.9], to:[1.2,1.8], fg:[0.43,0.47], tp:[0.31,0.35], ftp:[0.68,0.74] },
+    { max:74, pts:[5,6.5], reb:[4,5],   ast:[1,1.8], stl:[0.4,0.6], blk:[0.4,0.7], to:[1,1.5],  fg:[0.41,0.45], tp:[0.29,0.33], ftp:[0.65,0.71] },
+    { max:0,  pts:[3,4],   reb:[3,4],   ast:[0.8,1.5],stl:[0.2,0.4], blk:[0.2,0.5], to:[0.8,1.2], fg:[0.39,0.43], tp:[0.26,0.30], ftp:[0.60,0.68] },
+  ],
+  C: [
+    { max:99, pts:[25,31],  reb:[12,16], ast:[3.8,6.5],stl:[1.0,1.5], blk:[2.2,3.2], to:[2.8,3.5], fg:[0.55,0.60], tp:[0.30,0.35], ftp:[0.78,0.85] },
+    { max:94, pts:[20,24.5],reb:[10,11.9],ast:[2.8,4.5],stl:[0.8,1.2],blk:[1.7,2.1], to:[2.5,3.2], fg:[0.53,0.57], tp:[0.28,0.33], ftp:[0.76,0.82] },
+    { max:89, pts:[15,19.5],reb:[8.5,9.9],ast:[2.2,3.5],stl:[0.6,0.9],blk:[1.2,1.6], to:[2.0,2.8], fg:[0.51,0.55], tp:[0.26,0.31], ftp:[0.74,0.80] },
+    { max:84, pts:[9,14],   reb:[7,8.4], ast:[1.8,2.8],stl:[0.5,0.7], blk:[0.8,1.1], to:[1.5,2.2], fg:[0.49,0.53], tp:[0.24,0.29], ftp:[0.70,0.76] },
+    { max:79, pts:[6,8.5], reb:[6,7],   ast:[1.5,2.2],stl:[0.4,0.6], blk:[0.6,0.8], to:[1.2,1.8], fg:[0.47,0.51], tp:[0.22,0.27], ftp:[0.66,0.72] },
+    { max:74, pts:[4,6],   reb:[5,6],   ast:[1,1.8], stl:[0.3,0.5], blk:[0.4,0.6], to:[1,1.5],  fg:[0.45,0.49], tp:[0.20,0.25], ftp:[0.62,0.68] },
+    { max:0,  pts:[2,4],   reb:[4,5],   ast:[0.8,1.5],stl:[0.2,0.4], blk:[0.2,0.4], to:[0.8,1.2], fg:[0.43,0.47], tp:[0.18,0.22], ftp:[0.55,0.65] },
+  ],
+};
 
 const LOGO_CLASSES = [
   'logo-athletic','logo-classic','logo-modern','logo-bright','logo-navy',
@@ -1683,6 +1808,95 @@ function findTeamByName(name) {
   return null;
 }
 
+// ============= 能力值 & 36分钟数据系统 =============
+
+// 生成14项分项能力值 (基于OVR + 位置偏移 + 随机扰动)
+function generateAbilities(ovr, position) {
+  const offsets = POSITION_ABILITY_OFFSETS[position] || POSITION_ABILITY_OFFSETS.SF;
+  const ab = {};
+  for (const def of SUB_ABILITY_DEFS) {
+    const base = ovr + (offsets[def.key] || 0);
+    ab[def.key] = clamp(Math.round(base + randInt(-4, 4)), 25, 99);
+  }
+  return ab;
+}
+
+// OVR变化时同步调整分项能力 (保持球员特征, 整体加减)
+function growAbilities(p, delta) {
+  if (delta === 0) return;
+  const offsets = POSITION_ABILITY_OFFSETS[p.position] || POSITION_ABILITY_OFFSETS.SF;
+  for (const def of SUB_ABILITY_DEFS) {
+    // 核心能力(偏移为正)成长更快, 弱项(偏移为负)成长更慢
+    const weight = 1 + (offsets[def.key] || 0) * 0.03;
+    const change = Math.round(delta * weight + randInt(-1, 1));
+    p.abilities[def.key] = clamp(p.abilities[def.key] + change, 25, 99);
+  }
+}
+
+// 从OVR区间表查找36分钟数据基准
+function getStats36Table(ovr, position) {
+  const table = STATS_36MIN_TABLES[position] || STATS_36MIN_TABLES.SF;
+  for (let i = 0; i < table.length; i++) {
+    // 当前区间: (下一行的max+1) ~ 当前行的max; 最后一行则是 0~max
+    const lowerBound = i < table.length - 1 ? table[i + 1].max + 1 : 0;
+    if (ovr >= lowerBound && ovr <= table[i].max) return table[i];
+  }
+  return table[table.length - 1];
+}
+
+// 生成36分钟标准化数据 (OVR决定基准区间, 分项能力微调)
+function generateStats36(ovr, position, ab) {
+  const t = getStats36Table(ovr, position);
+  const r = (range) => rand(range[0], range[1]);
+  // 基础数据 (从OVR区间表随机)
+  let pts = r(t.pts), reb = r(t.reb), ast = r(t.ast);
+  let stl = r(t.stl), blk = r(t.blk), to = r(t.to);
+  let fg = r(t.fg), tp = r(t.tp), ftp = r(t.ftp);
+
+  // 分项能力微调 (±10%范围内)
+  if (ab) {
+    const adjust = (base, ability, scale) => base * (1 + (ability - 70) / 100 * scale);
+    pts = adjust(pts, (ab.layup + ab.three + ab.mid) / 3, 0.12);
+    reb = adjust(reb, (ab.drb + ab.orb + ab.strength) / 3, 0.15);
+    ast = adjust(ast, (ab.pass + ab.ball) / 2, 0.15);
+    stl = adjust(stl, ab.stl, 0.20);
+    blk = adjust(blk, ab.blk, 0.20);
+    // 命中率由对应能力微调
+    tp = clamp(tp + (ab.three - 70) * 0.0008, 0.20, 0.50);
+    ftp = clamp(ftp + (ab.ft - 70) * 0.001, 0.50, 0.95);
+    fg = clamp(fg + (ab.layup - 70) * 0.0005, 0.35, 0.62);
+    // 失误: 控球越高失误越少
+    to = clamp(to * (1 - (ab.ball - 70) * 0.002), 0.5, 5);
+  }
+  return {
+    pts: +pts.toFixed(1), reb: +reb.toFixed(1), ast: +ast.toFixed(1),
+    stl: +stl.toFixed(1), blk: +blk.toFixed(1), to: +to.toFixed(1),
+    fg: +(fg * 100).toFixed(1), tp: +(tp * 100).toFixed(1), ftp: +(ftp * 100).toFixed(1)
+  };
+}
+
+// 由36分钟数据反算OVR (权重公式: 得分25% 助攻18% 篮板15% 抢断盖帽14% 命中率18% 身体失误罚球10%)
+function calcOVRFromStats36(s, position) {
+  // 各项归一化到0-100
+  const nPts = clamp(s.pts / 30 * 100, 0, 100);
+  const nAst = clamp(s.ast / 10 * 100, 0, 100);
+  const nReb = clamp(s.reb / 12 * 100, 0, 100);
+  const nDef = clamp((s.stl + s.blk * 1.5) / 4 * 100, 0, 100);
+  const nShoot = clamp((s.fg - 38) / 20 * 100 + (s.tp - 30) / 18 * 50 + (s.ftp - 65) / 30 * 50, 0, 100) / 2;
+  const nMisc = clamp(50 + (100 - s.to * 15) / 2, 0, 100); // 失误越少分越高
+  const ovr = nPts * 0.25 + nAst * 0.18 + nReb * 0.15 + nDef * 0.14 + nShoot * 0.18 + nMisc * 0.10;
+  return Math.round(clamp(ovr, 40, 99));
+}
+
+// 应用联赛OVR上限
+function applyLeagueCap(p) {
+  const cap = getLeagueCap(p.league);
+  if (p.ovr > cap) {
+    log('CAP', `🔒 联赛上限: ${p.league || '业余'} OVR封顶 ${cap} (原${p.ovr})`);
+    p.ovr = cap;
+  }
+}
+
 // ============= GAME INITIALIZATION =============
 // 真实篮球青训体系：
 // 高中: 16-18岁 (3年: 高一/高二/高三)
@@ -1729,7 +1943,7 @@ function createPlayer(nationality, position, name, number) {
     injuryHistory: [],   // 完整伤病历史记录
     currentInjury: null,
     chronicInjuries: 0,  // 慢性伤病计数器 (影响长期OVR)
-    yearStats: { gp: 0, pts: 0, reb: 0, ast: 0 },
+    yearStats: { gp: 0, pts: 0, reb: 0, ast: 0, min: 0 },
     recentGames: [],     // 最近3年出场数 (用于续约判定)
     noOfferYears: 0,     // 连续无人报价年数
     draftPick: null,
@@ -1748,7 +1962,9 @@ function createPlayer(nationality, position, name, number) {
     proYears: 0,               // 职业生涯年数 (用于判定生涯阶段)
     injuryChanceMod: 0,        // 伤病概率加成修正 (事件加减,逐年衰减)
     fatigue: 0,                // 疲劳值 0-100 (影响伤病概率与成长)
-    _storyEventHistory: []     // 已触发事件id历史 (避免短期重复)
+    _storyEventHistory: [],    // 已触发事件id历史 (避免短期重复)
+    abilities: {},             // 14项分项能力值 (generateAbilities填充)
+    stats36: null              // 36分钟标准化数据 (generateStats36填充)
   };
   
   // Pick initial high school
@@ -1760,6 +1976,8 @@ function createPlayer(nationality, position, name, number) {
   player.peakOvr = player.ovr;
   player.peakSalary = 0;
   player.peakWealth = 0;
+  player.abilities = generateAbilities(player.ovr, player.position);
+  player.stats36 = generateStats36(player.ovr, player.position, player.abilities);
   
   return player;
 }
@@ -1823,6 +2041,7 @@ function advanceYear() {
   if (p.age <= 18 && change < 2) change = 2;
   
   p.ovr = clamp(p.ovr + change, 40, 99);
+  growAbilities(p, change);  // 同步分项能力值
   log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (潜力乘数:${potMultiplier.toFixed(2)}x, 基础成长:${change - chronicPenalty}, 伤病:${chronicPenalty})`);
   
   // === 伤病系统 ===
@@ -1842,6 +2061,7 @@ function advanceYear() {
     if (injury.severity >= 2) {
       const ovrLoss = randInt(1, 3);
       p.ovr = Math.max(40, p.ovr - ovrLoss);
+      growAbilities(p, -ovrLoss);  // 伤病导致能力下降
       p.chronicInjuries++;
       log('INJURY', `⚠️ 严重伤病: ${injury.name} | 严重度:${injury.severity} | 停赛${duration}周 | OVR-${ovrLoss} | 慢性伤病计数:${p.chronicInjuries}`, { injury, duration, ovrLoss });
     } else {
@@ -1875,21 +2095,28 @@ function advanceYear() {
     ? Math.max(0, maxGames - Math.ceil(p.currentInjury.weeksMissed * maxGames / 40))
     : randInt(Math.floor(maxGames * 0.7), maxGames);
   
-  // 位置影响数据分布
-  const basePerf = p.ovr / 100;
-  const perfMultiplier = rand(0.8, 1.2);
-  const posStats = {
-    PG: { pts: 22, reb: 4, ast: 8 },
-    SG: { pts: 20, reb: 5, ast: 4 },
-    SF: { pts: 18, reb: 7, ast: 4 },
-    PF: { pts: 16, reb: 9, ast: 3 },
-    C:  { pts: 15, reb: 11, ast: 2 }
-  }[p.position] || { pts: 18, reb: 7, ast: 4 };
-  
+  // === 36分钟标准化数据系统 ===
+  // 1. 应用联赛OVR上限
+  applyLeagueCap(p);
+  // 2. 由当前OVR+分项能力生成36分钟标准化数据
+  p.stats36 = generateStats36(p.ovr, p.position, p.abilities);
+  // 3. 根据OVR和耐力计算场均上场时间
+  const staminaBonus = (p.abilities.stamina - 70) * 0.1;
+  let minutes;
+  if (p.ovr >= 90)      minutes = 34 + staminaBonus + rand(-1, 2);
+  else if (p.ovr >= 85) minutes = 30 + staminaBonus + rand(-1, 2);
+  else if (p.ovr >= 80) minutes = 26 + staminaBonus + rand(-2, 2);
+  else if (p.ovr >= 75) minutes = 20 + staminaBonus + rand(-2, 3);
+  else if (p.ovr >= 70) minutes = 15 + staminaBonus + rand(-2, 3);
+  else                  minutes = 10 + staminaBonus + rand(-2, 3);
+  minutes = clamp(minutes, 5, 40);
+  // 4. 由36分钟数据换算赛季总数据: 总计 = 36分钟数据 × (上场时间/36) × 场次
+  const minRatio = minutes / 36;
   p.yearStats.gp = gamesPlayed;
-  p.yearStats.pts = Math.round(gamesPlayed * basePerf * posStats.pts * perfMultiplier);
-  p.yearStats.reb = Math.round(gamesPlayed * basePerf * posStats.reb * perfMultiplier);
-  p.yearStats.ast = Math.round(gamesPlayed * basePerf * posStats.ast * perfMultiplier);
+  p.yearStats.pts = Math.round(p.stats36.pts * minRatio * gamesPlayed);
+  p.yearStats.reb = Math.round(p.stats36.reb * minRatio * gamesPlayed);
+  p.yearStats.ast = Math.round(p.stats36.ast * minRatio * gamesPlayed);
+  p.yearStats.min = +minutes.toFixed(1);  // 记录场均上场时间
 
   // 记录最近3年出场数 (用于续约判定)
   p.recentGames.push(gamesPlayed);
@@ -1948,7 +2175,7 @@ function advanceYear() {
   p.stats.rpg = (p.stats.reb / Math.max(1, p.stats.gp)).toFixed(1);
   p.stats.apg = (p.stats.ast / Math.max(1, p.stats.gp)).toFixed(1);
   
-  log('STATS', `赛季数据: ${gamesPlayed}场 | ${Math.round(p.yearStats.pts/Math.max(1,gamesPlayed))}分 ${Math.round(p.yearStats.reb/Math.max(1,gamesPlayed))}板 ${Math.round(p.yearStats.ast/Math.max(1,gamesPlayed))}助`);
+  log('STATS', `赛季数据: ${gamesPlayed}场 | ${minutes.toFixed(0)}分钟 | 36min: ${p.stats36.pts}分 ${p.stats36.reb}板 ${p.stats36.ast}助 ${p.stats36.stl}断 ${p.stats36.blk}帽 | 命中率:${p.stats36.fg}% 三分:${p.stats36.tp}% 罚球:${p.stats36.ftp}%`);
   
   // 名气和关系变化
   const perfScore = (p.yearStats.pts / Math.max(1, p.yearStats.gp)) * 0.5;
@@ -3234,7 +3461,10 @@ function applyStoryEffects(choice, p) {
     outcomeLabel = ok ? ' ✅成功' : ' ❌失败';
   }
 
-  if (eff.ovr) p.ovr = clamp(p.ovr + eff.ovr, 40, 99);
+  if (eff.ovr) {
+    p.ovr = clamp(p.ovr + eff.ovr, 40, 99);
+    growAbilities(p, eff.ovr);  // 事件OVR变化同步分项能力
+  }
   if (eff.fame) p.fame = clamp(p.fame + eff.fame, 0, 100);
   if (eff.relation) p.relation = clamp(p.relation + eff.relation, 0, 100);
   if (eff.wealth) p.wealth += eff.wealth;
@@ -3680,9 +3910,41 @@ function renderPlayerCard() {
       <div class="pc-four-stats">
         <div class="pc-stat"><span class="pcs-icon">🗓</span><span class="pcs-val">${p.yearStats.gp}</span><span class="pcs-lab">出场</span></div>
         <div class="pc-stat"><span class="pcs-icon">🏀</span><span class="pcs-val">${p.yearStats.pts}</span><span class="pcs-lab">得分</span></div>
-        <div class="pc-stat"><span class="pcs-icon">🤝</span><span class="pcs-val">${p.yearStats.reb}</span><span class="pcs-lab">助攻</span></div>
-        <div class="pc-stat"><span class="pcs-icon">📐</span><span class="pcs-val">${p.yearStats.ast}</span><span class="pcs-lab">篮板</span></div>
+        <div class="pc-stat"><span class="pcs-icon">📐</span><span class="pcs-val">${p.yearStats.reb}</span><span class="pcs-lab">篮板</span></div>
+        <div class="pc-stat"><span class="pcs-icon">🤝</span><span class="pcs-val">${p.yearStats.ast}</span><span class="pcs-lab">助攻</span></div>
       </div>
+      ${p.stats36 ? `
+      <div class="pc-stats36">
+        <div class="pc-s36-title">36分钟标准化数据 ${p.yearStats.min ? `· 场均${p.yearStats.min}分钟` : ''}</div>
+        <div class="pc-s36-row">
+          <span>${p.stats36.pts}分</span>
+          <span>${p.stats36.reb}板</span>
+          <span>${p.stats36.ast}助</span>
+          <span>${p.stats36.stl}断</span>
+          <span>${p.stats36.blk}帽</span>
+          <span>${p.stats36.to}误</span>
+        </div>
+        <div class="pc-s36-shot">
+          <span>FG ${p.stats36.fg}%</span>
+          <span>3P ${p.stats36.tp}%</span>
+          <span>FT ${p.stats36.ftp}%</span>
+        </div>
+      </div>` : ''}
+      ${p.abilities && Object.keys(p.abilities).length > 0 ? `
+      <div class="pc-abilities" id="pcAbilities">
+        <div class="pc-ab-title" id="abToggle">分项能力值 <span class="pc-ab-arrow">▼</span></div>
+        <div class="pc-ab-grid" id="abGrid">
+          ${SUB_ABILITY_DEFS.map(def => {
+            const val = p.abilities[def.key] || 50;
+            const color = val >= 90 ? '#f59e0b' : val >= 80 ? '#10b981' : val >= 70 ? '#3b82f6' : val >= 60 ? '#6b7280' : '#ef4444';
+            return `<div class="pc-ab-item">
+              <span class="pc-ab-label">${def.label}</span>
+              <div class="pc-ab-bar"><div class="pc-ab-fill" style="width:${val}%;background:${color}"></div></div>
+              <span class="pc-ab-val">${val}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
       <div class="pc-bars">
         <div class="pc-bar">
           <span class="pcb-lab">关系</span>
@@ -3930,6 +4192,16 @@ function bindGameEvents() {
         gameYear = 2024;
         render();
       }
+    });
+  }
+
+  // 分项能力值折叠/展开
+  const abToggle = document.getElementById('abToggle');
+  if (abToggle) {
+    abToggle.addEventListener('click', () => {
+      abToggle.classList.toggle('collapsed');
+      const grid = document.getElementById('abGrid');
+      if (grid) grid.classList.toggle('hidden');
     });
   }
 }
