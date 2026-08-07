@@ -33,7 +33,7 @@
   .app {
     max-width: 520px;
     margin: 0 auto;
-    padding: 12px;
+    padding: clamp(8px, 2.5vw, 14px);
     min-height: 100vh;
   }
   .screen { display: none; animation: fadeIn .3s ease; }
@@ -56,11 +56,11 @@
   }
   h1, h2, h3 { font-weight: 700; }
   .btn {
-    display: flex; align-items: center; gap: 12px;
-    width: 100%; padding: 14px 16px;
+    display: flex; align-items: center; gap: clamp(8px, 2vw, 12px);
+    width: 100%; padding: clamp(10px, 2.8vw, 14px) clamp(12px, 3vw, 16px);
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; color: var(--text);
-    font-size: 15px; font-weight: 500;
+    border-radius: clamp(9px, 2.2vw, 12px); color: var(--text);
+    font-size: clamp(13px, 3.2vw, 15px); font-weight: 500;
     cursor: pointer; transition: all .2s ease;
     text-align: left; font-family: inherit;
   }
@@ -72,71 +72,71 @@
   }
   .btn-primary:hover { filter: brightness(1.1); }
   .btn:disabled { opacity: 0.4; pointer-events: none; }
-  .btn-sm { padding: 10px 12px; font-size: 13px; }
-  .btn-block { margin-bottom: 8px; }
+  .btn-sm { padding: clamp(8px, 2vw, 10px) clamp(10px, 2.5vw, 12px); font-size: clamp(11px, 2.8vw, 13px); }
+  .btn-block { margin-bottom: clamp(6px, 1.5vw, 8px); }
 
   .header {
-    text-align: center; padding: 20px 0 16px;
+    text-align: center; padding: clamp(14px, 4vw, 20px) 0 clamp(10px, 3vw, 16px);
   }
   .header h1 {
-    font-size: 24px;
+    font-size: clamp(20px, 5.5vw, 26px);
     background: linear-gradient(135deg, var(--accent), var(--gold));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .header p { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+  .header p { color: var(--text-dim); font-size: clamp(11px, 2.8vw, 13px); margin-top: clamp(4px, 1.5vw, 6px); }
 
-  .setup-section { margin-bottom: 20px; }
+  .setup-section { margin-bottom: clamp(14px, 4vw, 20px); }
   .setup-title {
-    font-size: 18px; font-weight: 700; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
+    font-size: clamp(15px, 4vw, 18px); font-weight: 700; margin-bottom: clamp(8px, 2.5vw, 12px);
+    display: flex; align-items: center; gap: clamp(6px, 1.8vw, 8px);
   }
   .setup-title .step {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: var(--accent); color: white; font-size: 12px;
+    width: clamp(20px, 5vw, 24px); height: clamp(20px, 5vw, 24px); border-radius: 50%;
+    background: var(--accent); color: white; font-size: clamp(10px, 2.6vw, 12px);
   }
   .country-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(6px, 1.8vw, 8px);
   }
   .country-btn {
-    flex-direction: column; align-items: flex-start; gap: 4px;
+    flex-direction: column; align-items: flex-start; gap: clamp(3px, 1vw, 4px);
   }
-  .country-btn .flag { font-size: 24px; }
+  .country-btn .flag { font-size: clamp(20px, 5vw, 24px); }
   .country-btn .c-name { font-weight: 600; }
-  .country-btn .c-info { font-size: 12px; color: var(--text-dim); }
+  .country-btn .c-info { font-size: clamp(10px, 2.6vw, 12px); color: var(--text-dim); }
   .country-btn.selected {
     background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(247,147,30,0.1));
     border-color: var(--accent);
   }
 
-  .input-row { display: flex; gap: 10px; }
+  .input-row { display: flex; gap: clamp(8px, 2vw, 10px); }
   .input-row input {
-    flex: 1; padding: 12px 14px;
+    flex: 1; padding: clamp(10px, 2.6vw, 12px) clamp(12px, 3vw, 14px);
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; color: var(--text); font-size: 15px;
+    border-radius: clamp(8px, 2vw, 10px); color: var(--text); font-size: clamp(13px, 3.2vw, 15px);
     font-family: inherit; outline: none;
   }
   .input-row input:focus { border-color: var(--accent); }
-  .pos-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .pos-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: clamp(4px, 1.4vw, 6px); }
   .pos-btn {
-    flex-direction: column; align-items: center; gap: 4px;
-    padding: 12px 6px; font-size: 12px;
+    flex-direction: column; align-items: center; gap: clamp(3px, 1vw, 4px);
+    padding: clamp(10px, 2.6vw, 12px) clamp(4px, 1.4vw, 6px); font-size: clamp(10px, 2.6vw, 12px);
   }
-  .pos-btn .pos-code { font-weight: 700; font-size: 16px; color: var(--accent); }
+  .pos-btn .pos-code { font-weight: 700; font-size: clamp(13px, 3.4vw, 16px); color: var(--accent); }
 
   /* Player Card */
   .player-card {
     background: linear-gradient(145deg, var(--card), var(--card2));
-    border-radius: 16px; padding: 16px;
+    border-radius: clamp(12px, 3.5vw, 16px); padding: clamp(12px, 3.2vw, 16px);
     border: 1px solid var(--border);
-    margin-bottom: 16px;
+    margin-bottom: clamp(10px, 3vw, 16px);
   }
   .player-main {
-    display: flex; align-items: center; gap: 14px;
+    display: flex; align-items: center; gap: clamp(10px, 2.8vw, 14px);
   }
   .ovr-badge {
-    width: 68px; height: 68px; border-radius: 14px;
+    width: clamp(58px, 15vw, 68px); height: clamp(58px, 15vw, 68px); border-radius: clamp(11px, 3vw, 14px);
     background: linear-gradient(145deg, #1a1f35, #0f1424);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -144,47 +144,48 @@
     flex-shrink: 0;
   }
   .ovr-badge .ovr {
-    font-size: 28px; font-weight: 800; color: var(--accent);
+    font-size: clamp(22px, 6vw, 28px); font-weight: 800; color: var(--accent);
     line-height: 1;
   }
   .ovr-badge .ovr-label {
-    font-size: 10px; color: var(--text-dim); margin-top: 2px;
+    font-size: clamp(9px, 2.2vw, 10px); color: var(--text-dim); margin-top: 2px;
   }
   .player-info { flex: 1; min-width: 0; }
   .player-name {
-    font-size: 18px; font-weight: 700;
-    display: flex; align-items: center; gap: 6px;
+    font-size: clamp(15px, 4vw, 18px); font-weight: 700;
+    display: flex; align-items: center; gap: clamp(4px, 1.4vw, 6px);
+    flex-wrap: wrap;
   }
   .player-meta {
-    font-size: 13px; color: var(--text-dim); margin-top: 3px;
-    display: flex; flex-wrap: wrap; gap: 8px;
+    font-size: clamp(11px, 2.8vw, 13px); color: var(--text-dim); margin-top: 3px;
+    display: flex; flex-wrap: wrap; gap: clamp(6px, 1.8vw, 8px);
   }
   .player-meta span { display: inline-flex; align-items: center; gap: 3px; }
   .team-row {
-    display: flex; align-items: center; gap: 8px;
-    margin-top: 8px; padding: 8px 10px;
-    background: rgba(255,255,255,0.03); border-radius: 8px;
+    display: flex; align-items: center; gap: clamp(6px, 1.8vw, 8px);
+    margin-top: clamp(6px, 1.8vw, 8px); padding: clamp(6px, 1.8vw, 8px) clamp(8px, 2.2vw, 10px);
+    background: rgba(255,255,255,0.03); border-radius: clamp(7px, 2vw, 8px);
   }
   .team-logo {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: clamp(32px, 9vw, 40px); height: clamp(32px, 9vw, 40px); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 13px; color: white;
+    font-weight: 800; font-size: clamp(11px, 2.8vw, 13px); color: white;
     flex-shrink: 0; position: relative;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
   }
   .team-logo svg { width: 100%; height: 100%; border-radius: 50%; }
-  .team-name { font-size: 14px; font-weight: 600; }
-  .team-league { font-size: 11px; color: var(--text-dim); }
+  .team-name { font-size: clamp(12px, 3vw, 14px); font-weight: 600; }
+  .team-league { font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); }
 
   /* Stat bars */
-  .stat-bars { display: flex; gap: 12px; margin-top: 12px; }
-  .stat-bar { flex: 1; }
+  .stat-bars { display: flex; gap: clamp(8px, 2.4vw, 12px); margin-top: clamp(8px, 2.4vw, 12px); }
+  .stat-bar { flex: 1; min-width: 0; }
   .stat-bar .bar-label {
     display: flex; justify-content: space-between;
-    font-size: 11px; color: var(--text-dim); margin-bottom: 4px;
+    font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); margin-bottom: 4px;
   }
   .bar-fill {
-    height: 6px; background: rgba(255,255,255,0.08);
+    height: clamp(5px, 1.4vw, 6px); background: rgba(255,255,255,0.08);
     border-radius: 3px; overflow: hidden;
   }
   .bar-inner {
@@ -198,108 +199,108 @@
   /* Stats grid */
   .stats-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 8px; margin-top: 12px;
+    gap: clamp(6px, 1.8vw, 8px); margin-top: clamp(8px, 2.4vw, 12px);
   }
   .stat-item {
-    text-align: center; padding: 8px 4px;
-    background: rgba(255,255,255,0.03); border-radius: 8px;
+    text-align: center; padding: clamp(6px, 1.8vw, 8px) clamp(3px, 1vw, 4px);
+    background: rgba(255,255,255,0.03); border-radius: clamp(7px, 2vw, 8px);
   }
-  .stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
-  .stat-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .stat-value { font-size: clamp(13px, 3.4vw, 16px); font-weight: 700; color: var(--text); }
+  .stat-label { font-size: clamp(9px, 2.2vw, 10px); color: var(--text-dim); margin-top: 2px; }
 
   /* Decision card */
   .event-card {
     background: linear-gradient(145deg, var(--card), var(--card2));
-    border-radius: 16px; padding: 16px;
-    border: 1px solid var(--border); margin-bottom: 16px;
+    border-radius: clamp(12px, 3.5vw, 16px); padding: clamp(12px, 3.2vw, 16px);
+    border: 1px solid var(--border); margin-bottom: clamp(10px, 3vw, 16px);
   }
   .event-icon {
-    width: 40px; height: 40px; border-radius: 10px;
+    width: clamp(34px, 9vw, 40px); height: clamp(34px, 9vw, 40px); border-radius: clamp(8px, 2.2vw, 10px);
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; margin-bottom: 12px;
+    font-size: clamp(17px, 4.4vw, 20px); margin-bottom: clamp(8px, 2.4vw, 12px);
   }
-  .event-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-  .event-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+  .event-title { font-size: clamp(14px, 3.6vw, 16px); font-weight: 700; margin-bottom: 6px; }
+  .event-desc { font-size: clamp(11px, 2.8vw, 13px); color: var(--text-dim); line-height: 1.5; margin-bottom: clamp(10px, 2.8vw, 14px); }
   .choice-btn {
-    flex-direction: column; align-items: flex-start; gap: 6px;
-    margin-bottom: 10px;
+    flex-direction: column; align-items: flex-start; gap: clamp(4px, 1.2vw, 6px);
+    margin-bottom: clamp(7px, 2vw, 10px);
   }
-  .choice-btn .choice-title { font-weight: 600; font-size: 14px; }
-  .choice-btn .choice-desc { font-size: 12px; color: var(--text-dim); }
+  .choice-btn .choice-title { font-weight: 600; font-size: clamp(12px, 3vw, 14px); }
+  .choice-btn .choice-desc { font-size: clamp(10px, 2.6vw, 12px); color: var(--text-dim); }
   .choice-btn .choice-tag {
     display: inline-block; padding: 2px 6px; border-radius: 4px;
     background: rgba(255,107,53,0.15); color: var(--accent);
-    font-size: 11px; font-weight: 600;
+    font-size: clamp(10px, 2.4vw, 11px); font-weight: 600;
   }
 
   /* Timeline */
   .timeline-title {
-    font-size: 14px; font-weight: 600; margin-bottom: 8px;
+    font-size: clamp(12px, 3vw, 14px); font-weight: 600; margin-bottom: clamp(6px, 1.8vw, 8px);
     color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
   }
   .timeline-item {
-    display: flex; gap: 10px; padding: 8px 0;
+    display: flex; gap: clamp(8px, 2.2vw, 10px); padding: clamp(6px, 1.8vw, 8px) 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .timeline-item:last-child { border-bottom: none; }
   .timeline-age {
-    width: 32px; height: 32px; border-radius: 8px;
+    width: clamp(28px, 7.5vw, 32px); height: clamp(28px, 7.5vw, 32px); border-radius: clamp(7px, 2vw, 8px);
     background: var(--accent); color: white;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 13px; flex-shrink: 0;
+    font-weight: 700; font-size: clamp(11px, 2.8vw, 13px); flex-shrink: 0;
   }
   .timeline-content { flex: 1; min-width: 0; }
-  .timeline-main { font-size: 13px; font-weight: 500; }
-  .timeline-sub { font-size: 11px; color: var(--text-dim); }
+  .timeline-main { font-size: clamp(11px, 2.8vw, 13px); font-weight: 500; word-break: break-word; }
+  .timeline-sub { font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); }
 
   /* Honor */
-  .honor-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .honor-grid { display: flex; flex-wrap: wrap; gap: clamp(4px, 1.4vw, 6px); margin-top: clamp(6px, 1.8vw, 8px); }
   .honor-chip {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 8px; border-radius: 6px;
+    padding: clamp(3px, 1vw, 4px) clamp(6px, 1.8vw, 8px); border-radius: clamp(5px, 1.4vw, 6px);
     background: rgba(255,215,0,0.1); color: var(--gold);
-    font-size: 11px; font-weight: 600;
+    font-size: clamp(10px, 2.4vw, 11px); font-weight: 600;
     border: 1px solid rgba(255,215,0,0.2);
   }
 
   /* Retirement */
   .retire-card {
     background: linear-gradient(145deg, var(--card), var(--card2));
-    border-radius: 16px; padding: 20px;
+    border-radius: clamp(12px, 3.5vw, 16px); padding: clamp(14px, 4vw, 20px);
     border: 1px solid var(--border); text-align: center;
   }
   .retire-title {
-    font-size: 24px; font-weight: 800;
+    font-size: clamp(20px, 5.5vw, 26px); font-weight: 800;
     background: linear-gradient(135deg, var(--accent), var(--gold));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 12px;
+    margin-bottom: clamp(8px, 2.4vw, 12px);
   }
-  .retire-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+  .retire-sub { color: var(--text-dim); font-size: clamp(12px, 3vw, 14px); margin-bottom: clamp(14px, 4vw, 20px); }
   .career-stats {
     display: grid; grid-template-columns: repeat(2, 1fr);
-    gap: 10px; margin-bottom: 16px;
+    gap: clamp(8px, 2.2vw, 10px); margin-bottom: clamp(10px, 3vw, 16px);
   }
   .career-stat {
-    padding: 12px; background: rgba(255,255,255,0.03);
-    border-radius: 10px;
+    padding: clamp(9px, 2.6vw, 12px); background: rgba(255,255,255,0.03);
+    border-radius: clamp(8px, 2.2vw, 10px);
   }
   .career-stat .val {
-    font-size: 22px; font-weight: 800;
+    font-size: clamp(18px, 5vw, 22px); font-weight: 800;
     color: var(--accent);
   }
   .career-stat .lbl {
-    font-size: 11px; color: var(--text-dim); margin-top: 2px;
+    font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); margin-top: 2px;
   }
 
-  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(6px, 1.8vw, 8px); }
   .mode-btn {
-    flex-direction: column; align-items: center; gap: 4px;
-    padding: 14px 8px; text-align: center;
+    flex-direction: column; align-items: center; gap: clamp(3px, 1vw, 4px);
+    padding: clamp(11px, 3vw, 14px) clamp(6px, 1.8vw, 8px); text-align: center;
   }
-  .mode-btn .mode-name { font-weight: 700; font-size: 13px; }
-  .mode-btn .mode-desc { font-size: 10px; color: var(--text-dim); }
+  .mode-btn .mode-name { font-weight: 700; font-size: clamp(11px, 2.8vw, 13px); }
+  .mode-btn .mode-desc { font-size: clamp(9px, 2.2vw, 10px); color: var(--text-dim); }
   .mode-btn.active {
     background: linear-gradient(135deg, rgba(255,107,53,0.3), rgba(247,147,30,0.2));
     border-color: var(--accent);
@@ -307,13 +308,14 @@
 
   /* Toast */
   .toast {
-    position: fixed; bottom: 20px; left: 50%;
+    position: fixed; bottom: clamp(14px, 4vw, 20px); left: 50%;
     transform: translateX(-50%);
     background: var(--card2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 16px;
-    z-index: 100; display: flex; align-items: center; gap: 8px;
+    border-radius: clamp(9px, 2.4vw, 12px); padding: clamp(10px, 2.6vw, 12px) clamp(12px, 3.2vw, 16px);
+    z-index: 100; display: flex; align-items: center; gap: clamp(6px, 1.8vw, 8px);
     animation: slideUp .3s ease;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    max-width: 90vw; font-size: clamp(12px, 2.8vw, 14px);
   }
 
   .hidden { display: none !important; }
@@ -321,7 +323,7 @@
   /* Scroll hint */
   .scroll-hint {
     text-align: center; color: var(--text-dim);
-    font-size: 11px; padding: 8px 0;
+    font-size: clamp(10px, 2.4vw, 11px); padding: clamp(6px, 1.8vw, 8px) 0;
   }
 
   /* Logo colors */
@@ -348,47 +350,47 @@
   .logo-black { background: linear-gradient(135deg, #212121, #000000); }
 
   .competition-banner {
-    padding: 10px 14px; border-radius: 10px;
+    padding: clamp(8px, 2.2vw, 10px) clamp(10px, 2.8vw, 14px); border-radius: clamp(8px, 2.2vw, 10px);
     background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,53,0.1));
     border: 1px solid rgba(255,215,0,0.3);
-    margin-bottom: 12px;
-    display: flex; align-items: center; gap: 10px;
+    margin-bottom: clamp(8px, 2.4vw, 12px);
+    display: flex; align-items: center; gap: clamp(8px, 2.2vw, 10px);
   }
-  .competition-banner .cb-icon { font-size: 20px; }
-  .competition-banner .cb-text { font-size: 13px; font-weight: 600; }
+  .competition-banner .cb-icon { font-size: clamp(17px, 4.4vw, 20px); }
+  .competition-banner .cb-text { font-size: clamp(11px, 2.8vw, 13px); font-weight: 600; }
 
   .draft-card {
     background: linear-gradient(145deg, var(--card), var(--card2));
-    border-radius: 16px; padding: 16px;
+    border-radius: clamp(12px, 3.5vw, 16px); padding: clamp(12px, 3.2vw, 16px);
     border: 1px solid var(--border);
   }
   .draft-pick {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px; background: rgba(255,255,255,0.03);
-    border-radius: 10px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: clamp(8px, 2.4vw, 12px);
+    padding: clamp(8px, 2.2vw, 10px); background: rgba(255,255,255,0.03);
+    border-radius: clamp(8px, 2.2vw, 10px); margin-bottom: clamp(6px, 1.8vw, 8px);
   }
   .draft-pick .pick-num {
-    font-size: 13px; font-weight: 700; color: var(--accent);
-    background: rgba(255,107,53,0.1); padding: 4px 8px; border-radius: 6px;
+    font-size: clamp(11px, 2.8vw, 13px); font-weight: 700; color: var(--accent);
+    background: rgba(255,107,53,0.1); padding: clamp(3px, 1vw, 4px) clamp(6px, 1.8vw, 8px); border-radius: clamp(5px, 1.4vw, 6px);
     flex-shrink: 0;
   }
   .draft-pick .pick-team { flex: 1; min-width: 0; }
-  .draft-pick .pick-team-name { font-weight: 600; font-size: 14px; }
-  .draft-pick .pick-team-league { font-size: 11px; color: var(--text-dim); }
+  .draft-pick .pick-team-name { font-weight: 600; font-size: clamp(12px, 3vw, 14px); }
+  .draft-pick .pick-team-league { font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); }
 
   .injured-badge {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 2px 6px; border-radius: 4px;
     background: rgba(239,68,68,0.15); color: var(--red);
-    font-size: 11px; font-weight: 600;
+    font-size: clamp(10px, 2.4vw, 11px); font-weight: 600;
   }
 
   .legend-chip {
     display: inline-flex; align-items: center; gap: 3px;
-    padding: 3px 7px; border-radius: 5px;
+    padding: clamp(2px, 0.8vw, 3px) clamp(5px, 1.6vw, 7px); border-radius: clamp(4px, 1.2vw, 5px);
     background: rgba(255,215,0,0.15);
     border: 1px solid rgba(255,215,0,0.3);
-    font-size: 11px; font-weight: 600; color: var(--gold);
+    font-size: clamp(10px, 2.4vw, 11px); font-weight: 600; color: var(--gold);
   }
 
   @media (max-width: 380px) {
@@ -403,89 +405,89 @@
   .player-card {
     background: linear-gradient(180deg, #131828 0%, #101526 100%);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 14px 14px 12px;
-    margin-bottom: 10px;
+    border-radius: clamp(11px, 3vw, 14px);
+    padding: clamp(10px, 2.8vw, 14px) clamp(10px, 2.8vw, 14px) clamp(9px, 2.4vw, 12px);
+    margin-bottom: clamp(8px, 2.2vw, 10px);
   }
-  .pc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .pc-top { display: flex; gap: clamp(9px, 2.4vw, 12px); align-items: flex-start; }
   .pc-top .ovr-badge {
-    width: 84px; height: 84px; border-radius: 12px;
+    width: clamp(64px, 18vw, 84px); height: clamp(64px, 18vw, 84px); border-radius: clamp(9px, 2.6vw, 12px);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     box-shadow: 0 2px 14px rgba(255,107,53,0.18) inset, 0 4px 14px rgba(0,0,0,0.4);
     border: 1.5px solid rgba(255,107,53,0.35);
     margin: 0; flex-shrink: 0;
   }
   .ovr-badge .ovr {
-    font-size: 34px; font-weight: 900; line-height: 1;
+    font-size: clamp(26px, 7vw, 34px); font-weight: 900; line-height: 1;
     background: linear-gradient(180deg, #ffd09e 0%, #ff7043 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .ovr-badge .ovr-label { font-size: 10px; letter-spacing: 2px; color: #b8a98a; margin-top: 2px; }
+  .ovr-badge .ovr-label { font-size: clamp(9px, 2.2vw, 10px); letter-spacing: 2px; color: #b8a98a; margin-top: 2px; }
   .pc-player { flex: 1; min-width: 0; }
-  .pc-name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
-  .pc-flag { font-size: 18px; line-height: 1; }
-  .pc-name { font-size: 19px; font-weight: 800; color: #fff; }
-  .pc-number { font-size: 14px; font-weight: 700; color: var(--accent); padding: 1px 7px; border-radius: 5px; background: rgba(255,107,53,0.15); }
-  .pc-pos { font-size: 12px; font-weight: 800; color: #b9c2d8; background: rgba(255,255,255,0.06); padding: 1px 7px; border-radius: 5px; }
-  .pc-team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .pc-team-logo { width: 22px; height: 22px; }
-  .pc-team-name { font-size: 14px; font-weight: 700; color: #fff; }
-  .pc-league { font-size: 11px; color: var(--text-dim); margin-left: 2px; }
-  .pc-meta-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-dim); }
+  .pc-name-row { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(4px, 1.4vw, 6px); margin-bottom: clamp(6px, 1.8vw, 8px); }
+  .pc-flag { font-size: clamp(15px, 4vw, 18px); line-height: 1; }
+  .pc-name { font-size: clamp(16px, 4.4vw, 19px); font-weight: 800; color: #fff; word-break: break-word; }
+  .pc-number { font-size: clamp(12px, 3vw, 14px); font-weight: 700; color: var(--accent); padding: 1px clamp(5px, 1.6vw, 7px); border-radius: 5px; background: rgba(255,107,53,0.15); }
+  .pc-pos { font-size: clamp(10px, 2.6vw, 12px); font-weight: 800; color: #b9c2d8; background: rgba(255,255,255,0.06); padding: 1px clamp(5px, 1.6vw, 7px); border-radius: 5px; }
+  .pc-team-row { display: flex; align-items: center; gap: clamp(6px, 1.8vw, 8px); margin-bottom: clamp(6px, 1.8vw, 8px); min-width: 0; }
+  .pc-team-logo { width: clamp(20px, 5.2vw, 24px); height: clamp(20px, 5.2vw, 24px); flex-shrink: 0; }
+  .pc-team-name { font-size: clamp(12px, 3vw, 14px); font-weight: 700; color: #fff; word-break: break-word; min-width: 0; }
+  .pc-league { font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); margin-left: 2px; }
+  .pc-meta-row { display: flex; gap: clamp(8px, 2.4vw, 12px); flex-wrap: wrap; font-size: clamp(10px, 2.6vw, 11.5px); color: var(--text-dim); }
   .pc-meta-row span { font-weight: 600; }
 
   /* 四项数据 */
   .pc-four-stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-    margin: 12px 0 10px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(5px, 1.6vw, 8px);
+    margin: clamp(8px, 2.4vw, 12px) 0 clamp(7px, 2vw, 10px);
   }
   .pc-stat {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
-    padding: 8px 4px; border-radius: 10px;
+    padding: clamp(6px, 1.8vw, 8px) clamp(3px, 1vw, 4px); border-radius: clamp(8px, 2.2vw, 10px);
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.05);
   }
-  .pcs-icon { font-size: 14px; }
-  .pcs-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
-  .pcs-lab { font-size: 10.5px; color: var(--text-dim); font-weight: 600; }
+  .pcs-icon { font-size: clamp(12px, 3vw, 14px); }
+  .pcs-val { font-size: clamp(16px, 4.6vw, 20px); font-weight: 900; color: #fff; line-height: 1; }
+  .pcs-lab { font-size: clamp(9px, 2.4vw, 10.5px); color: var(--text-dim); font-weight: 600; }
 
   /* 关系/清白/名气/财富条 */
-  .pc-bars { display: flex; flex-direction: column; gap: 6px; }
-  .pc-bar { display: grid; grid-template-columns: 44px 1fr 34px; align-items: center; gap: 8px; }
-  .pc-bar-wealth { grid-template-columns: 58px 1fr; }
-  .pcb-lab { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+  .pc-bars { display: flex; flex-direction: column; gap: clamp(4px, 1.4vw, 6px); }
+  .pc-bar { display: grid; grid-template-columns: clamp(36px, 10vw, 44px) 1fr clamp(28px, 8vw, 34px); align-items: center; gap: clamp(6px, 1.8vw, 8px); }
+  .pc-bar-wealth { grid-template-columns: clamp(48px, 13vw, 58px) 1fr; }
+  .pcb-lab { font-size: clamp(10px, 2.6vw, 11px); font-weight: 700; color: var(--text-dim); }
   .pcb-track {
-    height: 7px; background: rgba(255,255,255,0.06);
+    height: clamp(6px, 1.6vw, 7px); background: rgba(255,255,255,0.06);
     border-radius: 10px; overflow: hidden;
   }
   .pcb-fill { height: 100%; border-radius: 10px; transition: width .3s; }
   .pcb-fill.pcb-blue { background: linear-gradient(90deg, #2e6cd6, #5d90ff); }
   .pcb-fill.pcb-green { background: linear-gradient(90deg, #22a06b, #4ecfa0); }
   .pcb-fill.pcb-gold { background: linear-gradient(90deg, #c28a2e, #ffd26a); }
-  .pcb-val { font-size: 11px; font-weight: 800; color: #fff; text-align: right; }
+  .pcb-val { font-size: clamp(10px, 2.6vw, 11px); font-weight: 800; color: #fff; text-align: right; }
   .pcb-wealth {
-    font-size: 12px; font-weight: 800; color: #ffce74;
+    font-size: clamp(11px, 2.8vw, 12px); font-weight: 800; color: #ffce74;
     background: rgba(255,206,116,0.1);
-    padding: 3px 9px; border-radius: 6px; text-align: right;
+    padding: clamp(2px, 0.8vw, 3px) clamp(7px, 2vw, 9px); border-radius: clamp(5px, 1.4vw, 6px); text-align: right;
   }
 
   /* 重开入口 */
-  .pc-restart-row { margin-top: 10px; }
+  .pc-restart-row { margin-top: clamp(8px, 2.2vw, 10px); }
   .pc-restart {
-    width: 100%; display: flex; align-items: center; gap: 6px;
-    justify-content: flex-start; font-size: 12px;
-    padding: 8px 12px; border-radius: 10px;
+    width: 100%; display: flex; align-items: center; gap: clamp(5px, 1.4vw, 6px);
+    justify-content: flex-start; font-size: clamp(11px, 2.8vw, 12px);
+    padding: clamp(7px, 2vw, 8px) clamp(10px, 2.8vw, 12px); border-radius: clamp(8px, 2.2vw, 10px);
     background: linear-gradient(180deg, rgba(34,195,107,0.18), rgba(34,195,107,0.04));
     border: 1px solid rgba(34,195,107,0.25); color: #81e4b5;
     font-weight: 700;
   }
-  .pc-restart .pcr-icon { font-size: 13px; }
+  .pc-restart .pcr-icon { font-size: clamp(12px, 3vw, 13px); }
   .pc-restart:hover { filter: brightness(1.1); }
 
   /* 中间区域(横幅/荣誉/时间线) */
   .middle-section {
-    display: flex; flex-direction: column; gap: 10px;
-    margin-bottom: 10px;
+    display: flex; flex-direction: column; gap: clamp(8px, 2.2vw, 10px);
+    margin-bottom: clamp(8px, 2.2vw, 10px);
   }
   .middle-section:empty { margin: 0; }
 
@@ -493,46 +495,46 @@
   .career-timeline {
     background: linear-gradient(180deg, #131828, #101526);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px; padding: 8px;
+    border-radius: clamp(11px, 3vw, 14px); padding: clamp(6px, 1.8vw, 8px);
   }
   .ct-header-row, .ct-row {
     display: grid; align-items: center;
-    grid-template-columns: 48px 1fr 44px 36px 36px 36px;
-    gap: 4px; padding: 6px 5px;
+    grid-template-columns: clamp(38px, 10vw, 48px) 1fr clamp(34px, 9vw, 44px) clamp(28px, 7.5vw, 36px) clamp(28px, 7.5vw, 36px) clamp(28px, 7.5vw, 36px);
+    gap: clamp(3px, 1vw, 4px); padding: clamp(5px, 1.4vw, 6px) clamp(4px, 1.2vw, 5px);
   }
   .ct-header-row {
     border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-size: 10px; color: var(--text-dim); font-weight: 700;
+    font-size: clamp(9px, 2.2vw, 10px); color: var(--text-dim); font-weight: 700;
     text-align: center; margin-bottom: 4px;
   }
   .ct-row {
-    border-radius: 8px; font-size: 11px;
+    border-radius: clamp(7px, 2vw, 8px); font-size: clamp(10px, 2.6vw, 11px);
   }
   .ct-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-  .ct-age { text-align: center; font-weight: 800; color: #fff; font-size: 12px; }
+  .ct-age { text-align: center; font-weight: 800; color: #fff; font-size: clamp(10px, 2.6vw, 12px); }
   .ct-age-ovr {
     background: linear-gradient(135deg, #2155b8, #1a3c83);
-    border-radius: 6px; padding: 3px 2px;
+    border-radius: clamp(5px, 1.4vw, 6px); padding: 3px 2px;
     box-shadow: 0 2px 6px rgba(33,85,184,0.3);
   }
-  .ct-team { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
-  .ct-team-logo { width: 24px; height: 24px; flex-shrink: 0; }
+  .ct-team { display: flex; align-items: center; gap: clamp(4px, 1.2vw, 6px); min-width: 0; overflow: hidden; }
+  .ct-team-logo { width: clamp(20px, 5.4vw, 24px); height: clamp(20px, 5.4vw, 24px); flex-shrink: 0; }
   .ct-team > span:last-child {
-    color: #d9dfe9; font-weight: 700; font-size: 11px;
+    color: #d9dfe9; font-weight: 700; font-size: clamp(10px, 2.6vw, 11px);
     white-space: normal; overflow: visible; text-overflow: clip;
     line-height: 1.2; word-break: break-word;
     min-width: 0;
   }
   .ct-ovr { text-align: center; }
   .ct-ovr-val {
-    font-weight: 900; color: #ff9e67; font-size: 12px;
+    font-weight: 900; color: #ff9e67; font-size: clamp(10px, 2.6vw, 12px);
     background: rgba(255,107,53,0.1); border-radius: 5px; padding: 2px 4px;
   }
-  .ct-col { text-align: center; font-weight: 700; color: #d9dfe9; font-size: 11px; }
+  .ct-col { text-align: center; font-weight: 700; color: #d9dfe9; font-size: clamp(10px, 2.6vw, 11px); }
   .ct-tag {
-    font-size: 8.5px; font-weight: 800; color: #ff9e67;
+    font-size: clamp(7.5px, 1.9vw, 8.5px); font-weight: 800; color: #ff9e67;
     background: rgba(255,107,53,0.1);
-    padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+    padding: 1px clamp(4px, 1.2vw, 6px); border-radius: 4px; margin-left: 4px;
     white-space: nowrap;
   }
 
@@ -541,19 +543,19 @@
     margin-top: auto;
     background: linear-gradient(180deg, #141b30, #0f1428);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 14px 12px 12px;
+    border-radius: clamp(12px, 3.2vw, 16px); padding: clamp(11px, 2.8vw, 14px) clamp(10px, 2.6vw, 12px) clamp(10px, 2.6vw, 12px);
     box-shadow: 0 -10px 28px rgba(0,0,0,0.45);
   }
-  .ev-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .ev-head { display: flex; align-items: center; gap: clamp(6px, 1.8vw, 8px); margin-bottom: 6px; }
   .ev-icon {
-    width: 30px; height: 30px; border-radius: 8px;
+    width: clamp(26px, 7vw, 30px); height: clamp(26px, 7vw, 30px); border-radius: clamp(7px, 2vw, 8px);
     background: rgba(255,107,53,0.15); color: #ff8c5e;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 15px;
+    font-size: clamp(13px, 3.2vw, 15px); flex-shrink: 0;
   }
-  .ev-title { font-size: 16px; font-weight: 800; color: #fff; }
-  .ev-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; margin: 2px 4px 10px; }
-  .ev-choices { display: flex; flex-direction: column; gap: 8px; }
+  .ev-title { font-size: clamp(14px, 3.6vw, 16px); font-weight: 800; color: #fff; }
+  .ev-desc { font-size: clamp(11px, 2.8vw, 12.5px); color: var(--text-dim); line-height: 1.55; margin: 2px clamp(3px, 1vw, 4px) clamp(8px, 2.2vw, 10px); word-break: break-word; }
+  .ev-choices { display: flex; flex-direction: column; gap: clamp(6px, 1.8vw, 8px); }
 
   /* 主屏幕三段流式布局: 顶栏卡 - 中间滚动 - 事件卡 固定 */
   .screen-flow {
@@ -566,15 +568,15 @@
 
   /* ========== 三步骤 开始界面 ========== */
   #screen-setup {
-    display: flex; flex-direction: column; gap: 12px;
+    display: flex; flex-direction: column; gap: clamp(9px, 2.4vw, 12px);
   }
   .setup-steps { display: flex; justify-content: center; padding: 4px 0 2px; }
-  .step-dots { display: flex; align-items: center; gap: 6px; }
+  .step-dots { display: flex; align-items: center; gap: clamp(5px, 1.4vw, 6px); }
   .step-dots .dot {
-    width: 30px; height: 30px; border-radius: 50%;
+    width: clamp(26px, 7vw, 30px); height: clamp(26px, 7vw, 30px); border-radius: 50%;
     background: rgba(255,255,255,0.06); color: var(--text-dim);
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800;
+    font-size: clamp(11px, 2.8vw, 13px); font-weight: 800;
     border: 1.5px solid rgba(255,255,255,0.1);
     transition: all .25s;
   }
@@ -584,20 +586,20 @@
     box-shadow: 0 3px 14px rgba(255,112,67,0.35);
   }
   .step-line {
-    display: inline-block; width: 46px; height: 2px;
+    display: inline-block; width: clamp(34px, 11vw, 46px); height: 2px;
     background: rgba(255,255,255,0.12);
     position: relative; top: -1px;
   }
 
   .setup-panel { display: none; animation: fadeSlide .28s ease; }
-  .setup-panel.active { display: flex; flex-direction: column; gap: 14px; }
+  .setup-panel.active { display: flex; flex-direction: column; gap: clamp(10px, 2.8vw, 14px); }
   @keyframes fadeSlide {
     from { opacity: 0; transform: translateX(16px); }
     to   { opacity: 1; transform: translateX(0); }
   }
   .setup-title-lg {
-    font-size: 18px; font-weight: 800; color: #fff;
-    padding-left: 10px; border-left: 4px solid var(--accent);
+    font-size: clamp(15px, 4vw, 18px); font-weight: 800; color: #fff;
+    padding-left: clamp(8px, 2.2vw, 10px); border-left: 4px solid var(--accent);
   }
 
   /* 步骤1 模式选择 */
@@ -605,22 +607,22 @@
     grid-template-columns: repeat(3, 1fr);
   }
   .mode-btn {
-    display: flex !important; flex-direction: column; align-items: center; gap: 6px;
-    padding: 18px 10px;
+    display: flex !important; flex-direction: column; align-items: center; gap: clamp(4px, 1.2vw, 6px);
+    padding: clamp(13px, 3.6vw, 18px) clamp(7px, 2vw, 10px);
   }
-  .mode-ico { font-size: 26px; }
-  .mode-name { font-size: 16px; font-weight: 900; }
-  .mode-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; text-align: center; }
+  .mode-ico { font-size: clamp(22px, 5.6vw, 26px); }
+  .mode-name { font-size: clamp(13px, 3.4vw, 16px); font-weight: 900; }
+  .mode-desc { font-size: clamp(10px, 2.4vw, 11px); color: var(--text-dim); line-height: 1.4; text-align: center; }
 
   .step-next, .step-back {
     width: 100%; display: flex; justify-content: center;
-    padding: 12px 14px; font-weight: 800; font-size: 14px;
+    padding: clamp(10px, 2.8vw, 12px) clamp(12px, 3vw, 14px); font-weight: 800; font-size: clamp(12px, 3.2vw, 14px);
   }
   .step-next[disabled] {
     opacity: .45; cursor: not-allowed; filter: grayscale(.5);
   }
   .step-nav-row {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 2.2vw, 10px);
   }
   .step-back {
     background: rgba(255,255,255,0.05); color: var(--text-dim);
@@ -635,29 +637,29 @@
     .step-country-grid { grid-template-columns: repeat(2, 1fr) !important; }
   }
   .step-country-btn {
-    display: flex !important; flex-direction: column; align-items: center; gap: 4px;
-    padding: 16px 6px;
+    display: flex !important; flex-direction: column; align-items: center; gap: clamp(3px, 1vw, 4px);
+    padding: clamp(12px, 3.4vw, 16px) clamp(4px, 1.4vw, 6px);
   }
   .flag-lg {
-    font-size: 42px; line-height: 1; margin-bottom: 2px;
+    font-size: clamp(34px, 9vw, 42px); line-height: 1; margin-bottom: 2px;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
   }
   .flag-lg-img {
-    width: 72px; height: 54px;
+    width: clamp(56px, 17vw, 72px); height: clamp(42px, 12.8vw, 54px);
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: clamp(6px, 1.8vw, 8px);
     border: 1.5px solid rgba(255,255,255,0.2);
     box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    margin-bottom: 6px;
+    margin-bottom: clamp(4px, 1.4vw, 6px);
   }
-  .step-country-btn .c-name { font-size: 13px; font-weight: 800; }
-  .step-country-btn .c-info { font-size: 10.5px; color: var(--text-dim); }
+  .step-country-btn .c-name { font-size: clamp(11px, 2.8vw, 13px); font-weight: 800; }
+  .step-country-btn .c-info { font-size: clamp(9px, 2.3vw, 10.5px); color: var(--text-dim); }
 
   /* 步骤3 球场+球衣 */
   .sub-title {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12.5px; font-weight: 800; color: #d9dfe9;
-    margin-bottom: 8px;
+    display: flex; align-items: center; gap: clamp(5px, 1.4vw, 6px);
+    font-size: clamp(11px, 2.9vw, 12.5px); font-weight: 800; color: #d9dfe9;
+    margin-bottom: clamp(6px, 1.8vw, 8px);
   }
   .st-dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -667,10 +669,10 @@
   .court-select-wrap {
     background: linear-gradient(180deg, #131828, #101526);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px; padding: 12px;
+    border-radius: clamp(11px, 3vw, 14px); padding: clamp(9px, 2.4vw, 12px);
   }
   .court-svg-wrap {
-    width: 100%; border-radius: 10px; overflow: hidden;
+    width: 100%; border-radius: clamp(8px, 2.2vw, 10px); overflow: hidden;
     background: #1a1207;
   }
   .court-svg-wrap svg { display: block; width: 100%; height: auto; }
@@ -705,49 +707,46 @@
   .jersey-name-wrap {
     background: linear-gradient(180deg, #131828, #101526);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px; padding: 12px;
+    border-radius: clamp(11px, 3vw, 14px); padding: clamp(9px, 2.4vw, 12px);
   }
   .jersey-row {
-    display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start;
-  }
-  @media (max-width: 420px) {
-    .jersey-row { grid-template-columns: 110px 1fr; }
+    display: grid; grid-template-columns: clamp(110px, 30vw, 140px) 1fr; gap: clamp(10px, 2.8vw, 14px); align-items: start;
   }
   .jersey-preview {
     width: 100%; aspect-ratio: 180/200;
     background: radial-gradient(ellipse at 50% 30%, rgba(45,96,209,0.15), transparent 70%);
-    border-radius: 12px;
+    border-radius: clamp(9px, 2.4vw, 12px);
     border: 1px dashed rgba(255,255,255,0.1);
   }
   .jersey-preview svg { width: 100%; height: 100%; }
-  .jersey-inputs { display: flex; flex-direction: column; gap: 12px; }
-  .ji-row { display: flex; flex-direction: column; gap: 6px; }
-  .ji-row label { font-size: 11.5px; font-weight: 800; color: var(--text-dim); }
-  .num-picker { display: grid; grid-template-columns: 40px 1fr 40px; gap: 6px; align-items: center; }
+  .jersey-inputs { display: flex; flex-direction: column; gap: clamp(9px, 2.4vw, 12px); }
+  .ji-row { display: flex; flex-direction: column; gap: clamp(4px, 1.2vw, 6px); }
+  .ji-row label { font-size: clamp(10px, 2.6vw, 11.5px); font-weight: 800; color: var(--text-dim); }
+  .num-picker { display: grid; grid-template-columns: clamp(34px, 9vw, 40px) 1fr clamp(34px, 9vw, 40px); gap: clamp(5px, 1.4vw, 6px); align-items: center; }
   .num-btn {
-    padding: 6px 0; display: inline-flex; justify-content: center;
+    padding: clamp(5px, 1.4vw, 6px) 0; display: inline-flex; justify-content: center;
     background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);
-    font-size: 20px; font-weight: 800;
+    font-size: clamp(17px, 4.4vw, 20px); font-weight: 800;
   }
   .num-picker input {
-    width: 100%; padding: 7px 10px; text-align: center;
-    font-size: 17px; font-weight: 900;
+    width: 100%; padding: clamp(6px, 1.6vw, 7px) clamp(8px, 2.2vw, 10px); text-align: center;
+    font-size: clamp(14px, 3.6vw, 17px); font-weight: 900;
   }
   .num-quick {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(4px, 1.2vw, 5px);
   }
   .num-chip {
-    padding: 5px 0; border-radius: 7px;
+    padding: clamp(4px, 1.2vw, 5px) 0; border-radius: clamp(6px, 1.6vw, 7px);
     border: 1px solid rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.04); color: #d9dfe9;
-    font-size: 12px; font-weight: 800;
+    font-size: clamp(10px, 2.6vw, 12px); font-weight: 800;
     cursor: pointer; transition: all .15s;
   }
   .num-chip:hover {
     background: rgba(255,107,53,0.15);
     border-color: rgba(255,107,53,0.45); color: #fff;
   }
-  .ji-row input[type="text"] { width: 100%; padding: 8px 10px; }
+  .ji-row input[type="text"] { width: 100%; padding: clamp(7px, 1.8vw, 8px) clamp(8px, 2.2vw, 10px); }
 </style>
 </head>
 <body>
@@ -3633,42 +3632,42 @@ function renderDraftResultScreen() {
     
     return `
       <div class="screen active">
-        <div style="max-width:420px;margin:0 auto;padding:20px;">
-          <div style="text-align:center;margin-bottom:24px;">
-            <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px;">${dp.regionLeague || '职业联赛'}选秀结果</div>
-            <div style="font-size:15px;font-weight:700;color:#fff;">${p.name} · ${country.flag} ${country.name}</div>
+        <div style="max-width:100%;margin:0 auto;padding:clamp(14px,4vw,20px);box-sizing:border-box;">
+          <div style="text-align:center;margin-bottom:clamp(16px,4vw,24px);">
+            <div style="font-size:clamp(11px,2.8vw,13px);color:var(--text-dim);margin-bottom:4px;">${dp.regionLeague || '职业联赛'}选秀结果</div>
+            <div style="font-size:clamp(13px,3.4vw,15px);font-weight:700;color:#fff;word-break:break-word;">${p.name} · ${country.flag} ${country.name}</div>
           </div>
-          
-          <div style="background:linear-gradient(135deg,#2155b8,#1a3c83);border-radius:20px;padding:30px 20px;text-align:center;margin-bottom:20px;box-shadow:0 8px 32px rgba(33,85,184,0.4);">
-            <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:8px;">恭喜被选中</div>
-            <div style="font-size:32px;font-weight:900;color:#fff;margin-bottom:4px;">${roundLabel}</div>
-            <div style="font-size:20px;font-weight:700;color:#ffd700;margin-bottom:16px;">${pickNumLabel} · 总第 ${dp.overall} 顺位</div>
-            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
-              <div style="width:60px;height:60px;">${draftLogo}</div>
-              <div style="text-align:left;">
-                <div style="font-size:22px;font-weight:900;color:#fff;">${dp.team}</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.7);">${dp.league || ''}</div>
+
+          <div style="background:linear-gradient(135deg,#2155b8,#1a3c83);border-radius:clamp(14px,4vw,20px);padding:clamp(20px,5vw,30px) clamp(14px,4vw,20px);text-align:center;margin-bottom:clamp(14px,4vw,20px);box-shadow:0 8px 32px rgba(33,85,184,0.4);box-sizing:border-box;">
+            <div style="font-size:clamp(12px,3vw,14px);color:rgba(255,255,255,0.7);margin-bottom:8px;">恭喜被选中</div>
+            <div style="font-size:clamp(24px,7vw,32px);font-weight:900;color:#fff;margin-bottom:4px;">${roundLabel}</div>
+            <div style="font-size:clamp(16px,4.6vw,20px);font-weight:700;color:#ffd700;margin-bottom:clamp(12px,3vw,16px);word-break:break-word;">${pickNumLabel} · 总第 ${dp.overall} 顺位</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:clamp(8px,2.4vw,12px);margin-bottom:clamp(10px,2.8vw,12px);">
+              <div style="width:clamp(44px,12vw,60px);height:clamp(44px,12vw,60px);flex-shrink:0;">${draftLogo}</div>
+              <div style="text-align:left;min-width:0;">
+                <div style="font-size:clamp(16px,5vw,22px);font-weight:900;color:#fff;word-break:break-word;">${dp.team}</div>
+                <div style="font-size:clamp(10px,2.6vw,12px);color:rgba(255,255,255,0.7);">${dp.league || ''}</div>
               </div>
             </div>
-            <div style="display:inline-block;background:rgba(255,215,0,0.2);border:1px solid rgba(255,215,0,0.4);border-radius:12px;padding:6px 18px;font-size:14px;font-weight:700;color:#ffd700;">${pickLabel}</div>
+            <div style="display:inline-block;background:rgba(255,215,0,0.2);border:1px solid rgba(255,215,0,0.4);border-radius:clamp(8px,2.4vw,12px);padding:clamp(5px,1.4vw,6px) clamp(12px,3.2vw,18px);font-size:clamp(12px,3vw,14px);font-weight:700;color:#ffd700;">${pickLabel}</div>
           </div>
 
-          <div style="background:var(--bg-card);border-radius:12px;padding:16px;margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-              <span style="color:var(--text-dim);font-size:13px;">选秀地区</span>
-              <span style="color:#fff;font-weight:700;">${dp.regionLeague}</span>
+          <div style="background:var(--bg-card);border-radius:clamp(9px,2.6vw,12px);padding:clamp(12px,3.2vw,16px);margin-bottom:clamp(14px,4vw,20px);box-sizing:border-box;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:clamp(6px,1.8vw,8px);gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">选秀地区</span>
+              <span style="color:#fff;font-weight:700;font-size:clamp(11px,2.8vw,13px);text-align:right;word-break:break-word;">${dp.regionLeague}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-              <span style="color:var(--text-dim);font-size:13px;">起薪</span>
-              <span style="color:#4ade80;font-weight:700;">${formatSalary(p.salary)}</span>
+            <div style="display:flex;justify-content:space-between;margin-bottom:clamp(6px,1.8vw,8px);gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">起薪</span>
+              <span style="color:#4ade80;font-weight:700;font-size:clamp(11px,2.8vw,13px);text-align:right;">${formatSalary(p.salary)}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;">
-              <span style="color:var(--text-dim);font-size:13px;">当前OVR</span>
-              <span style="color:#ff9e67;font-weight:700;">${p.ovr}</span>
+            <div style="display:flex;justify-content:space-between;gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">当前OVR</span>
+              <span style="color:#ff9e67;font-weight:700;font-size:clamp(11px,2.8vw,13px);">${p.ovr}</span>
             </div>
           </div>
 
-          <div style="text-align:center;color:var(--text-dim);font-size:12px;">点击任意位置继续 →</div>
+          <div style="text-align:center;color:var(--text-dim);font-size:clamp(11px,2.6vw,12px);">点击任意位置继续 →</div>
         </div>
       </div>
     `;
@@ -3677,34 +3676,34 @@ function renderDraftResultScreen() {
     const statusMsg = p.ovr >= 60 ? '与球队签约' : '进入自由球员市场';
     return `
       <div class="screen active">
-        <div style="max-width:420px;margin:0 auto;padding:20px;">
-          <div style="text-align:center;margin-bottom:24px;">
-            <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px;">选秀结果</div>
-            <div style="font-size:15px;font-weight:700;color:#fff;">${p.name} · ${country.flag} ${country.name}</div>
-          </div>
-          
-          <div style="background:linear-gradient(135deg,#64748b,#475569);border-radius:20px;padding:30px 20px;text-align:center;margin-bottom:20px;box-shadow:0 8px 32px rgba(100,116,139,0.4);">
-            <div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px;">未被选中</div>
-            <div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:12px;">落选</div>
-            <div style="font-size:14px;color:rgba(255,255,255,0.7);">${statusMsg}</div>
+        <div style="max-width:100%;margin:0 auto;padding:clamp(14px,4vw,20px);box-sizing:border-box;">
+          <div style="text-align:center;margin-bottom:clamp(16px,4vw,24px);">
+            <div style="font-size:clamp(11px,2.8vw,13px);color:var(--text-dim);margin-bottom:4px;">选秀结果</div>
+            <div style="font-size:clamp(13px,3.4vw,15px);font-weight:700;color:#fff;word-break:break-word;">${p.name} · ${country.flag} ${country.name}</div>
           </div>
 
-          <div style="background:var(--bg-card);border-radius:12px;padding:16px;margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-              <span style="color:var(--text-dim);font-size:13px;">签约球队</span>
-              <span style="color:#fff;font-weight:700;">${p.teamName}</span>
+          <div style="background:linear-gradient(135deg,#64748b,#475569);border-radius:clamp(14px,4vw,20px);padding:clamp(20px,5vw,30px) clamp(14px,4vw,20px);text-align:center;margin-bottom:clamp(14px,4vw,20px);box-shadow:0 8px 32px rgba(100,116,139,0.4);box-sizing:border-box;">
+            <div style="font-size:clamp(13px,3.2vw,16px);color:rgba(255,255,255,0.8);margin-bottom:8px;">未被选中</div>
+            <div style="font-size:clamp(18px,5.5vw,24px);font-weight:900;color:#fff;margin-bottom:clamp(10px,2.8vw,12px);">落选</div>
+            <div style="font-size:clamp(12px,3vw,14px);color:rgba(255,255,255,0.7);">${statusMsg}</div>
+          </div>
+
+          <div style="background:var(--bg-card);border-radius:clamp(9px,2.6vw,12px);padding:clamp(12px,3.2vw,16px);margin-bottom:clamp(14px,4vw,20px);box-sizing:border-box;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:clamp(6px,1.8vw,8px);gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">签约球队</span>
+              <span style="color:#fff;font-weight:700;font-size:clamp(11px,2.8vw,13px);text-align:right;word-break:break-word;">${p.teamName}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-              <span style="color:var(--text-dim);font-size:13px;">联赛</span>
-              <span style="color:#fff;font-weight:700;">${p.league}</span>
+            <div style="display:flex;justify-content:space-between;margin-bottom:clamp(6px,1.8vw,8px);gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">联赛</span>
+              <span style="color:#fff;font-weight:700;font-size:clamp(11px,2.8vw,13px);text-align:right;word-break:break-word;">${p.league}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;">
-              <span style="color:var(--text-dim);font-size:13px;">当前OVR</span>
-              <span style="color:#ff9e67;font-weight:700;">${p.ovr}</span>
+            <div style="display:flex;justify-content:space-between;gap:8px;">
+              <span style="color:var(--text-dim);font-size:clamp(11px,2.8vw,13px);">当前OVR</span>
+              <span style="color:#ff9e67;font-weight:700;font-size:clamp(11px,2.8vw,13px);">${p.ovr}</span>
             </div>
           </div>
 
-          <div style="text-align:center;color:var(--text-dim);font-size:12px;">点击任意位置继续 →</div>
+          <div style="text-align:center;color:var(--text-dim);font-size:clamp(11px,2.6vw,12px);">点击任意位置继续 →</div>
         </div>
       </div>
     `;
