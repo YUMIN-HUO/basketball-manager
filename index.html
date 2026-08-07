@@ -2524,8 +2524,7 @@ function checkPhaseTransition(p) {
 }
 
 // === 选秀参选资格检查 ===
-// 规则: 年满19岁 且 高中毕业满1年, 不限当前阶段(大学/职业均可)
-// 22岁后仍有资格参选(各联赛规则不同,游戏简化为19-22岁均可主动参选)
+// 规则: 年满19岁 且 高中毕业满1年, 22岁后不可参选
 function checkDraftEligibility(p) {
   // 必须高中毕业后才能参选
   if (!p.hsGradYear) {
@@ -2533,6 +2532,9 @@ function checkDraftEligibility(p) {
   }
   if (p.age < 19) {
     return { eligible: false, reason: `未满19岁(${p.age}岁),不符合参选年龄` };
+  }
+  if (p.age > 22) {
+    return { eligible: false, reason: `已满${p.age}岁,超出选秀年龄限制(22岁)` };
   }
   const yearsSinceHS = gameYear - p.hsGradYear;
   if (yearsSinceHS < 1) {
@@ -3036,40 +3038,71 @@ function getTransferChoices() {
     return Math.round(90 - (idx / pool.length) * 30);  // 90→60分布
   };
 
-  // 球员所在联赛的球队池 (转会通常在同联赛内)
-  // NBA球员在NBA内转会, 其他联赛同理
-  let teamPool;
-  if (p.league === 'NBA' || p.nationality === 'USA' || p.nationality === 'CAN') {
-    teamPool = PRO_TEAMS.USA;
-  } else {
-    teamPool = PRO_TEAMS[p.nationality] || PRO_TEAMS.USA;
+  // 跨联赛转会: 从多个不同联赛中提供合同选择
+  // 收集所有联赛的球队,按联赛分组
+  const leagueTeams = {};
+  for (const region in PRO_TEAMS) {
+    for (const team of PRO_TEAMS[region]) {
+      const lg = team.league;
+      if (!leagueTeams[lg]) leagueTeams[lg] = [];
+      // 排除当前球队
+      if (team.name !== p.teamName) {
+        leagueTeams[lg].push({ team, region, strength: getTeamStrength(team, PRO_TEAMS[region]) });
+      }
+    }
   }
 
-  // 排除当前球队 (避免"转会到原队"的bug)
-  const availableTeams = teamPool.filter(t => t.name !== p.teamName);
-  if (availableTeams.length === 0) return [];
+  // 根据OVR决定可获得报价的联赛档次
+  // T0(NBA/EuroLeague/ACB): OVR 80+ | T1(CBA/Serie A/Turkish/Greek/Adriatic): OVR 72+ | T2(其他): OVR 60+
+  const T0_LEAGUES = ['NBA', 'EuroLeague', 'ACB'];
+  const T1_LEAGUES = ['CBA', 'Serie A', 'Turkish League', 'Greek League', 'Adriatic'];
+  const leagueTier = (lg) => {
+    if (T0_LEAGUES.includes(lg)) return 0;
+    if (T1_LEAGUES.includes(lg)) return 1;
+    return 2;
+  };
+  const maxTier = p.ovr >= 80 ? 0 : p.ovr >= 72 ? 1 : 2;
+  // 可选联赛: 只能获得与自身档次相当或更低的联赛报价 (tier值越大=联赛越低级)
+  const availableLeagues = Object.keys(leagueTeams).filter(lg => leagueTier(lg) >= maxTier);
+  // 确保当前联赛在选项中 (但仅当OVR满足该联赛档次时)
+  if (p.league && !availableLeagues.includes(p.league) && leagueTeams[p.league] && leagueTier(p.league) >= maxTier) {
+    availableLeagues.push(p.league);
+  }
+  if (availableLeagues.length === 0) return [];
 
-  // 按实力排序(强队在前)
-  const sortedTeams = availableTeams.map(t => ({
-    team: t,
-    strength: getTeamStrength(t, teamPool)
-  })).sort((a, b) => b.strength - a.strength);
+  // 按tier分组,优先选高 tier(低数字)的联赛
+  const byTier = { 0: [], 1: [], 2: [] };
+  availableLeagues.forEach(lg => byTier[leagueTier(lg)].push(lg));
 
-  // OVR越高, 强队越愿意接收; OVR低, 只能去弱队
-  // 匹配逻辑: 球员OVR决定能去的球队实力上限
-  const playerTier = p.ovr >= 85 ? 0 : p.ovr >= 78 ? 1 : p.ovr >= 72 ? 2 : 3;
-  const numOffers = p.ovr >= 85 ? 3 : p.ovr >= 75 ? 2 : 1;
+  // 从不同联赛中各选1支球队,提供2-3个跨联赛报价
+  const numOffers = p.ovr >= 85 ? 3 : 2;
+  const selectedLeagues = [];
+  // 第1个报价: 优先选最好的联赛档次
+  const bestTier = Math.min(...Object.keys(byTier).filter(k => byTier[k].length > 0).map(Number));
+  if (byTier[bestTier].length > 0) {
+    selectedLeagues.push(pickN(byTier[bestTier], 1)[0]);
+  }
+  // 后续报价: 从其他档次或同档次不同联赛中选
+  for (let i = 1; i < numOffers; i++) {
+    const remaining = availableLeagues.filter(lg => !selectedLeagues.includes(lg));
+    if (remaining.length === 0) break;
+    // 50%概率选同档次, 50%选更低档次(如果有)
+    const sameTier = remaining.filter(lg => leagueTier(lg) === bestTier);
+    const lowerTier = remaining.filter(lg => leagueTier(lg) > bestTier);
+    const pool = (sameTier.length > 0 && (lowerTier.length === 0 || Math.random() < 0.5)) ? sameTier : lowerTier;
+    if (pool.length > 0) selectedLeagues.push(pickN(pool, 1)[0]);
+  }
 
-  // 高OVR: 从强队中选; 低OVR: 从中下游球队选
-  const startIdx = playerTier === 0 ? 0 :
-                   playerTier === 1 ? Math.floor(sortedTeams.length * 0.2) :
-                   playerTier === 2 ? Math.floor(sortedTeams.length * 0.4) :
-                   Math.floor(sortedTeams.length * 0.6);
-  const endIdx = Math.min(startIdx + numOffers + 2, sortedTeams.length);
-  const candidates = sortedTeams.slice(startIdx, endIdx);
-
-  // 随机选2-3支, 按实力排序展示
-  const offers = pickN(candidates, Math.min(2, candidates.length));
+  const offers = [];
+  for (const lg of selectedLeagues) {
+    const pool = leagueTeams[lg];
+    if (!pool || pool.length === 0) continue;
+    // 按实力排序,根据OVR选合适档位的球队
+    const sorted = [...pool].sort((a, b) => b.strength - a.strength);
+    const tierIdx = p.ovr >= 85 ? 0 : p.ovr >= 78 ? Math.floor(sorted.length * 0.2) : Math.floor(sorted.length * 0.4);
+    const candidate = sorted[Math.min(tierIdx + Math.floor(Math.random() * 2), sorted.length - 1)];
+    if (candidate) offers.push(candidate);
+  }
 
   return offers.map(({team, strength}) => {
     // 薪资: 按目标联赛梯队+球员OVR计算,强队有加成
