@@ -497,39 +497,40 @@
   }
   .ct-header-row, .ct-row {
     display: grid; align-items: center;
-    grid-template-columns: 56px 1fr 50px 42px 42px 42px;
-    gap: 6px; padding: 7px 6px;
+    grid-template-columns: 48px 1fr 44px 36px 36px 36px;
+    gap: 4px; padding: 6px 5px;
   }
   .ct-header-row {
     border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-size: 10.5px; color: var(--text-dim); font-weight: 700;
+    font-size: 10px; color: var(--text-dim); font-weight: 700;
     text-align: center; margin-bottom: 4px;
   }
   .ct-row {
-    border-radius: 8px; font-size: 12px;
+    border-radius: 8px; font-size: 11px;
   }
   .ct-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-  .ct-age { text-align: center; font-weight: 800; color: #fff; font-size: 13px; }
+  .ct-age { text-align: center; font-weight: 800; color: #fff; font-size: 12px; }
   .ct-age-ovr {
     background: linear-gradient(135deg, #2155b8, #1a3c83);
-    border-radius: 6px; padding: 4px 2px;
+    border-radius: 6px; padding: 3px 2px;
     box-shadow: 0 2px 6px rgba(33,85,184,0.3);
   }
-  .ct-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .ct-team-logo { width: 28px; height: 28px; flex-shrink: 0; }
+  .ct-team { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+  .ct-team-logo { width: 24px; height: 24px; flex-shrink: 0; }
   .ct-team > span:last-child {
-    color: #d9dfe9; font-weight: 700; font-size: 13px;
+    color: #d9dfe9; font-weight: 700; font-size: 11px;
     white-space: normal; overflow: visible; text-overflow: clip;
-    line-height: 1.3;
+    line-height: 1.2; word-break: break-word;
+    min-width: 0;
   }
   .ct-ovr { text-align: center; }
   .ct-ovr-val {
-    font-weight: 900; color: #ff9e67; font-size: 13px;
+    font-weight: 900; color: #ff9e67; font-size: 12px;
     background: rgba(255,107,53,0.1); border-radius: 5px; padding: 2px 4px;
   }
-  .ct-col { text-align: center; font-weight: 700; color: #d9dfe9; font-size: 12px; }
+  .ct-col { text-align: center; font-weight: 700; color: #d9dfe9; font-size: 11px; }
   .ct-tag {
-    font-size: 9.5px; font-weight: 800; color: #ff9e67;
+    font-size: 8.5px; font-weight: 800; color: #ff9e67;
     background: rgba(255,107,53,0.1);
     padding: 1px 6px; border-radius: 4px; margin-left: 4px;
     white-space: nowrap;
@@ -1481,11 +1482,10 @@ function findTeamByName(name) {
 // 国际球员可不读大学直接参加选秀 (需满19岁)
 function createPlayer(nationality, position, name, number) {
   const country = COUNTRIES.find(c => c.code === nationality);
-  const threshold = country.thresholdVal;
   const posBonus = { PG: 2, SG: 1, SF: 0, PF: -1, C: -2 }[position.code] || 0;
 
-  // 初始OVR: 16岁新秀围绕各国thresholdVal分布 (中国约55, 美国约75)
-  // 巅峰期(28-30岁)中位数达70: 通过潜力值控制成长上限
+  // 初始OVR: 所有国籍统一50-54
+  // 潜力值: 代表成长速度(越高提升越快),随机分布
   const player = {
     name: name || '匿名球员',
     number: number || randInt(1, 55),
@@ -1494,8 +1494,8 @@ function createPlayer(nationality, position, name, number) {
     position: position.code,
     positionName: position.name,
     age: 16,
-    ovr: randInt(threshold - 10, threshold + 5) + posBonus,
-    // 潜力值(天赋): 加权随机分布,不受国籍影响
+    ovr: randInt(50, 54),
+    // 潜力值(成长速度): 越高每年提升越快,与国籍无关
     // 95-99(5%), 90-94(10%), 80-89(30%), 55-79(55%)
     potential: rollPotential(),
     phase: 'highschool', // highschool -> university -> predraft -> pro -> retired
@@ -1565,36 +1565,41 @@ function advanceYear() {
   // 大学年级递增
   if (p.phase === 'university') p.uniYear++;
   
-  // OVR变化: 受潜力值约束, 趋向潜力值而非无限增长
-  // 30岁前上升, 30岁后下降 (随机性+年龄修正+慢性伤病影响)
-  const ageMod = getAgeModifier(p.age);
-  const chronicPenalty = p.chronicInjuries > 0 ? -randInt(0, p.chronicInjuries) : 0;
-  const potDiff = p.potential - p.ovr;
+  // OVR变化: 固定基础成长 + 潜力值乘数(潜力越高提升越快)
+  // 高中: 快速成长期 | 大学: 稳步提升期 | 职业: 先升后降
+  const potMultiplier = 0.5 + (p.potential / 100) * 1.5; // 0.5x ~ 2.0x
   let change;
-  if (p.age <= 30) {
-    if (potDiff > 5) {
-      // 远低于潜力: 快速成长 (ageMod全生效)
-      change = randInt(1, 3) + ageMod + chronicPenalty;
-    } else if (potDiff > 0) {
-      // 接近潜力: 缓慢增长 (ageMod减半, 避免超过潜力太多)
-      change = randInt(0, 1) + Math.floor(ageMod / 2) + chronicPenalty;
-    } else {
-      // 达到/超过潜力: 强制波动下降 (忽略ageMod, 防止继续增长)
-      change = randInt(-3, 0) + chronicPenalty;
-    }
-  } else {
-    // 30岁后: 下降期
-    change = ageMod + chronicPenalty + randInt(-1, 1);
-  }
-  p.ovr = clamp(p.ovr + change, 40, 99);
-  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (年龄修正:${ageMod}, 慢性伤病:${chronicPenalty}, 潜力差:${potDiff}, 随机:${change - ageMod - chronicPenalty})`);
   
-  // 潜力值: 25岁后逐年下降, 不低于当前OVR
-  if (p.age > 25) {
-    const potDrop = randInt(0, 2);
-    p.potential = Math.max(p.potential - potDrop, p.ovr);
-    if (potDrop > 0) log('POTENTIAL', `潜力下降 ${potDrop} → ${p.potential}`);
+  if (p.phase === 'highschool') {
+    // 高中: 每年固定+3~5,潜力高者+更多
+    const baseGrowth = randInt(3, 5);
+    change = Math.round(baseGrowth * potMultiplier * 0.7);
+  } else if (p.phase === 'university') {
+    // 大学: 每年固定+2~4,潜力高者+更多
+    const baseGrowth = randInt(2, 4);
+    change = Math.round(baseGrowth * potMultiplier * 0.8);
+  } else if (p.phase === 'pro' && p.age <= 25) {
+    // 职业新秀期: 每年固定+2~3,潜力高者+更多
+    const baseGrowth = randInt(2, 3);
+    change = Math.round(baseGrowth * potMultiplier * 0.9);
+  } else if (p.age <= 30) {
+    // 黄金期: 微幅波动,偶尔+1
+    change = Math.round(randInt(-1, 1) + potMultiplier * 0.3);
+  } else {
+    // 30岁后: 下降期,年龄越大下降越多
+    const declineRate = p.age >= 36 ? randInt(-4, -2) : p.age >= 33 ? randInt(-3, -1) : randInt(-2, 0);
+    change = Math.round(declineRate * (2 - potMultiplier * 0.3));
   }
+  
+  // 伤病惩罚
+  const chronicPenalty = p.chronicInjuries > 0 ? -randInt(0, p.chronicInjuries) : 0;
+  change += chronicPenalty;
+  
+  // 边界保护
+  if (p.age <= 18 && change < 2) change = 2;
+  
+  p.ovr = clamp(p.ovr + change, 40, 99);
+  log('OVR', `OVR变化: ${prevOvr} → ${p.ovr} (潜力乘数:${potMultiplier.toFixed(2)}x, 基础成长:${change - chronicPenalty}, 伤病:${chronicPenalty})`);
   
   // === 伤病系统 ===
   // 概率基于年龄和打球强度 (年龄越大概率越高)
@@ -1675,17 +1680,38 @@ function advanceYear() {
     teamLogoCls: p.teamLogoCls,
     stats: { ...p.yearStats }
   });
-  if (p._ovrLog.length > 10) p._ovrLog.shift();
+  if (p._ovrLog.length > 15) p._ovrLog.shift();
   
-  // 当前career项补充ovr/stats (用于时间线表格)
-  if (p.career.length > 0) {
-    const last = p.career[p.career.length - 1];
-    if (last.age === p.age) {
-      last.ovr = p.ovr;
-      last.teamName = p.teamName;
-      last.teamLogo = p.teamLogo;
-      last.stats = { ...p.yearStats };
+  // 每年都记录生涯条目(按年份记录,即使同队也每年显示)
+  const phaseEvent = p.phase === 'highschool' ? '高中联赛' :
+                     p.phase === 'university' ? '大学联赛' :
+                     p.phase === 'pro' ? '职业联赛' : '生涯';
+  // 检查是否已有该年龄的生涯条目(避免和转会/选秀重复)
+  const existingIdx = p.career.findIndex(c => c.age === p.age);
+  if (existingIdx >= 0) {
+    // 更新已有条目,补充OVR和数据,保留原有事件标签(如转会/选秀)
+    p.career[existingIdx].ovr = p.ovr;
+    p.career[existingIdx].stats = { ...p.yearStats };
+    // 如果已有条目是加入/联赛类事件,更新队伍信息
+    const existingEvent = p.career[existingIdx].event;
+    if (existingEvent === '加入' || existingEvent === '高中联赛' || existingEvent === '大学联赛' || existingEvent === '职业联赛') {
+      p.career[existingIdx].teamName = p.teamName;
+      p.career[existingIdx].teamLogo = p.teamLogo;
+      p.career[existingIdx].teamLogoCls = p.teamLogoCls;
+      p.career[existingIdx].team = p.teamName;
     }
+  } else {
+    p.career.push({
+      age: p.age,
+      event: phaseEvent,
+      team: p.teamName,
+      teamName: p.teamName,
+      teamLogo: p.teamLogo,
+      teamLogoCls: p.teamLogoCls,
+      league: p.league,
+      ovr: p.ovr,
+      stats: { ...p.yearStats }
+    });
   }
   
   p.stats.gp += p.yearStats.gp;
@@ -1855,9 +1881,13 @@ function checkPhaseTransition(p) {
     p.uniYear = 0;
     const universityChoices = pickN(UNIVERSITIES[p.nationality] || UNIVERSITIES.USA, 3);
     p.universityChoices = universityChoices;
-    p.career.push({
-      age: p.age, event: '高中毕业', team: p.teamName, league: p.league
-    });
+    const hsEntry = {
+      age: p.age, event: '高中毕业', team: p.teamName, teamName: p.teamName,
+      teamLogo: p.teamLogo, teamLogoCls: p.teamLogoCls, league: p.league,
+      ovr: p.ovr, stats: { ...p.yearStats }
+    };
+    const hsIdx = p.career.findIndex(c => c.age === p.age);
+    if (hsIdx >= 0) p.career[hsIdx] = hsEntry; else p.career.push(hsEntry);
     p.hsGradYear = gameYear;  // 记录高中毕业年份,用于参选资格判定
     log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr} | 毕业年份:${p.hsGradYear}`);
   }
@@ -2009,7 +2039,8 @@ function generateCareerTitle(p) {
   const totalPts = p.stats.pts;
   const ppg = parseFloat(p.stats.ppg) || 0;
   const honors = p.honors;
-  const peakOVR = p.potential;  // 潜力值≈巅峰OVR
+  // 巅峰OVR: 从历史记录中取最高值(潜力值现在是成长速度,不是上限)
+  const peakOVR = Math.max(p.ovr, ...(p._ovrLog || []).map(l => l.ovr));
   const retireOVR = p.ovr;
   const careerYears = p.age - 16;
   const injuries = p.injuryHistory.length;
@@ -2144,9 +2175,13 @@ function chooseDecision(choice) {
       p.team = choice.team;
       if (choice.salary) p.salary = choice.salary;
       const phaseLabel = p.phase === 'pro' ? '转会' : '转学';
-      p.career.push({
-        age: p.age, event: phaseLabel, team: choice.team.name, league: p.league
-      });
+      const transferEntry = {
+        age: p.age, event: phaseLabel, team: choice.team.name, teamName: choice.team.name,
+        teamLogo: choice.team.logo, teamLogoCls: choice.team.cls, league: p.league,
+        ovr: p.ovr, stats: { ...p.yearStats }
+      };
+      const tIdx = p.career.findIndex(c => c.age === p.age);
+      if (tIdx >= 0) p.career[tIdx] = transferEntry; else p.career.push(transferEntry);
     }
     advanceYear();
   } else if (choice.type === 'draft') {
@@ -2243,10 +2278,13 @@ function declareDraft() {
       p.teamLogoCls = draftTeam.cls;
       p.league = draftTeam.league;
       p.team = draftTeam;
-      p.career.push({
-        age: p.age, event: '落选·NBA双向合同', team: draftTeam.name, league: draftTeam.league,
-        draftPick: '落选(双向合同)'
-      });
+      const faEntry = {
+        age: p.age, event: '落选·NBA双向合同', team: draftTeam.name, teamName: draftTeam.name,
+        teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls, league: draftTeam.league,
+        draftPick: '落选(双向合同)', ovr: p.ovr, stats: { ...p.yearStats }
+      };
+      const faIdx = p.career.findIndex(c => c.age === p.age);
+      if (faIdx >= 0) p.career[faIdx] = faEntry; else p.career.push(faEntry);
       log('DRAFT', `✅ 落选后签约NBA双向合同: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
       p.fame = clamp(p.fame + 1, 0, 100);
       return true;
@@ -2263,10 +2301,13 @@ function declareDraft() {
         p.teamLogoCls = draftTeam.cls;
         p.league = draftTeam.league;
         p.team = draftTeam;
-        p.career.push({
-          age: p.age, event: 'NBA落选·签约本国联赛', team: draftTeam.name, league: draftTeam.league,
-          draftPick: 'NBA落选'
-        });
+        const homeEntry = {
+          age: p.age, event: 'NBA落选·签约本国联赛', team: draftTeam.name, teamName: draftTeam.name,
+          teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls, league: draftTeam.league,
+          draftPick: 'NBA落选', ovr: p.ovr, stats: { ...p.yearStats }
+        };
+        const homeIdx = p.career.findIndex(c => c.age === p.age);
+        if (homeIdx >= 0) p.career[homeIdx] = homeEntry; else p.career.push(homeEntry);
         log('DRAFT', `✅ 落选后签约${country.proName}: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
         p.fame = clamp(p.fame + 2, 0, 100);
         return true;
@@ -2280,10 +2321,13 @@ function declareDraft() {
     p.teamLogoCls = 'logo-steel';
     p.league = '自由联赛';
     p.team = { name: '自由球员', logo: 'FA', cls: 'logo-steel', league: '自由联赛' };
-    p.career.push({
-      age: p.age, event: '落选自由球员', team: '自由球员', league: '自由联赛',
-      draftPick: '落选'
-    });
+    const faEntry2 = {
+      age: p.age, event: '落选自由球员', team: '自由球员', teamName: '自由球员',
+      teamLogo: 'FA', teamLogoCls: 'logo-steel', league: '自由联赛',
+      draftPick: '落选', ovr: p.ovr, stats: { ...p.yearStats }
+    };
+    const faIdx2 = p.career.findIndex(c => c.age === p.age);
+    if (faIdx2 >= 0) p.career[faIdx2] = faEntry2; else p.career.push(faEntry2);
     log('DRAFT', `❌ 落选→自由球员 | OVR=${p.ovr} | 起薪${formatSalary(p.salary)}`);
     return true;
   }
@@ -2328,11 +2372,21 @@ function declareDraft() {
   p.team = draftTeam;
 
   const pickLabel = draftPosition <= 14 ? '乐透秀' : round === 1 ? '首轮秀' : '次轮秀';
-  p.career.push({
+  // 检查是否已有该年龄的条目(如大学联赛记录),替换为选秀记录
+  const draftEntry = {
     age: p.age, event: pickLabel,
-    team: draftTeam.name, league: draftTeam.league,
-    draftPick: `第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`
-  });
+    team: draftTeam.name, teamName: draftTeam.name, teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls,
+    league: draftTeam.league,
+    draftPick: `第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`,
+    ovr: p.ovr,
+    stats: { ...p.yearStats }
+  };
+  const existingIdx = p.career.findIndex(c => c.age === p.age);
+  if (existingIdx >= 0) {
+    p.career[existingIdx] = draftEntry;
+  } else {
+    p.career.push(draftEntry);
+  }
 
   log('DRAFT', `📋 选秀结果: ${pickLabel} | 第${round}轮第${pickNum}顺位(总第${draftPosition}) | 球队:${draftTeam.name}(${draftTeam.league}) | 起薪:${formatSalary(p.salary)} | OVR:${p.ovr}`, { round, pickNum, overall: draftPosition, team: draftTeam.name, salary: p.salary });
 
@@ -2620,7 +2674,7 @@ function renderSetupScreen() {
           ${(() => {
             // ISO 3166-1 alpha-3 → alpha-2 映射
             const A3_A2 = { CHN:'cn', USA:'us', ESP:'es', FRA:'fr', SRB:'rs', GRC:'gr',
-              TUR:'tr', ITA:'it', DEU:'de', ARG:'ar', AUS:'au', CAN:'ca', JPN:'jp', KOR:'kr', BRA:'br' };
+              TUR:'tr', ITA:'it', DEU:'de', GER:'de', ARG:'ar', AUS:'au', CAN:'ca', JPN:'jp', KOR:'kr', BRA:'br' };
             return COUNTRIES.map(c => {
               const cc = A3_A2[c.code] || c.code.toLowerCase().slice(0,2);
               return `
@@ -2796,14 +2850,13 @@ function bindSetupEvents() {
     });
   });
   
-  // 国籍选择 (国旗前)
+  // 国籍选择 (点击后自动跳转下一页)
   document.querySelectorAll('.step-country-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.step-country-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedCountry = btn.dataset.code;
-      const next = document.querySelector('#step-country .step-next');
-      if (next) next.disabled = false;
+      setTimeout(() => goStep(3), 200);
     });
   });
   
@@ -3025,10 +3078,8 @@ function renderGameScreen() {
   const choices = state.currentChoices || getYearChoices();
   state.currentChoices = choices;
   
-  // 构造生涯时间线表格（仿足一把：年龄 俱乐部 能力 出场 得分 助攻）
-  // 读取 career 历史 + 根据 yearStats 推断当前年数据
+  // 构造生涯时间线表格（按年份记录: 年龄 俱乐部 能力 出场 得分 助攻）
   const recentCareer = p.career.slice(-7).reverse();
-  const ovrHistory = (p._ovrLog || []).slice(-7).reverse();
   const timelineTable = `
     <div class="career-timeline">
       <div class="ct-header-row">
@@ -3039,20 +3090,21 @@ function renderGameScreen() {
         <span class="ct-col">得分</span>
         <span class="ct-col">助攻</span>
       </div>
-      ${recentCareer.map((c, i) => {
+      ${recentCareer.map(c => {
         const teamDisp = c.teamName || c.team || '-';
-        const ovrDisp = (ovrHistory[i] && ovrHistory[i].ovr) ? ovrHistory[i].ovr : '-';
-        const statS = (ovrHistory[i] && ovrHistory[i].stats) ? ovrHistory[i].stats : (c.stats ? c.stats : null);
-        const gp = statS ? statS.gp : (i === 0 ? p.yearStats.gp : '-');
-        const pts = statS ? statS.pts : (i === 0 ? p.yearStats.pts : '-');
-        const ast = statS ? statS.ast : (i === 0 ? p.yearStats.ast : '-');
+        const ovrDisp = c.ovr != null ? c.ovr : '-';
+        const statS = c.stats || {};
+        const gp = statS.gp != null ? statS.gp : '-';
+        const pts = statS.pts != null ? statS.pts : '-';
+        const ast = statS.ast != null ? statS.ast : '-';
+        const logoCls = c.teamLogoCls || 'logo-navy';
         return `
         <div class="ct-row">
           <span class="ct-age ct-age-ovr">${c.age}</span>
           <span class="ct-team">
-            ${c.teamLogo ? `<span class="team-logo ct-team-logo">${getTeamBadge(c.teamLogo, 'logo-navy', teamDisp)}</span>` : ''}
+            ${c.teamLogo ? `<span class="team-logo ct-team-logo">${getTeamBadge(c.teamLogo, logoCls, teamDisp)}</span>` : ''}
             <span>${teamDisp}</span>
-            ${c.event && c.event !== '加入' ? `<span class="ct-tag">${c.event}</span>` : ''}
+            ${c.event && c.event !== '加入' && c.event !== '高中联赛' && c.event !== '大学联赛' && c.event !== '职业联赛' ? `<span class="ct-tag">${c.event}</span>` : ''}
           </span>
           <span class="ct-ovr ct-ovr-val">${ovrDisp}</span>
           <span class="ct-col">${gp}</span>
@@ -3060,20 +3112,6 @@ function renderGameScreen() {
           <span class="ct-col">${ast}</span>
         </div>`;
       }).join('')}
-      <!-- 补上当前赛季 (若 career 未满) -->
-      ${recentCareer.length < 3 ? `
-        <div class="ct-row">
-          <span class="ct-age ct-age-ovr">${p.age}</span>
-          <span class="ct-team">
-            ${p.teamLogo ? `<span class="team-logo ct-team-logo">${getTeamBadge(p.teamLogo, p.teamLogoCls, p.teamName || '未知')}</span>` : ''}
-            <span>${p.teamName || (p.phase==='highschool' ? COUNTRIES.find(c=>c.code===p.nationality).youthName : COUNTRIES.find(c=>c.code===p.nationality).universityName)}</span>
-          </span>
-          <span class="ct-ovr ct-ovr-val">${p.ovr}</span>
-          <span class="ct-col">${p.yearStats.gp}</span>
-          <span class="ct-col">${p.yearStats.pts}</span>
-          <span class="ct-col">${p.yearStats.ast}</span>
-        </div>
-      ` : ''}
     </div>
   `;
   
