@@ -1524,7 +1524,7 @@ function createPlayer(nationality, position, name, number) {
     recentGames: [],     // 最近3年出场数 (用于续约判定)
     noOfferYears: 0,     // 连续无人报价年数
     draftPick: null,
-    draftDeclared: false,
+    draftsParticipated: [],  // 已参加的选秀地区列表(每个地区只能参加一次)
     retired: false,
     retirementReason: '',
     careerTitle: '',     // 结局称号 (基于生涯数据生成)
@@ -1888,48 +1888,54 @@ function checkPhaseTransition(p) {
     };
     const hsIdx = p.career.findIndex(c => c.age === p.age);
     if (hsIdx >= 0) p.career[hsIdx] = hsEntry; else p.career.push(hsEntry);
-    p.hsGradYear = gameYear;  // 记录高中毕业年份,用于参选资格判定
+    p.hsGradYear = gameYear;
     log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr} | 毕业年份:${p.hsGradYear}`);
   }
-
-  // 大学: 18-22岁 (4年), 大四毕业(22岁)自动参选
-  // NBA规则: 年满19岁 + 高中毕业满1年 可参选 (one-and-done)
-  // 22岁自动获得参选资格(国际球员规则: 22岁自动参选)
-  if (p.phase === 'university' && p.age >= 22 && p.uniYear >= 3 && !p.draftDeclared) {
-    log('PHASE', `🎓 大学毕业 → 自动参选 (22岁自动资格) | 大学: ${p.teamName} | OVR: ${p.ovr}`);
-    declareDraft();
-  }
+  // 注意: 选秀由玩家主动选择,不再自动触发
+  // 玩家可在19-22岁期间选择参加任意地区的选秀
 }
 
-// === NBA选秀参选资格检查 ===
-// 规则1: 年满19岁 + 高中毕业至少满1年 (one-and-done)
-// 规则2: 国际球员年满22岁自动获得参选资格
-// 规则3: 未满19岁但符合特殊规定的可提前申请(需联盟批准)
+// === 选秀参选资格检查 ===
+// 规则: 年满19岁 且 高中毕业满1年, 不限当前阶段(大学/职业均可)
+// 22岁后仍有资格参选(各联赛规则不同,游戏简化为19-22岁均可主动参选)
 function checkDraftEligibility(p) {
-  const country = COUNTRIES.find(c => c.code === p.nationality);
-  const isInternational = p.nationality !== 'USA';
-
-  // 必须在大学阶段才能参选(高中毕业后)
-  if (p.phase !== 'university') {
+  // 必须高中毕业后才能参选
+  if (!p.hsGradYear) {
     return { eligible: false, reason: '需先完成高中学业' };
   }
-
-  // 规则1: 年满19岁 + 高中毕业满1年
-  const yearsSinceHS = p.hsGradYear ? gameYear - p.hsGradYear : 0;
   if (p.age < 19) {
     return { eligible: false, reason: `未满19岁(${p.age}岁),不符合参选年龄` };
   }
+  const yearsSinceHS = gameYear - p.hsGradYear;
   if (yearsSinceHS < 1) {
     return { eligible: false, reason: `高中毕业未满1年(仅${yearsSinceHS}年)` };
   }
-
-  // 规则2: 国际球员22岁自动资格; 美国球员19岁+高中毕业1年即可
-  if (isInternational && p.age >= 22) {
-    return { eligible: true, reason: '国际球员22岁自动参选资格', auto: true };
-  }
-
-  // 规则1满足: 19岁+高中毕业1年
   return { eligible: true, reason: `年满19岁+高中毕业${yearsSinceHS}年,符合参选条件` };
+}
+
+// === 获取可参加的选秀地区列表 ===
+function getAvailableDrafts(p) {
+  const drafts = [];
+  // 球员国籍对应地区优先显示
+  const allRegions = Object.keys(PRO_TEAMS);
+  // 将球员国籍排在第一位
+  const sortedRegions = p.nationality && PRO_TEAMS[p.nationality]
+    ? [p.nationality, ...allRegions.filter(r => r !== p.nationality)]
+    : allRegions;
+  for (const code of sortedRegions) {
+    // 已参加过的地区不能再参加
+    if (p.draftsParticipated.includes(code)) continue;
+    const teams = PRO_TEAMS[code];
+    const country = COUNTRIES.find(c => c.code === code);
+    const leagueName = country ? country.proName : teams[0].league;
+    drafts.push({
+      region: code,
+      leagueName: leagueName,
+      teamCount: teams.length,
+      league: teams[0].league
+    });
+  }
+  return drafts;
 }
 
 // === 选秀行情评估 ===
@@ -2185,7 +2191,7 @@ function chooseDecision(choice) {
     }
     advanceYear();
   } else if (choice.type === 'draft') {
-    declareDraft();
+    declareDraft(choice.region);
     return;
   } else if (choice.type === 'decline_draft') {
     advanceYear();
@@ -2201,57 +2207,61 @@ function chooseDecision(choice) {
   render();
 }
 
-function declareDraft() {
+function declareDraft(draftRegion) {
   const p = state;
   const country = COUNTRIES.find(c => c.code === p.nationality);
 
-  // === 参选资格检查 (NBA规则) ===
+  // === 参选资格检查 ===
   const eligibility = checkDraftEligibility(p);
   if (!eligibility.eligible) {
     log('DRAFT', `❌ 参选资格不符: ${eligibility.reason}`);
     return false;
   }
 
-  p.draftDeclared = true;
+  // 默认选秀地区: 球员国籍对应地区
+  const region = draftRegion || p.nationality;
+  // 检查是否已参加过该地区选秀
+  if (p.draftsParticipated.includes(region)) {
+    log('DRAFT', `❌ 已参加过${region}地区选秀,不能重复参加`);
+    return false;
+  }
+  // 记录已参加的选秀地区
+  p.draftsParticipated.push(region);
+
+  // 获取该地区的球队池
+  const regionTeams = PRO_TEAMS[region] || PRO_TEAMS.USA;
+  const regionCountry = COUNTRIES.find(c => c.code === region);
+  const regionLeagueName = regionCountry ? regionCountry.proName : regionTeams[0].league;
+
   p.phase = 'pro';
-  p.recentGames = [];  // 进入职业阶段,清空大学时期出场记录(避免误判出场不足)
+  p.recentGames = [];
   p.noOfferYears = 0;
 
-  log('DRAFT', `=== 选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential} | 资格:${eligibility.reason}`);
+  log('DRAFT', `=== ${regionLeagueName}选秀开始 === 球员:${p.name} | 国籍:${country.name} | 年龄:${p.age} | OVR:${p.ovr} | 潜力:${p.potential} | 资格:${eligibility.reason}`);
 
   // === 选秀行情评估 ===
   const stock = evaluateDraftStock(p);
-  log('DRAFT', `选秀行情: ${stock.stock} (${stock.range}) | 修正:年龄${p.age <= 19 ? '+3年轻' : p.age >= 23 ? '-2大龄' : '0'} 潜力${p.potential >= 88 ? '+2' : '0'} 国际${p.nationality !== 'USA' ? '+1' : '0'}`);
+  log('DRAFT', `选秀行情: ${stock.stock} (${stock.range}) | 修正:年龄${p.age <= 19 ? '+3年轻' : p.age >= 23 ? '-2大龄' : '0'} 潜力${p.potential >= 88 ? '+2' : '0'} 国际${p.nationality !== region ? '+1' : '0'}`);
 
-  // === 选秀顺位确定 (乐透抽签+战绩倒序) ===
-  // 乐透区(1-14): 抽签概率与战绩负相关,但游戏简化为OVR越高顺位越靠前
-  // 非乐透区(15-30): 按战绩倒序,游戏简化为OVR决定
-  // 次轮(31-60): OVR+潜力综合
+  // === 选秀顺位确定 ===
   let draftPosition;
   let drafted = true;
 
   if (p.ovr >= 88) {
-    // 乐透区: 1-14顺位 (抽签机制: OVR越高顺位越靠前,但有随机波动)
-    // 简化乐透抽签: 基础顺位 + 随机波动(模拟抽签概率)
     const basePick = clamp(1 + Math.floor((90 - p.ovr) / 2) + stock.bonus, 1, 14);
-    const lotteryVariance = randInt(-2, 3);  // 抽签波动(模拟概率权重)
+    const lotteryVariance = randInt(-2, 3);
     draftPosition = clamp(basePick + lotteryVariance, 1, 14);
     log('DRAFT', `乐透抽签: 基础顺位${basePick} + 抽签波动${lotteryVariance} → 第${draftPosition}顺位`);
   } else if (p.ovr >= 82) {
-    // 乐透末段/首轮初: 6-14顺位
     draftPosition = clamp(randInt(6, 14) + stock.bonus, 1, 14);
     log('DRAFT', `乐透区评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
   } else if (p.ovr >= 75) {
-    // 首轮中后段: 15-30顺位 (战绩倒序,简化为OVR决定)
     draftPosition = clamp(randInt(15, 30) + stock.bonus, 15, 30);
     log('DRAFT', `首轮评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
   } else if (p.ovr >= 68) {
-    // 次轮: 31-60顺位
     draftPosition = clamp(randInt(31, 60) + stock.bonus, 31, 60);
     log('DRAFT', `次轮评估: OVR=${p.ovr} → 第${draftPosition}顺位`);
   } else {
-    // OVR < 68: 高概率落选
-    // 落选概率: OVR越低概率越高 (62-67: 50%, <62: 80%)
     const undraftedProb = p.ovr >= 62 ? 0.5 : 0.8;
     if (Math.random() < undraftedProb) {
       drafted = false;
@@ -2262,37 +2272,35 @@ function declareDraft() {
     }
   }
 
-  // === 落选处理: 自由球员签约 ===
+  // === 落选处理 ===
   if (!drafted) {
     p.draftPick = null;
-    log('DRAFT', `❌ NBA落选 → 进入自由球员市场`);
+    log('DRAFT', `❌ ${regionLeagueName}落选 → 进入自由球员市场`);
 
-    // 落选秀可签约NBA球队(双向合同/Exhibit 10)或本国联赛
-    // OVR≥65: 30%概率获NBA双向合同
+    // 落选秀可签约该地区联赛球队(双向合同)
     if (p.ovr >= 65 && Math.random() < 0.3) {
-      const nbaTeams = PRO_TEAMS.USA;
-      const draftTeam = pick(nbaTeams);
-      p.salary = randInt(50000, 100000);  // 双向合同底薪
+      const draftTeam = pick(regionTeams);
+      p.salary = randInt(50000, 100000);
       p.teamName = draftTeam.name;
       p.teamLogo = draftTeam.logo;
       p.teamLogoCls = draftTeam.cls;
       p.league = draftTeam.league;
       p.team = draftTeam;
       const faEntry = {
-        age: p.age, event: '落选·NBA双向合同', team: draftTeam.name, teamName: draftTeam.name,
+        age: p.age, event: `${regionLeagueName}落选·双向合同`, team: draftTeam.name, teamName: draftTeam.name,
         teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls, league: draftTeam.league,
         draftPick: '落选(双向合同)', ovr: p.ovr, stats: { ...p.yearStats }
       };
       const faIdx = p.career.findIndex(c => c.age === p.age);
       if (faIdx >= 0) p.career[faIdx] = faEntry; else p.career.push(faEntry);
-      log('DRAFT', `✅ 落选后签约NBA双向合同: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
+      log('DRAFT', `✅ 落选后签约${regionLeagueName}双向合同: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
       p.fame = clamp(p.fame + 1, 0, 100);
       return true;
     }
 
-    // OVR≥60: 签约本国联赛
-    if (p.ovr >= 60 && p.nationality !== 'USA') {
-      const homeTeams = PRO_TEAMS[p.nationality];
+    // 落选后签约其他联赛
+    if (p.ovr >= 60) {
+      const homeTeams = (p.nationality !== region) ? (PRO_TEAMS[p.nationality] || regionTeams) : regionTeams;
       if (homeTeams && homeTeams.length > 0) {
         const draftTeam = pick(homeTeams);
         p.salary = randInt(100000, 300000);
@@ -2302,19 +2310,19 @@ function declareDraft() {
         p.league = draftTeam.league;
         p.team = draftTeam;
         const homeEntry = {
-          age: p.age, event: 'NBA落选·签约本国联赛', team: draftTeam.name, teamName: draftTeam.name,
+          age: p.age, event: `${regionLeagueName}落选·签约其他联赛`, team: draftTeam.name, teamName: draftTeam.name,
           teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls, league: draftTeam.league,
-          draftPick: 'NBA落选', ovr: p.ovr, stats: { ...p.yearStats }
+          draftPick: `${regionLeagueName}落选`, ovr: p.ovr, stats: { ...p.yearStats }
         };
         const homeIdx = p.career.findIndex(c => c.age === p.age);
         if (homeIdx >= 0) p.career[homeIdx] = homeEntry; else p.career.push(homeEntry);
-        log('DRAFT', `✅ 落选后签约${country.proName}: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
+        log('DRAFT', `✅ 落选后签约: ${draftTeam.name} | 起薪${formatSalary(p.salary)}`);
         p.fame = clamp(p.fame + 2, 0, 100);
         return true;
       }
     }
 
-    // OVR<60或无球队签约: 自由球员
+    // 自由球员
     p.salary = 50000;
     p.teamName = '自由球员';
     p.teamLogo = 'FA';
@@ -2322,9 +2330,9 @@ function declareDraft() {
     p.league = '自由联赛';
     p.team = { name: '自由球员', logo: 'FA', cls: 'logo-steel', league: '自由联赛' };
     const faEntry2 = {
-      age: p.age, event: '落选自由球员', team: '自由球员', teamName: '自由球员',
+      age: p.age, event: `${regionLeagueName}落选自由球员`, team: '自由球员', teamName: '自由球员',
       teamLogo: 'FA', teamLogoCls: 'logo-steel', league: '自由联赛',
-      draftPick: '落选', ovr: p.ovr, stats: { ...p.yearStats }
+      draftPick: `${regionLeagueName}落选`, ovr: p.ovr, stats: { ...p.yearStats }
     };
     const faIdx2 = p.career.findIndex(c => c.age === p.age);
     if (faIdx2 >= 0) p.career[faIdx2] = faEntry2; else p.career.push(faEntry2);
@@ -2336,9 +2344,8 @@ function declareDraft() {
   const round = draftPosition <= 30 ? 1 : 2;
   const pickNum = draftPosition <= 30 ? draftPosition : draftPosition - 30;
 
-  // 选秀球队: NBA选秀所有球队都来自NBA联盟(30支)
-  const proTeams = PRO_TEAMS.USA;
-  const draftTeam = pick(proTeams);
+  // 选秀球队: 从该地区的球队池中随机选取
+  const draftTeam = pick(regionTeams);
 
   p.draftPick = {
     round: round,
@@ -2347,22 +2354,21 @@ function declareDraft() {
     team: draftTeam.name,
     logo: draftTeam.logo,
     cls: draftTeam.cls,
-    league: draftTeam.league
+    league: draftTeam.league,
+    region: region,
+    regionLeague: regionLeagueName
   };
 
-  // 薪资: 基于真实NBA新秀合同(2023版新秀工资表)
-  // 乐透秀(前14): ~800万-1200万/4年 → 约200-300万/年
-  // 首轮其他(15-30): ~200-400万/4年 → 约50-100万/年
-  // 次轮: ~100-200万/年 (非保障)
+  // 薪资: 基于选秀顺位
   let baseSalary;
   if (draftPosition <= 5) {
-    baseSalary = randInt(2500000, 4000000);  // 前5顺位(状元~底薪)
+    baseSalary = randInt(2500000, 4000000);
   } else if (draftPosition <= 14) {
-    baseSalary = randInt(1500000, 2500000);  // 乐透区
+    baseSalary = randInt(1500000, 2500000);
   } else if (draftPosition <= 30) {
-    baseSalary = randInt(800000, 1500000);   // 首轮其他
+    baseSalary = randInt(800000, 1500000);
   } else {
-    baseSalary = randInt(100000, 500000);     // 次轮(非保障)
+    baseSalary = randInt(100000, 500000);
   }
   p.salary = baseSalary;
   p.teamName = draftTeam.name;
@@ -2372,25 +2378,19 @@ function declareDraft() {
   p.team = draftTeam;
 
   const pickLabel = draftPosition <= 14 ? '乐透秀' : round === 1 ? '首轮秀' : '次轮秀';
-  // 检查是否已有该年龄的条目(如大学联赛记录),替换为选秀记录
   const draftEntry = {
-    age: p.age, event: pickLabel,
+    age: p.age, event: `${regionLeagueName} ${pickLabel}`,
     team: draftTeam.name, teamName: draftTeam.name, teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls,
     league: draftTeam.league,
-    draftPick: `第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`,
+    draftPick: `${regionLeagueName} 第${round}轮第${pickNum}顺位 (总第${draftPosition}顺位)`,
     ovr: p.ovr,
     stats: { ...p.yearStats }
   };
   const existingIdx = p.career.findIndex(c => c.age === p.age);
-  if (existingIdx >= 0) {
-    p.career[existingIdx] = draftEntry;
-  } else {
-    p.career.push(draftEntry);
-  }
+  if (existingIdx >= 0) p.career[existingIdx] = draftEntry; else p.career.push(draftEntry);
 
-  log('DRAFT', `📋 选秀结果: ${pickLabel} | 第${round}轮第${pickNum}顺位(总第${draftPosition}) | 球队:${draftTeam.name}(${draftTeam.league}) | 起薪:${formatSalary(p.salary)} | OVR:${p.ovr}`, { round, pickNum, overall: draftPosition, team: draftTeam.name, salary: p.salary });
+  log('DRAFT', `📋 选秀结果: ${regionLeagueName} ${pickLabel} | 第${round}轮第${pickNum}顺位(总第${draftPosition}) | 球队:${draftTeam.name}(${draftTeam.league}) | 起薪:${formatSalary(p.salary)} | OVR:${p.ovr}`, { round, pickNum, overall: draftPosition, team: draftTeam.name, salary: p.salary });
 
-  // 选秀后名气提升
   const fameBoost = draftPosition <= 14 ? 15 : draftPosition <= 30 ? 8 : 3;
   p.fame = clamp(p.fame + fameBoost, 0, 100);
   return true;
@@ -2516,26 +2516,24 @@ function getYearChoices() {
       });
     });
     
-    // Draft option: NBA参选资格检查
-    // 规则: 年满19岁 + 高中毕业满1年 (one-and-done)
-    // 国际球员22岁自动获得参选资格
+    // Draft option: 19岁以上可参选,不限阶段
     const eligibility = checkDraftEligibility(p);
-    if (eligibility.eligible && !p.draftDeclared) {
-      const stock = evaluateDraftStock(p);
-      choices.push({
-        type: 'draft',
-        title: '参加选秀',
-        desc: `选秀行情：${stock.stock} (${stock.range})`,
-        tag: '选秀'
-      });
-      choices.push({
-        type: 'decline_draft',
-        title: '留守大学',
-        desc: '再打一年大学联赛，提升选秀排名',
-        tag: '观望'
-      });
-    } else if (!eligibility.eligible && p.phase === 'university' && p.age < 22) {
-      // 未达参选资格,显示原因
+    if (eligibility.eligible) {
+      const availableDrafts = getAvailableDrafts(p);
+      if (availableDrafts.length > 0) {
+        const stock = evaluateDraftStock(p);
+        // 显示前2个可选地区选秀
+        availableDrafts.slice(0, 2).forEach(d => {
+          choices.push({
+            type: 'draft',
+            region: d.region,
+            title: `参加${d.leagueName}选秀`,
+            desc: `选秀行情：${stock.stock} (${stock.range})`,
+            tag: '选秀'
+          });
+        });
+      }
+    } else if (p.age < 19) {
       choices.push({
         type: 'stay',
         title: '加练提升',
@@ -2564,7 +2562,23 @@ function getYearChoices() {
   
   // Transfer offers
   const transferChoices = getTransferChoices();
-  choices.push(...transferChoices.slice(0, 2));
+  choices.push(...transferChoices.slice(0, 1));
+  
+  // Draft option for pro players aged 19-22 (can still enter drafts)
+  const eligibility = checkDraftEligibility(p);
+  if (eligibility.eligible) {
+    const availableDrafts = getAvailableDrafts(p);
+    if (availableDrafts.length > 0) {
+      const stock = evaluateDraftStock(p);
+      choices.push({
+        type: 'draft',
+        region: availableDrafts[0].region,
+        title: `参加${availableDrafts[0].leagueName}选秀`,
+        desc: `选秀行情：${stock.stock} (${stock.range})`,
+        tag: '选秀'
+      });
+    }
+  }
   
   // Negotiate
   choices.push({
@@ -3680,22 +3694,18 @@ const SIM_TESTS = {
       // 大学阶段: 19岁后选择参选或留守
       let draftAge = null;
       while (state.phase === 'university' && !state.retired) {
-        if (state.age >= 19 && !state.draftDeclared && state.ovr >= 80) {
+        if (state.age >= 19 && state.ovr >= 80) {
           // 高OVR球员提前参选
-          declareDraft();
+          declareDraft(state.nationality);
           draftAge = state.age;
           break;
         } else if (state.age >= 22) {
-          // 22岁强制参选
-          declareDraft();
+          // 22岁自动参选(本国选秀)
+          declareDraft(state.nationality);
           draftAge = state.age;
           break;
         }
         advanceYear();
-        // advanceYear内部可能触发自动选秀(checkPhaseTransition)
-        if (state.phase === 'pro' && draftAge === null) {
-          draftAge = state.age;
-        }
       }
 
       // 职业阶段: 推进到退役
