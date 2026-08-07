@@ -1853,20 +1853,20 @@ function generateStats36(ovr, position, ab) {
   let stl = r(t.stl), blk = r(t.blk), to = r(t.to);
   let fg = r(t.fg), tp = r(t.tp), ftp = r(t.ftp);
 
-  // 分项能力微调 (±10%范围内)
+  // 分项能力微调 (±5%范围内, 保持数据接近基准表)
   if (ab) {
     const adjust = (base, ability, scale) => base * (1 + (ability - 70) / 100 * scale);
-    pts = adjust(pts, (ab.layup + ab.three + ab.mid) / 3, 0.12);
-    reb = adjust(reb, (ab.drb + ab.orb + ab.strength) / 3, 0.15);
-    ast = adjust(ast, (ab.pass + ab.ball) / 2, 0.15);
-    stl = adjust(stl, ab.stl, 0.20);
-    blk = adjust(blk, ab.blk, 0.20);
+    pts = adjust(pts, (ab.layup + ab.three + ab.mid) / 3, 0.06);
+    reb = adjust(reb, (ab.drb + ab.orb + ab.strength) / 3, 0.08);
+    ast = adjust(ast, (ab.pass + ab.ball) / 2, 0.08);
+    stl = adjust(stl, ab.stl, 0.10);
+    blk = adjust(blk, ab.blk, 0.10);
     // 命中率由对应能力微调
-    tp = clamp(tp + (ab.three - 70) * 0.0008, 0.20, 0.50);
-    ftp = clamp(ftp + (ab.ft - 70) * 0.001, 0.50, 0.95);
-    fg = clamp(fg + (ab.layup - 70) * 0.0005, 0.35, 0.62);
+    tp = clamp(tp + (ab.three - 70) * 0.0004, 0.20, 0.50);
+    ftp = clamp(ftp + (ab.ft - 70) * 0.0005, 0.50, 0.95);
+    fg = clamp(fg + (ab.layup - 70) * 0.0003, 0.35, 0.62);
     // 失误: 控球越高失误越少
-    to = clamp(to * (1 - (ab.ball - 70) * 0.002), 0.5, 5);
+    to = clamp(to * (1 - (ab.ball - 70) * 0.001), 0.5, 5);
   }
   return {
     pts: +pts.toFixed(1), reb: +reb.toFixed(1), ast: +ast.toFixed(1),
@@ -2101,15 +2101,15 @@ function advanceYear() {
   // 2. 由当前OVR+分项能力生成36分钟标准化数据
   p.stats36 = generateStats36(p.ovr, p.position, p.abilities);
   // 3. 根据OVR和耐力计算场均上场时间
-  const staminaBonus = (p.abilities.stamina - 70) * 0.1;
+  const staminaBonus = (p.abilities.stamina - 70) * 0.08;
   let minutes;
-  if (p.ovr >= 90)      minutes = 34 + staminaBonus + rand(-1, 2);
-  else if (p.ovr >= 85) minutes = 30 + staminaBonus + rand(-1, 2);
-  else if (p.ovr >= 80) minutes = 26 + staminaBonus + rand(-2, 2);
-  else if (p.ovr >= 75) minutes = 20 + staminaBonus + rand(-2, 3);
-  else if (p.ovr >= 70) minutes = 15 + staminaBonus + rand(-2, 3);
-  else                  minutes = 10 + staminaBonus + rand(-2, 3);
-  minutes = clamp(minutes, 5, 40);
+  if (p.ovr >= 90)      minutes = 30 + staminaBonus + rand(-1, 2);
+  else if (p.ovr >= 85) minutes = 26 + staminaBonus + rand(-1, 2);
+  else if (p.ovr >= 80) minutes = 22 + staminaBonus + rand(-2, 2);
+  else if (p.ovr >= 75) minutes = 17 + staminaBonus + rand(-2, 3);
+  else if (p.ovr >= 70) minutes = 12 + staminaBonus + rand(-2, 3);
+  else                  minutes = 8 + staminaBonus + rand(-2, 3);
+  minutes = clamp(minutes, 5, 36);
   // 4. 由36分钟数据换算赛季总数据: 总计 = 36分钟数据 × (上场时间/36) × 场次
   const minRatio = minutes / 36;
   p.yearStats.gp = gamesPlayed;
