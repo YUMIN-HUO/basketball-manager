@@ -1900,7 +1900,42 @@ const ESPN_NCAA_IDS = {
   'University of Houston':248,
 };
 
-const TEAM_LOGO_URLS = {};
+const TEAM_LOGO_URLS = {
+  // ===== CBA (20队 · Wikimedia Commons) =====
+  '辽宁本钢': 'https://commons.wikimedia.org/wiki/Special:FilePath/Liaoning_Flying_Leopards_logo.svg',
+  '广东宏远': 'https://commons.wikimedia.org/wiki/Special:FilePath/Guangdong_Southern_Tigers_logo.svg',
+  '北京首钢': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Ducks_logo.svg',
+  '新疆伊力特': 'https://commons.wikimedia.org/wiki/Special:FilePath/Xinjiang_Flying_Tigers_logo.svg',
+  '上海久事': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanghai_Sharks_logo.svg',
+  '浙江稠州': 'https://commons.wikimedia.org/wiki/Special:FilePath/Zhejiang_Golden_Bulls_logo.svg',
+  '山东高速': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shandong_Heroes_logo.svg',
+  '深圳马可波罗': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shenzhen_Leopards.svg',
+  '广州龙狮': 'https://commons.wikimedia.org/wiki/Special:FilePath/Guangzhou_Long_Lions_logo.svg',
+  '天津先行者': 'https://commons.wikimedia.org/wiki/Special:FilePath/Tianjin_Pioneers_logo.svg',
+  '山西汾酒': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanxi_Loongs_logo.svg',
+  '吉林九台': 'https://commons.wikimedia.org/wiki/Special:FilePath/Jilin_Northeast_Tigers_logo.svg',
+  '青岛国信': 'https://commons.wikimedia.org/wiki/Special:FilePath/Qingdao_Eagles_logo.svg',
+  '南京同曦': 'https://commons.wikimedia.org/wiki/Special:FilePath/Nanjing_Monkey_Kings_logo.svg',
+  '福建浔兴': 'https://commons.wikimedia.org/wiki/Special:FilePath/Fujian_Sturgeons_logo.svg',
+  '苏州肯帝亚': 'https://commons.wikimedia.org/wiki/Special:FilePath/Jiangsu_Dragons_logo.svg',
+  '四川金强': 'https://commons.wikimedia.org/wiki/Special:FilePath/Sichuan_Blue_Whales_logo.svg',
+  '宁波町渥': 'https://commons.wikimedia.org/wiki/Special:FilePath/Ningbo_Rockets_logo.svg',
+  '广厦控股': 'https://commons.wikimedia.org/wiki/Special:FilePath/Zhejiang_Guangsha_Lions_logo.svg',
+  '北控水务': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Royal_Fighters_logo.svg',
+  // ===== CUBA/CUBAL 大学 =====
+  '清华大学': 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Tsinghua_University_Logo.svg',
+  '北京大学': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Peking_University_seal.svg',
+  '太原理工大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Taiyuan_University_of_Technology_logo.svg',
+  '厦门大学': 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Xiamen_University_logo.svg',
+  '上海交通大学': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Shanghai_Jiao_Tong_University_Logo.svg',
+  '华中科技大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Huazhong_University_of_Science_and_Technology_logo.svg',
+  '华侨大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Huaqiao_Univ_logo.png',
+  '宁波大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Ningbo_University_logo.svg',
+  '北京体育大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Sport_University_logo.svg',
+  '中国矿业大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/China_University_of_Mining_and_Technology_logo.svg',
+  '湖南工业大学': 'https://commons.wikimedia.org/wiki/Special:FilePath/Hunan_University_of_Technology_logo.svg',
+  '广州商学院': 'https://commons.wikimedia.org/wiki/Special:FilePath/Guangzhou_College_of_Commerce_logo.svg',
+};
 
 // ============= 队徽生成系统 (多源CDN + 超时回退) =============
 function getBadgeUrl(teamName) {
@@ -1909,6 +1944,8 @@ function getBadgeUrl(teamName) {
   if (NBA_LOGO_IDS[teamName]) return `https://cdn.nba.com/logos/nba/${NBA_LOGO_IDS[teamName]}/primary/L/logo.svg`;
   // ESPN NCAA CDN
   if (ESPN_NCAA_IDS[teamName] != null) return `https://a.espncdn.com/i/teamlogos/ncaa/500/${ESPN_NCAA_IDS[teamName]}.png`;
+  // TEAM_LOGO_URLS 映射 (CBA/CUBA等)
+  if (TEAM_LOGO_URLS[teamName]) return TEAM_LOGO_URLS[teamName];
   return null;
 }
 
