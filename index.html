@@ -2053,7 +2053,7 @@ function getTeamBadge(logo, cls, teamName) {
   }
 
   if (imgUrl) {
-    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" referrerpolicy="no-referrer" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:contain;display:block" onerror="window.replaceBadgeImg(this)" onload="this.style.opacity='1'">`;
+    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:50%" onerror="window.replaceBadgeImg(this)" onload="this.style.display='block'">`;
   }
   // 3. 无真实队徽: 生成SVG兜底
   return getFallbackBadge(logo, cls);
@@ -2068,14 +2068,23 @@ window.replaceBadgeImg = function(imgEl) {
     if (imgEl.dataset.fallbackDone === '1') return;
     imgEl.dataset.fallbackDone = '1';
     const parent = imgEl.parentNode;
-    if (parent) {
-      const wrapper = document.createElement('span');
-      wrapper.innerHTML = getFallbackBadge(logo, cls);
-      const svg = wrapper.firstChild;
-      parent.replaceChild(svg, imgEl);
+    if (!parent) return;
+    // 创建临时容器解析SVG字符串
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = getFallbackBadge(logo, cls);
+    const svgEl = wrapper.firstElementChild;
+    if (svgEl && svgEl.tagName === 'svg') {
+      parent.replaceChild(svgEl, imgEl);
+    } else {
+      // SVG解析失败,直接用文本替代
+      const span = document.createElement('span');
+      span.textContent = logo.substring(0, 3);
+      span.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;color:#fff;font-size:clamp(10px,2.8vw,13px);border-radius:50%';
+      span.className = cls || '';
+      parent.replaceChild(span, imgEl);
     }
   } catch(e) {
-    // 静默处理,避免控制台报错刷屏
+    // 静默处理
   }
 };
 
@@ -2099,15 +2108,15 @@ function getFallbackBadge(logo, cls) {
   const c1 = colors[0], c2 = colors[1];
   const safeLogo = logo || '??';
   const shortLogo = safeLogo.length > 4 ? safeLogo.substring(0, 4) : safeLogo;
-  // 篮球纹理背景 + 渐变圆 + 队名缩写
+  const uid = 'fb' + Math.random().toString(36).substring(2, 8);
   return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="fallback-badge">
     <defs>
-      <radialGradient id="fb-${shortLogo}" cx="40%" cy="35%" r="60%">
+      <radialGradient id="${uid}" cx="40%" cy="35%" r="60%">
         <stop offset="0%" stop-color="${c1}" stop-opacity="0.95"/>
         <stop offset="100%" stop-color="${c2}" stop-opacity="1"/>
       </radialGradient>
     </defs>
-    <circle cx="24" cy="24" r="23" fill="url(#fb-${shortLogo})"/>
+    <circle cx="24" cy="24" r="23" fill="url(#${uid})"/>
     <circle cx="24" cy="24" r="23" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
     <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
     <line x1="6" y1="24" x2="42" y2="24" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
