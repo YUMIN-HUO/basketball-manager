@@ -1971,6 +1971,28 @@ const TEAM_LOGO_URLS = {
   '上海交通大学': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Shanghai_Jiao_Tong_University_Logo.svg',
   '厦门大学': 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Xiamen_University_logo.svg',
   '早稲田大学': 'https://upload.wikimedia.org/wikipedia/commons/2/25/Waseda_University_Logo.svg',
+
+  // ========== CBA球队 (Wikimedia Commons Special:FilePath - 标准热链) ==========
+  '辽宁本钢': 'https://commons.wikimedia.org/wiki/Special:FilePath/Liaoning_Flying_Leopards_logo.svg',
+  '广东宏远': 'https://commons.wikimedia.org/wiki/Special:FilePath/Guangdong_Southern_Tigers_logo.svg',
+  '北京首钢': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Ducks_logo.svg',
+  '新疆伊力特': 'https://commons.wikimedia.org/wiki/Special:FilePath/Xinjiang_Flying_Tigers_logo.svg',
+  '上海久事': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanghai_Sharks_logo.svg',
+  '浙江稠州': 'https://commons.wikimedia.org/wiki/Special:FilePath/Zhejiang_Golden_Bulls_logo.svg',
+  '山东高速': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shandong_Heroes_logo.svg',
+  '深圳马可波罗': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shenzhen_Leopards.svg',
+  '广州龙狮': 'https://commons.wikimedia.org/wiki/Special:FilePath/Guangzhou_Long_Lions_logo.svg',
+  '天津先行者': 'https://commons.wikimedia.org/wiki/Special:FilePath/Tianjin_Pioneers_logo.svg',
+  '山西汾酒': 'https://commons.wikimedia.org/wiki/Special:FilePath/Shanxi_Loongs_logo.svg',
+  '吉林九台': 'https://commons.wikimedia.org/wiki/Special:FilePath/Jilin_Northeast_Tigers_logo.svg',
+  '青岛国信': 'https://commons.wikimedia.org/wiki/Special:FilePath/Qingdao_Eagles_logo.svg',
+  '南京同曦': 'https://commons.wikimedia.org/wiki/Special:FilePath/Nanjing_Monkey_Kings_logo.svg',
+  '福建浔兴': 'https://commons.wikimedia.org/wiki/Special:FilePath/Fujian_Sturgeons_logo.svg',
+  '苏州肯帝亚': 'https://commons.wikimedia.org/wiki/Special:FilePath/Jiangsu_Dragons_logo.svg',
+  '四川金强': 'https://commons.wikimedia.org/wiki/Special:FilePath/Sichuan_Blue_Whales_logo.svg',
+  '宁波町渥': 'https://commons.wikimedia.org/wiki/Special:FilePath/Ningbo_Rockets_logo.svg',
+  '广厦控股': 'https://commons.wikimedia.org/wiki/Special:FilePath/Zhejiang_Guangsha_Lions_logo.svg',
+  '北控水务': 'https://commons.wikimedia.org/wiki/Special:FilePath/Beijing_Royal_Fighters_logo.svg',
 };
 
 // 生成队徽HTML (真实图片优先,SVG兜底)
@@ -1986,7 +2008,7 @@ function getTeamBadge(logo, cls, teamName) {
   }
 
   if (imgUrl) {
-    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:contain;display:block" onerror="window.replaceBadgeImg(this)" onload="this.style.opacity='1'">`;
+    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" referrerpolicy="no-referrer" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:contain;display:block" onerror="window.replaceBadgeImg(this)" onload="this.style.opacity='1'">`;
   }
   // 3. 无真实队徽: 生成SVG兜底
   return getFallbackBadge(logo, cls);
