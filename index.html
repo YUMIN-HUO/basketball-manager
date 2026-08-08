@@ -1951,17 +1951,16 @@ function getBadgeUrl(teamName) {
 
 function getTeamBadge(logo, cls, teamName) {
   const imgUrl = getBadgeUrl(teamName);
-  const shortName = (logo || '??').substring(0, 4);
-  // SVG兜底 (始终预生成)
-  const fallback = getFallbackBadge(logo, cls);
+  // 无URL → 直接返回SVG兜底
+  if (!imgUrl) return getFallbackBadge(logo, cls);
 
-  if (!imgUrl) return fallback;
-
-  // img + 内联超时回退span
-  const uid = 'b' + Math.random().toString(36).substring(2, 8);
+  // 有URL → img标签 + onerror内联回退
+  const fallbackSvg = getFallbackBadge(logo, cls).replace(/"/g, "'");
   return `<span style="display:inline-block;width:100%;height:100%;position:relative;border-radius:50%;overflow:hidden">
-    <img src="${imgUrl}" alt="${teamName}" id="${uid}" data-fb="${cls}" data-logo="${logo}" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:50%" onerror="document.getElementById('${uid}').style.display='none';this.nextElementSibling.style.display='flex'">
-    <span style="display:none;width:100%;height:100%">${fallback}</span>
+    <img src="${imgUrl}" alt="${teamName||''}" 
+         style="width:100%;height:100%;object-fit:contain;display:block;border-radius:50%"
+         onerror="this.style.display='none';var s=this.nextElementSibling;if(s){s.style.display='block';s.style.width='100%';s.style.height='100%'}">
+    <span style="display:none;width:100%;height:100%">${fallbackSvg}</span>
   </span>`;
 }
 
@@ -1979,26 +1978,16 @@ const LOGO_COLORS = {
   'logo-classic': ['#1e3a5f', '#0f1f33'], 'logo-modern': ['#3d2b1f', '#1a0f08'],
   'logo-bright': ['#ff6b35', '#c44a1a']
 };
-// SVG兜底队徽 (用于无真实logo的球队 - 篮球风格圆形徽章)
+// SVG兜底队徽 (极简可靠 - 无渐变/无ID/纯色)
 function getFallbackBadge(logo, cls) {
-  const colors = LOGO_COLORS[cls] || ['#444', '#222'];
-  const c1 = colors[0], c2 = colors[1];
+  const colors = LOGO_COLORS[cls] || ['#555', '#333'];
+  const c1 = colors[0];
   const safeLogo = logo || '??';
   const shortLogo = safeLogo.length > 4 ? safeLogo.substring(0, 4) : safeLogo;
-  const uid = 'fb' + Math.random().toString(36).substring(2, 8);
   return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="fallback-badge">
-    <defs>
-      <radialGradient id="${uid}" cx="40%" cy="35%" r="60%">
-        <stop offset="0%" stop-color="${c1}" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="${c2}" stop-opacity="1"/>
-      </radialGradient>
-    </defs>
-    <circle cx="24" cy="24" r="23" fill="url(#${uid})"/>
-    <circle cx="24" cy="24" r="23" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-    <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
-    <line x1="6" y1="24" x2="42" y2="24" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
-    <line x1="24" y1="6" x2="24" y2="42" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
-    <text x="24" y="29" text-anchor="middle" font-size="15" font-weight="900" fill="white" font-family="Arial, sans-serif" letter-spacing="0.5">${shortLogo}</text>
+    <circle cx="24" cy="24" r="23" fill="${c1}"/>
+    <circle cx="24" cy="24" r="23" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+    <text x="24" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" font-family="Arial, sans-serif">${shortLogo}</text>
   </svg>`;
 }
 
