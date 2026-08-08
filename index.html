@@ -1590,8 +1590,9 @@ function rollPotential() {
   const r = Math.random();
   if (r < 0.05) return randInt(95, 99);
   if (r < 0.15) return randInt(90, 94);
-  if (r < 0.45) return randInt(80, 89);
-  return randInt(55, 79);
+  if (r < 0.35) return randInt(80, 89);
+  if (r < 0.65) return randInt(70, 79);
+  return randInt(50, 69);
 }
 function pickN(arr, n) {
   const copy = [...arr]; const result = [];
@@ -2940,8 +2941,13 @@ function chooseDecision(choice) {
   } else if (choice.type === 'retire') {
     p.retired = true;
     p.retirementReason = '主动退役，结束职业生涯';
+    // 主动退役也需生成结局称号 (advanceYear 不会被调用)
+    if (!p.careerTitle) {
+      p.careerTitle = generateCareerTitle(p);
+      log('TITLE', `🏷️ 结局称号: ${p.careerTitle} | 生涯:${p.stats.gp}场 ${p.stats.pts}分 ${p.honors.length}荣誉`);
+    }
   }
-  
+
   render();
 }
 
@@ -4970,25 +4976,36 @@ const SIM_TESTS = {
     const savedState = state;
     const savedYear = gameYear;
 
-    // 场景1: 年龄42强制退役
+    // 场景1: 年龄45强制退役 (硬上限)
     clearLog();
     state = createPlayer('USA', POSITIONS[0], '退役测试_年龄', 1);
-    state.age = 42;
+    state.age = 45;
     state.phase = 'pro';
     state.ovr = 75;
     checkRetirement(state);
-    this.assert(state.retired === true, '42岁强制退役', `(retired=${state.retired})`);
-    this.assert(state.retirementReason.includes('42'), '退役原因含"42岁"');
+    this.assert(state.retired === true, '45岁强制退役', `(retired=${state.retired})`);
+    this.assert(state.retirementReason.includes('45'), '退役原因含"45岁"');
 
-    // 场景2: OVR<60被迫退役 (30岁以下)
+    // 场景2: 大学毕业生低OVR自由球员无人签约退役 (tryFreeAgentSigning)
     clearLog();
-    state = createPlayer('USA', POSITIONS[0], '退役测试_低OVR', 1);
-    state.age = 28;
-    state.phase = 'pro';
-    state.ovr = 55;
-    checkRetirement(state);
-    this.assert(state.retired === true, 'OVR<60被迫退役', `(OVR=${state.ovr}, retired=${state.retired})`);
-    this.assert(state.retirementReason.includes('能力值'), '退役原因含"能力值"');
+    state = createPlayer('USA', POSITIONS[0], '退役测试_自由球员', 1);
+    state.age = 22;
+    state.phase = 'university';
+    state.uniYear = 4;
+    state.ovr = 55;  // 极低OVR,签约概率仅10%
+    state.draftsParticipated = [];
+    state.stats36 = { pts: 5, reb: 2, ast: 1, stl: 0, blk: 0, to: 1, fg: 30, tp: 20, ftp: 50 };
+    // 多次运行降低随机干扰
+    let faRetireCount = 0;
+    for (let i = 0; i < 20; i++) {
+      const testState = createPlayer('USA', POSITIONS[0], 'FA测试', 1);
+      testState.age = 22; testState.phase = 'university'; testState.uniYear = 4;
+      testState.ovr = 50; testState.draftsParticipated = [];
+      testState.stats36 = { pts: 4, reb: 2, ast: 1, stl: 0, blk: 0, to: 1, fg: 25, tp: 15, ftp: 45 };
+      tryFreeAgentSigning(testState);
+      if (testState.retired) faRetireCount++;
+    }
+    this.assert(faRetireCount > 10, `低OVR自由球员大概率无人签约退役`, `(20次中${faRetireCount}次退役)`);
 
     // 场景3: 严重伤病退役
     clearLog();
