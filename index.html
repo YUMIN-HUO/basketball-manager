@@ -2627,11 +2627,11 @@ function checkNationalTeam(p) {
 
     // 国家队数据 (5-10场比赛)
     const natGames = randInt(5, 10);
-    const natPtsPerGame = Math.max(5, Math.round(p.ovr * 0.25 + randInt(2, 8)));
+    const natPtsPerGame = Math.max(8, Math.round(p.ovr * 0.35 + randInt(1, 8)));
     natGP += natGames;
     natPts += natPtsPerGame * natGames;
-    natReb += Math.round(natGames * randInt(3, 8));
-    natAst += Math.round(natGames * randInt(2, 6));
+    natReb += Math.round(natGames * (randInt(3, 8) + Math.floor(p.ovr * 0.04)));
+    natAst += Math.round(natGames * (randInt(2, 6) + Math.floor(p.ovr * 0.03)));
 
     // 晋级轮次判定 (基于totalScore)
     // 世界杯: 32强→16强→8强→4强→决赛→冠军
@@ -4749,7 +4749,7 @@ function renderRetirementScreen() {
               <div style="font-size:clamp(16px,5vw,20px);flex-shrink:0;">${r.roundLevel >= 5 ? '🏆' : r.roundLevel >= 3 ? '🥉' : '🌍'}</div>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:clamp(10px,2.8vw,13px);font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.competition}</div>
-                <div style="font-size:clamp(7px,1.8vw,10px);color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.flag} ${r.country} · ${r.year}岁 · ${r.gp}场${r.avgPts}分</div>
+                <div style="font-size:clamp(7px,1.8vw,10px);color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.flag} ${r.country} · ${r.year}岁 · ${r.gp}场 · 场均${r.avgPts}分</div>
               </div>
               <div style="font-size:clamp(9px,2.2vw,11px);font-weight:600;color:${r.roundLevel >= 5 ? '#ffd700' : r.roundLevel >= 3 ? '#ff9e67' : 'var(--text-dim)'};flex-shrink:0;padding:2px 6px;background:${r.roundLevel >= 5 ? 'rgba(255,215,0,0.12)' : r.roundLevel >= 3 ? 'rgba(255,158,103,0.12)' : 'rgba(255,255,255,0.04)'};border-radius: var(--r-full);">${r.round}</div>
             </div>
