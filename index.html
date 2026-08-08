@@ -812,7 +812,172 @@
     border-color: rgba(255,107,53,0.45); color: #fff;
   }
   .ji-row input[type="text"] { width: 100%; padding: clamp(7px, 1.8vw, 8px) clamp(8px, 2.2vw, 10px); }
-</style>
+
+
+  /* ========== START SCREEN CONTRAST ENHANCEMENT ========== */
+  /* Unselected options: brighter card background + clearer border + sharper text */
+  .mode-btn:not(.active),
+  .step-country-btn:not(.selected) {
+    background: linear-gradient(145deg, #1b223a, #151a2e) !important;
+    border: 1.5px solid rgba(255,255,255,0.14) !important;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  }
+  .mode-btn:not(.active) .mode-name,
+  .step-country-btn:not(.selected) .c-name {
+    color: #ffffff !important;
+  }
+  .mode-btn:not(.active) .mode-desc,
+  .step-country-btn:not(.selected) .c-info {
+    color: #a8b1cc !important;
+  }
+  /* Hover state (unselected): even brighter border + glow rim */
+  .mode-btn:not(.active):hover,
+  .step-country-btn:not(.selected):hover,
+  .num-chip:not(.active):hover {
+    border-color: rgba(255,160,100,0.55) !important;
+    background: linear-gradient(145deg, #202846, #1a1f36) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,107,53,0.18) !important;
+  }
+  /* Active/Selected state: stronger + brighter gradient, thicker orange border, double-layer glow */
+  .mode-btn.active {
+    background: linear-gradient(145deg, rgba(255,107,53,0.5), rgba(247,147,30,0.3), rgba(255,107,53,0.25)) !important;
+    border: 2px solid #ff7043 !important;
+    box-shadow: 0 0 20px rgba(255,107,53,0.5), 0 0 40px rgba(255,107,53,0.18), inset 0 0 24px rgba(255,255,255,0.08) !important;
+    transform: translateY(-3px) scale(1.01) !important;
+  }
+  .mode-btn.active .mode-name { color: #ffffff !important; text-shadow: 0 1px 4px rgba(255,80,20,0.6) !important; }
+  .mode-btn.active .mode-desc { color: #ffe2cc !important; }
+  .mode-btn.active::after {
+    content: '✓'; position: absolute; top: 6px; right: 10px;
+    width: clamp(18px, 5vw, 22px); height: clamp(18px, 5vw, 22px);
+    background: linear-gradient(135deg, #fff, #ffd8a8);
+    color: #ff5a1a; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(10px, 2.6vw, 12px); font-weight: 900;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+  .country-btn.selected,
+  .step-country-btn.selected {
+    background: linear-gradient(145deg, rgba(255,107,53,0.45), rgba(247,147,30,0.25)) !important;
+    border: 2px solid #ff7043 !important;
+    box-shadow: 0 0 20px rgba(255,107,53,0.45), 0 0 36px rgba(255,107,53,0.16), inset 0 0 22px rgba(255,255,255,0.07) !important;
+    transform: translateY(-2px) scale(1.01) !important;
+  }
+  .step-country-btn.selected .c-name { color: #ffffff !important; text-shadow: 0 1px 4px rgba(255,80,20,0.55) !important; }
+  .step-country-btn.selected .c-info { color: #ffe2cc !important; }
+  .country-btn.selected::before,
+  .step-country-btn.selected::before { z-index: 9; }
+  .country-btn.selected::after,
+  .step-country-btn.selected::after {
+    content: '✓'; position: absolute; top: 6px; right: 8px;
+    width: clamp(18px, 5vw, 22px); height: clamp(18px, 5vw, 22px);
+    background: linear-gradient(135deg, #fff, #ffd8a8); color: #ff5a1a;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: clamp(10px, 2.6vw, 12px); font-weight: 900;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35); z-index: 10;
+  }
+  /* Primary (Next) button: brighter, high-contrast orange gradient + white text + thick shadow */
+  .btn-primary.step-next:not([disabled]),
+  .btn-primary:not([disabled]) {
+    background: linear-gradient(135deg, #ff7b3a 0%, #ff5a1a 45%, #f7931e 100%) !important;
+    border: 1.5px solid #ff8c4a !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 28px rgba(255,90,26,0.45), 0 0 0 1.5px rgba(255,255,255,0.08) inset, 0 0 22px rgba(255,120,60,0.3) !important;
+    font-weight: 900 !important; letter-spacing: 0.5px !important;
+  }
+  .btn-primary.step-next:not([disabled]):hover,
+  .btn-primary:not([disabled]):hover {
+    background: linear-gradient(135deg, #ff8f55 0%, #ff6a2b 45%, #ffa13a 100%) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 36px rgba(255,90,26,0.55), 0 0 0 1.5px rgba(255,255,255,0.1) inset, 0 0 30px rgba(255,140,70,0.45) !important;
+  }
+  .btn-primary.step-next:not([disabled]):active,
+  .btn-primary:not([disabled]):active { transform: translateY(-1px) scale(0.97) !important; }
+  /* Back button: brighter secondary contrast vs primary */
+  .step-back {
+    background: linear-gradient(145deg, #242c48, #1b2138) !important;
+    border: 1.5px solid rgba(255,255,255,0.18) !important;
+    color: #cfd6e8 !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  }
+  .step-back:hover {
+    background: linear-gradient(145deg, #2e375a, #232a44) !important;
+    border-color: rgba(255,255,255,0.35) !important;
+    color: #ffffff !important;
+  }
+  /* Number chip (unselected/selected contrast) */
+  .num-quick .num-chip {
+    background: linear-gradient(145deg, #1c233c, #161b30) !important;
+    border: 1.25px solid rgba(255,255,255,0.12) !important;
+    color: #e8eaf0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  }
+  .num-quick .num-chip.active {
+    background: linear-gradient(135deg, rgba(255,107,53,0.55), rgba(247,147,30,0.35)) !important;
+    border: 1.75px solid #ff7043 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(255,107,53,0.45), 0 4px 14px rgba(255,90,26,0.3) !important;
+    transform: translateY(-1.5px) !important;
+    font-weight: 900 !important;
+  }
+  /* Number +/- buttons */
+  .num-btn {
+    background: linear-gradient(145deg, #1f2743, #171c32) !important;
+    border: 1.5px solid rgba(255,255,255,0.15) !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.35) !important;
+  }
+  .num-btn:hover { border-color: rgba(255,107,53,0.5) !important; color: #ff7b3a !important; }
+  /* Step indicators (dots) - high contrast */
+  .step-dot {
+    background: rgba(255,255,255,0.12) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.4) !important;
+    transition: var(--transition-bounce) !important;
+  }
+  .step-dot.active {
+    background: linear-gradient(135deg, #ff7043, #ffd700) !important;
+    box-shadow: 0 0 0 3px rgba(255,112,67,0.18), 0 0 12px rgba(255,112,67,0.55) !important;
+    transform: scale(1.15) !important;
+  }
+  /* Step title & setup header - more weight / brighter */
+  .setup-title {
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.2px !important;
+  }
+  .setup-subtitle {
+    color: #b8c0d8 !important;
+    font-weight: 600 !important;
+  }
+  .setup-title-lg { color: #ffffff !important; font-weight: 900 !important; }
+  .step-title {
+    color: #ffffff !important;
+    font-weight: 900 !important;
+  }
+  .step-info { color: #a8b1cc !important; }
+  /* Sub titles (球场/球衣) */
+  .sub-title { color: #eef1fa !important; font-weight: 900 !important; }
+  .st-dot {
+    box-shadow: 0 0 0 3px rgba(255,112,67,0.2), 0 0 8px rgba(255,112,67,0.55) !important;
+  }
+  /* Court & jersey panels: clearer border + top accent rim */
+  .court-select-wrap, .jersey-name-wrap {
+    border: 1.5px solid rgba(255,255,255,0.14) !important;
+  }
+  .court-select-wrap::before, .jersey-name-wrap::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: var(--r-xl) var(--r-xl) 0 0; opacity: 0.9;
+  }
+  /* Position dot on court - contrast boost */
+  .pd-bg { fill: rgba(255,255,255,0.1) !important; stroke: rgba(255,255,255,0.5) !important; }
+  .pos-dot.active .pd-bg {
+    fill: rgba(255,107,53,0.55) !important; stroke: #fff !important; stroke-width: 4 !important;
+    filter: drop-shadow(0 0 10px rgba(255,107,53,0.7)) !important;
+  }
+  .pos-dot.active .pd-txt { fill: #ffffff !important; }
+  .pos-dot.active .pd-name { fill: #fff2e0 !important; font-weight: 800 !important; }
+  </style>
 </head>
 <body>
 <div class="app" id="app"></div>
