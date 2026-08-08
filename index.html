@@ -1889,137 +1889,44 @@ const NBA_LOGO_IDS = {
 };
 
 // 非NBA球队的真实队徽URL (运动队徽CDN + Wikipedia可靠直链)
-const TEAM_LOGO_URLS = {
-  // ========== 欧洲联赛球队 (Wikipedia 可靠直链) ==========
-  '皇家马德里': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Real_madrid_logo.svg',
-  '巴塞罗那': 'https://upload.wikimedia.org/wikipedia/en/a/a8/FCB_Logo.svg',
-  '费内巴切': 'https://upload.wikimedia.org/wikipedia/en/d/da/Fenerbah%C3%A7e_SK_logo.svg',
-  '奥林匹亚科斯': 'https://upload.wikimedia.org/wikipedia/en/a/a3/Olympiacos_BC_logo.svg',
-  '帕纳辛奈科斯': 'https://upload.wikimedia.org/wikipedia/en/c/c9/Panathinaikos_BC_logo.svg',
-  '拜仁慕尼黑': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg',
-  'ALBA柏林': 'https://upload.wikimedia.org/wikipedia/en/9/90/Alba_Berlin_logo.svg',
-  '贝尔格莱德红星': 'https://upload.wikimedia.org/wikipedia/en/e/e3/KK_Crvena_zvezda_logo.svg',
-  '贝尔格莱德游击队': 'https://upload.wikimedia.org/wikipedia/en/2/2f/KK_Partizan_logo.svg',
-  '米兰奥林匹亚': 'https://upload.wikimedia.org/wikipedia/en/9/9d/Olimpia_Milano_logo.svg',
-  '博洛尼亚维图斯': 'https://upload.wikimedia.org/wikipedia/en/9/9c/Virtus_Bologna_logo.svg',
-  'ASVEL里昂维勒班': 'https://upload.wikimedia.org/wikipedia/en/3/3a/LDLC_ASVEL_logo.svg',
-  '摩纳哥篮球': 'https://upload.wikimedia.org/wikipedia/en/9/92/AS_Monaco_Basket_logo.svg',
-  '瓦伦西亚篮球': 'https://upload.wikimedia.org/wikipedia/en/0/04/Valencia_Basket_logo.svg',
-  '安纳托利亚艾菲斯': 'https://upload.wikimedia.org/wikipedia/en/4/47/Anadolu_Efes_SK_logo.svg',
-  '博卡青年': 'https://upload.wikimedia.org/wikipedia/commons/0/06/Boca_Juniors_logo.svg',
-  '河床篮球': 'https://upload.wikimedia.org/wikipedia/commons/2/26/River_Plate_logo.svg',
-  '弗拉门戈篮球': 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Clube_de_Regatas_do_Flamengo_logo.svg',
-  '尤文图特巴达洛纳': 'https://upload.wikimedia.org/wikipedia/en/2/28/Club_Joventut_Badalona_logo.svg',
-  '乌尼卡哈马拉加': 'https://upload.wikimedia.org/wikipedia/en/8/8a/Unicaja_M%C3%A1laga_logo.svg',
-  '利摩日CSP': 'https://upload.wikimedia.org/wikipedia/en/3/37/Limoges_CSP_logo.svg',
-  '加拉塔萨雷': 'https://upload.wikimedia.org/wikipedia/en/2/25/Galatasaray_SK_logo.svg',
-  '贝西克塔斯': 'https://upload.wikimedia.org/wikipedia/en/4/4f/Besiktas_JK_logo.svg',
-  'AEK雅典': 'https://upload.wikimedia.org/wikipedia/en/2/2e/AEK_Athens_F.C._logo.svg',
-  '悉尼国王': 'https://upload.wikimedia.org/wikipedia/en/9/9e/Sydney_Kings_logo.svg',
-  '珀斯野猫': 'https://upload.wikimedia.org/wikipedia/en/9/93/Perth_Wildcats_logo.svg',
-  '莱里达篮球': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/For%C3%A7a_Lleida_CE.svg',
-  '皇家贝蒂斯': 'https://upload.wikimedia.org/wikipedia/en/1/13/Real_Betis_Baloncesto_logo.svg',
-  '特内里费篮球': 'https://upload.wikimedia.org/wikipedia/en/6/64/CB_Canarias_logo.svg',
-  '萨拉戈萨篮球': 'https://upload.wikimedia.org/wikipedia/en/8/8f/Basket_Zaragoza_logo.svg',
-  '格拉纳达篮球': 'https://upload.wikimedia.org/wikipedia/en/1/18/Fundaci%C3%B3n_CB_Granada_logo.svg',
-  '墨尔本联队': 'https://upload.wikimedia.org/wikipedia/en/b/be/Melbourne_United_logo.svg',
-  '布里斯班子弹': 'https://upload.wikimedia.org/wikipedia/en/8/84/Brisbane_Bullets_logo.svg',
-  '阿德莱德36人': 'https://upload.wikimedia.org/wikipedia/en/a/ae/Adelaide_36ers_logo.svg',
-  '塔斯马尼亚跳蚁': 'https://upload.wikimedia.org/wikipedia/en/4/4a/Tasmania_JackJumpers_logo.svg',
-  '新西兰破坏者': 'https://upload.wikimedia.org/wikipedia/en/4/4f/New_Zealand_Breakers_logo.svg',
-  '伊拉瓦拉老鹰': 'https://upload.wikimedia.org/wikipedia/en/7/7a/Illawarra_Hawks_logo.svg',
-  '勒芒萨尔特': 'https://upload.wikimedia.org/wikipedia/en/5/5e/Le_Mans_Sarthe_Basket_logo.svg',
-  '巴黎篮球': 'https://upload.wikimedia.org/wikipedia/en/0/0b/Paris_Basketball_logo.svg',
-  '南泰尔92': 'https://upload.wikimedia.org/wikipedia/en/3/38/Nanterre_92_logo.svg',
-  '佩里斯特里': 'https://upload.wikimedia.org/wikipedia/en/3/3d/Peristeri_BC_logo.svg',
-  '达鲁沙法卡': 'https://upload.wikimedia.org/wikipedia/en/9/9f/Dar%C3%BC%C5%9F%C5%9Fafaka_logo.svg',
-  '博洛尼亚福尔图多': 'https://upload.wikimedia.org/wikipedia/en/7/77/Fortitudo_Bologna_logo.svg',
-  '布罗斯班贝格': 'https://upload.wikimedia.org/wikipedia/en/e/e0/Brose_Baskets_logo.svg',
-  '乌尔姆拉蒂奥法姆': 'https://upload.wikimedia.org/wikipedia/en/3/36/Ratiopharm_Ulm_logo.svg',
-  '圣洛伦索': 'https://upload.wikimedia.org/wikipedia/en/6/62/San_Lorenzo_de_Almagro_logo.svg',
-  '伏伊伏丁那': 'https://upload.wikimedia.org/wikipedia/en/4/4f/FK_Vojvodina_logo.svg',
-
-  // ========== NCAA大学球队 (Wikipedia Commons已知可靠直链) ==========
-  'Duke University': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Duke_Blue_Devils_logo.svg',
-  'Michigan State University': 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Michigan_State_Spartans_alternate_logo.svg',
-  'Arizona': 'https://upload.wikimedia.org/wikipedia/commons/3/34/Arizona_Wildcats_logo.svg',
-  'University of North Carolina': 'https://upload.wikimedia.org/wikipedia/commons/d/d7/North_Carolina_Tar_Heels_logo.svg',
-  // 其他NCAA使用seeklogo.com可靠CDN (稳定访问)
-  'University of Florida': 'https://upload.wikimedia.org/wikipedia/commons/7/7d/Florida_Gators_logo.svg',
-  'University of Michigan': 'https://upload.wikimedia.org/wikipedia/commons/6/65/Michigan_Wolverines_logo.svg',
-  'University of Illinois': 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Illinois_Fighting_Illini_logo.svg',
-  'University of Tennessee': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Tennessee_Volunteers_logo.svg',
-  'University of Connecticut': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Connecticut_Huskies_logo.svg',
-  'University of Texas': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Texas_Longhorns_logo.svg',
-  'University of Kansas': 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Kansas_Jayhawks_logo.svg',
-  'University of Alabama': 'https://upload.wikimedia.org/wikipedia/commons/6/6c/Alabama_Crimson_Tide_logo.svg',
-  'Purdue University': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Purdue_Boilermakers_logo.svg',
-  'Gonzaga': 'https://upload.wikimedia.org/wikipedia/commons/d/dc/Gonzaga_Bulldogs_logo.svg',
-  'Indiana University': 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Indiana_Hoosiers_logo.svg',
-  'Vanderbilt University': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Vanderbilt_Commodores_logo.svg',
-  'University of Louisville': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Louisville_Cardinals_logo.svg',
-  'University of Arkansas': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Arkansas_Razorbacks_logo.svg',
-  'University of Virginia': 'https://upload.wikimedia.org/wikipedia/commons/9/99/Virginia_Cavaliers_logo.svg',
-  'University of Houston': 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Houston_Cougars_logo.svg',
-
-  // ========== US高中篮球名校 ==========
-  'Oak Hill Academy': 'https://upload.wikimedia.org/wikipedia/commons/5/54/Oak_Hill_Academy_athletics_monogram.png',
-
-  // ========== 中国大学 (Wikipedia可靠直链) ==========
-  '清华大学': 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Tsinghua_University_Logo.svg',
-  '北京大学': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Peking_University_seal.svg',
-  '上海交通大学': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Shanghai_Jiao_Tong_University_Logo.svg',
-  '厦门大学': 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Xiamen_University_logo.svg',
-  '早稲田大学': 'https://upload.wikimedia.org/wikipedia/commons/2/25/Waseda_University_Logo.svg',
+// ESPN NCAA 队徽ID映射 (来源: espn_ids.json)
+const ESPN_NCAA_IDS = {
+  'Duke University':150, 'University of North Carolina':153, 'University of Kansas':2305,
+  'Michigan State University':127, 'Arizona':12, 'University of Florida':57,
+  'University of Michigan':130, 'University of Illinois':2286, 'University of Tennessee':2633,
+  'University of Connecticut':41, 'University of Texas':251, 'University of Alabama':333,
+  'Purdue University':2509, 'Gonzaga':2250, 'Indiana University':84, 'Vanderbilt University':238,
+  'University of Louisville':97, 'University of Arkansas':8, 'University of Virginia':258,
+  'University of Houston':248,
 };
 
-// 生成队徽HTML (真实图片优先,SVG兜底)
-function getTeamBadge(logo, cls, teamName) {
-  let imgUrl = null;
-  // 1. NBA球队: 使用官方CDN
-  if (teamName && NBA_LOGO_IDS[teamName]) {
-    imgUrl = `https://cdn.nba.com/logos/nba/${NBA_LOGO_IDS[teamName]}/primary/L/logo.svg`;
-  }
-  // 2. 非NBA已知球队: 使用Wikipedia/可靠URL
-  else if (teamName && TEAM_LOGO_URLS[teamName]) {
-    imgUrl = TEAM_LOGO_URLS[teamName];
-  }
+const TEAM_LOGO_URLS = {};
 
-  if (imgUrl) {
-    return `<img src="${imgUrl}" alt="${teamName || logo}" data-logo="${logo}" data-cls="${cls}" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:50%" onerror="window.replaceBadgeImg(this)" onload="this.style.display='block'">`;
-  }
-  // 3. 无真实队徽: 生成SVG兜底
-  return getFallbackBadge(logo, cls);
+// ============= 队徽生成系统 (多源CDN + 超时回退) =============
+function getBadgeUrl(teamName) {
+  if (!teamName) return null;
+  // NBA官方CDN
+  if (NBA_LOGO_IDS[teamName]) return `https://cdn.nba.com/logos/nba/${NBA_LOGO_IDS[teamName]}/primary/L/logo.svg`;
+  // ESPN NCAA CDN
+  if (ESPN_NCAA_IDS[teamName] != null) return `https://a.espncdn.com/i/teamlogos/ncaa/500/${ESPN_NCAA_IDS[teamName]}.png`;
+  return null;
 }
 
-// 全局队徽回退函数 (挂载到window确保onerror可访问)
-window.replaceBadgeImg = function(imgEl) {
-  try {
-    const logo = imgEl.getAttribute('data-logo') || imgEl.alt || '';
-    const cls = imgEl.getAttribute('data-cls') || '';
-    // 防止重复回退
-    if (imgEl.dataset.fallbackDone === '1') return;
-    imgEl.dataset.fallbackDone = '1';
-    const parent = imgEl.parentNode;
-    if (!parent) return;
-    // 创建临时容器解析SVG字符串
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = getFallbackBadge(logo, cls);
-    const svgEl = wrapper.firstElementChild;
-    if (svgEl && svgEl.tagName === 'svg') {
-      parent.replaceChild(svgEl, imgEl);
-    } else {
-      // SVG解析失败,直接用文本替代
-      const span = document.createElement('span');
-      span.textContent = logo.substring(0, 3);
-      span.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;color:#fff;font-size:clamp(10px,2.8vw,13px);border-radius:50%';
-      span.className = cls || '';
-      parent.replaceChild(span, imgEl);
-    }
-  } catch(e) {
-    // 静默处理
-  }
-};
+function getTeamBadge(logo, cls, teamName) {
+  const imgUrl = getBadgeUrl(teamName);
+  const shortName = (logo || '??').substring(0, 4);
+  // SVG兜底 (始终预生成)
+  const fallback = getFallbackBadge(logo, cls);
+
+  if (!imgUrl) return fallback;
+
+  // img + 内联超时回退span
+  const uid = 'b' + Math.random().toString(36).substring(2, 8);
+  return `<span style="display:inline-block;width:100%;height:100%;position:relative;border-radius:50%;overflow:hidden">
+    <img src="${imgUrl}" alt="${teamName}" id="${uid}" data-fb="${cls}" data-logo="${logo}" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:50%" onerror="document.getElementById('${uid}').style.display='none';this.nextElementSibling.style.display='flex'">
+    <span style="display:none;width:100%;height:100%">${fallback}</span>
+  </span>`;
+}
 
 // SVG兜底队徽 (用于无真实logo的球队)
 const LOGO_COLORS = {
@@ -5227,6 +5134,17 @@ function bindRetirementEvents() {
 
 // ============= INIT =============
 render();
+
+// 全局队徽超时兜底: 8秒后仍未加载的图片, 自动替换为SVG
+setTimeout(function(){
+  document.querySelectorAll('.team-logo img[src]').forEach(function(img){
+    if(img.naturalWidth===0 && img.naturalHeight===0){
+      img.style.display='none';
+      var next=img.nextElementSibling;
+      if(next) next.style.display='flex';
+    }
+  });
+},8000);
 
 // ============= 模拟测试数据系统 =============
 // 通过 console.runSimTests() 调用，测试不同场景下的游戏逻辑
