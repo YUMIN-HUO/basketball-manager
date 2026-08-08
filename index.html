@@ -1994,7 +1994,11 @@ function startGame(nationality, position, name, number) {
 function advanceYear() {
   const p = state;
   if (p.retired) return;
-  
+
+  // 清空本年度奖项/事件列表 (避免跨年累积)
+  p.yearAwards = [];
+  p.yearEvents = [];
+
   const prevOvr = p.ovr;
   p.age++;
   gameYear++;
@@ -2347,18 +2351,20 @@ function advanceYear() {
   // 生涯随机事件 (每年随机触发,玩家互动选择)
   // 仅在未退役时生成;退役路径由checkRetirement处理
   if (!p.retired) {
-    p._pendingStoryEvent = getStoryEvent(p);
-    log('STORY', `📌 触发事件: ${p._pendingStoryEvent.icon} ${p._pendingStoryEvent.title}`);
-  }
-
   // 国家队赛事
   checkNationalTeam(p);
 
   // 阶段转换
   checkPhaseTransition(p);
 
-  // 退役检查
+  // 退役检查 (在故事事件之前: 退役年不生成故事事件,避免孤立)
   checkRetirement(p);
+
+  // 生涯随机事件 (仅未退役时生成;退役年跳过,否则玩家既看不到也做不了选择)
+  if (!p.retired) {
+    p._pendingStoryEvent = getStoryEvent(p);
+    log('STORY', `📌 触发事件: ${p._pendingStoryEvent.icon} ${p._pendingStoryEvent.title}`);
+  }
 
   // 退役时生成结局称号 (基于生涯数据,不随机)
   if (p.retired && !p.careerTitle) {
@@ -2519,8 +2525,100 @@ function checkPhaseTransition(p) {
     p.hsGradYear = gameYear;
     log('PHASE', `🎓 高中毕业 → 进入大学阶段 | 高中: ${p.teamName} | 最终OVR: ${p.ovr} | 毕业年份:${p.hsGradYear}`);
   }
-  // 注意: 选秀由玩家主动选择,不再自动触发
-  // 玩家可在19-22岁期间选择参加任意地区的选秀
+  // 大学: 4年制,毕业后若未参选选秀则进入自由球员市场
+  // 已参选的球员 phase 在 declareDraft 中已设为 'pro',不会进入此分支
+  if (p.phase === 'university' && p.uniYear >= 4) {
+    const uniEntry = {
+      age: p.age, event: '大学毕业', team: p.teamName, teamName: p.teamName,
+      teamLogo: p.teamLogo, teamLogoCls: p.teamLogoCls, league: p.league,
+      ovr: p.ovr, stats: { ...p.yearStats }
+    };
+    const uniIdx = p.career.findIndex(c => c.age === p.age);
+    if (uniIdx >= 0) p.career[uniIdx] = uniEntry; else p.career.push(uniEntry);
+    log('PHASE', `🎓 大学毕业 | ${p.teamName} | 最终OVR: ${p.ovr} | 学制4年`);
+
+    // 未参加过任何选秀 → 作为自由球员寻求职业合同
+    if (p.draftsParticipated.length === 0) {
+      tryFreeAgentSigning(p);
+    }
+  }
+}
+
+// === 自由球员签约机制 ===
+// 大学毕业后未选秀/落选,按数据和能力值评估是否有职业联赛球队愿意签约
+// 签约概率基于 OVR + 潜力 + 大学数据;无人签约则退役
+function tryFreeAgentSigning(p) {
+  // 综合市场价值: OVR为主,潜力与大学数据为辅
+  const dataBonus = p.stats36 ? (p.stats36.pts + p.stats36.reb + p.stats36.ast) / 200 : 0;
+  const marketValue = p.ovr + dataBonus + (p.potential >= 85 ? 2 : 0);
+
+  // 签约概率分层 (OVR越高越容易获合同)
+  let signProb;
+  if (p.ovr >= 78) signProb = 0.90;
+  else if (p.ovr >= 72) signProb = 0.70;
+  else if (p.ovr >= 68) signProb = 0.50;
+  else if (p.ovr >= 62) signProb = 0.30;
+  else signProb = 0.10;
+  // 潜力加成: 年轻高潜力球员更受青睐
+  if (p.potential >= 85) signProb = Math.min(0.95, signProb + 0.10);
+
+  log('FREE_AGENT', `=== 大学毕业 → 自由球员市场 === OVR:${p.ovr} 潜力:${p.potential} 市场价值:${marketValue.toFixed(1)} 签约概率:${Math.round(signProb*100)}%`);
+
+  if (Math.random() > signProb) {
+    // 无人愿意签约 → 退役
+    p.retired = true;
+    p.retirementReason = '大学毕业未获职业合同，生涯结束';
+    log('FREE_AGENT', `❌ 无人签约 → 被迫退役 | OVR:${p.ovr} 签约概率:${Math.round(signProb*100)}%`);
+    return false;
+  }
+
+  // 有人签约: 按OVR筛选可签约的联赛档次
+  // T0(NBA/EuroLeague/ACB): OVR 80+ | T1(CBA/Serie A/Turkish/Greek/Adriatic): OVR 72+ | T2(其他): 无门槛
+  const T0_LEAGUES = ['NBA', 'EuroLeague', 'ACB'];
+  const T1_LEAGUES = ['CBA', 'Serie A', 'Turkish League', 'Greek League', 'Adriatic'];
+
+  const candidates = [];
+  for (const region in PRO_TEAMS) {
+    for (const team of PRO_TEAMS[region]) {
+      const lg = team.league;
+      // 按OVR限制可签约联赛档次 (与 getTransferChoices 一致)
+      if (p.ovr < 80 && T0_LEAGUES.includes(lg)) continue;
+      if (p.ovr < 72 && T1_LEAGUES.includes(lg)) continue;
+      candidates.push({ team, region });
+    }
+  }
+  if (candidates.length === 0) {
+    // 极端情况: 无可签约球队 → 退役
+    p.retired = true;
+    p.retirementReason = '大学毕业未获职业合同，生涯结束';
+    log('FREE_AGENT', `❌ 无可签约联赛 → 被迫退役 | OVR:${p.ovr}`);
+    return false;
+  }
+
+  const signed = pick(candidates);
+  const draftTeam = signed.team;
+
+  p.phase = 'pro';
+  p.salary = calcSalary(p.ovr, draftTeam.league);
+  p.teamName = draftTeam.name;
+  p.teamLogo = draftTeam.logo;
+  p.teamLogoCls = draftTeam.cls;
+  p.league = draftTeam.league;
+  p.team = draftTeam;
+  p.recentGames = [];
+  p.noOfferYears = 0;
+
+  const faEntry = {
+    age: p.age, event: '大学毕业·自由签约', team: draftTeam.name, teamName: draftTeam.name,
+    teamLogo: draftTeam.logo, teamLogoCls: draftTeam.cls, league: draftTeam.league,
+    draftPick: '自由球员', ovr: p.ovr, stats: { ...p.yearStats }
+  };
+  const faIdx = p.career.findIndex(c => c.age === p.age);
+  if (faIdx >= 0) p.career[faIdx] = faEntry; else p.career.push(faEntry);
+
+  log('FREE_AGENT', `✅ 自由签约: ${draftTeam.name} (${draftTeam.league}) | 起薪:${formatSalary(p.salary)}`);
+  p.fame = clamp(p.fame + 2, 0, 100);
+  return true;
 }
 
 // === 选秀参选资格检查 ===
